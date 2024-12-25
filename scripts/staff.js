@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const stockTable = document.getElementById('stockTable');
-    const customerLedgerTable = document.getElementById('customerLedgerTable');
+    const customerLedgerTable = document.getElementById('customerpendingTable');
     const paginationContainerStock = document.getElementById('paginationContainerStock');
     const paginationContainerCustomer = document.getElementById('paginationContainerCustomer');
 
