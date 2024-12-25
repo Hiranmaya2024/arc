@@ -1,0 +1,229 @@
+/* Overall Layout */
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column; 
+    height: 100vh; 
+}
+
+h1, h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input, button {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    color: #dc3545;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+#offersList {
+    list-style: none;
+    padding: 0;
+}
+
+#offersList li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 5px;
+}
+
+section {
+    margin-bottom: 30px;
+}
+
+.container {
+    display: flex; 
+}
+
+.content-container {
+    flex: 70%; 
+    padding: 20px;
+}
+
+.company-info {
+    margin-bottom: 20px;
+}
+
+
+.top-container {
+    flex: 20%; 
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    background-color: #f0f0f0; 
+}
+
+.bottom-container {
+    flex: 80%; 
+    display: flex; 
+}
+
+/* Top Container Sections */
+.logo-container {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.logo-container img {
+    margin-right: 10px;
+    max-width: 100px;
+    height: auto;
+}
+
+.slider-container {
+    margin-right: 20px;
+}
+
+/* Slider */
+.slider {
+    overflow: hidden;
+    width: 300px; 
+}
+
+.slide {
+    display: flex;
+    align-items: center; 
+    width: 100%;
+    transform: translateX(0); 
+    transition: transform 0.5s ease-in-out; 
+}
+.slide img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Bottom Container Sections */
+.carousel-container {
+    flex: 70%;
+    padding: 20px;
+    overflow: hidden; 
+}
+
+.carousel {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 100%; 
+}
+
+.slide {
+    flex: 0 0 100%; 
+}
+
+.login-container {
+    flex: 30%; 
+    padding: 20px;
+    background-color: #f0f0f0; 
+}
+
+/* ... rest of your existing CSS for login, carousel, etc. ... */
+
+/*.top-container {
+    flex: 20%; 
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    background-color: #f0f0f0; 
+}
+
+.bottom-container {
+    flex: 80%; 
+    display: flex; 
+}
+
+/* Top Container Sections */
+/*.logo-container {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.logo-container img {
+    margin-right: 10px;
+}
+
+.slider-container {
+    margin-right: 20px;
+}
+
+/* Slider 
+.slider {
+    overflow: hidden;
+    width: 300px; 
+}
+
+.slide {
+    display: flex;
+    align-items: center; 
+    width: 100%;
+    transform: translateX(0); 
+    transition: transform 0.5s ease-in-out; 
+}
+
+/* Bottom Container Sections 
+.carousel-container {
+    flex: 70%;
+    padding: 20px;
+}
+
+/*.login-container {
+    flex: 30%; 
+    padding: 20px;
+    background-color: #f0f0f0; 
+}*/
+
+/* ... rest of your existing CSS for login, carousel, etc. ... */
+/*.slide {
+    flex: 0 0 100%; 
+}*/
+
+/* Add more CSS for styling as needed */
+/* Add more CSS for styling as needed */
