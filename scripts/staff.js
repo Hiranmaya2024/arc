@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const stockTable = document.getElementById('stockTable');
-    const customerLedgerTable = document.getElementById('customerpendingTable');
+    const customerLedgerTable = document.getElementById('customerLedgerTable');
     const paginationContainerStock = document.getElementById('paginationContainerStock');
     const paginationContainerCustomer = document.getElementById('paginationContainerCustomer');
 
@@ -34,5 +34,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         customerLedgerTable.querySelector('tbody').appendChild(tr);
     });
-  //  paginateTable(customerLedgerTable, paginationContainerCustomer, 10); // Apply pagination
+    paginateTable(customerLedgerTable, paginationContainerCustomer, 10); // Apply pagination
 });
