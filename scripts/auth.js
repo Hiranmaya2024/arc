@@ -34,9 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Redirect based on user type
                 if (user[2] === 'staff') {
-                    window.location.href = '../pages/staff.html';
+                    window.location.href = 'staff.html';
                 } else if (user[2] === 'customer') {
-                    window.location.href = '../pages/customer.html';
+                    window.location.href = 'customer.html';
                 } else {
                     errorMessage.textContent = 'Unauthorized Access';
                 }
