@@ -30,18 +30,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Calculate and update customer balances
     const updatedLedger = calculateCustomerBalances(customerLedger);
 
-    // Populate the customer ledger table
+    // Create a copy of the updated ledger for sorting
+    let sortedLedger = [...updatedLedger]; 
+
+    // Populate the customer ledger table with initial data
     customerLedgerTable.querySelector('tbody').innerHTML = '';
-    updatedLedger.forEach(row => {
-        const tr = document.createElement('tr');
-        row.forEach(cell => {
-            const td = document.createElement('td');
-            td.textContent = cell;
-            tr.appendChild(td);
-        });
-        customerLedgerTable.querySelector('tbody').appendChild(tr);
-    });
-    paginateTable(customerLedgerTable, paginationContainerCustomer, 10); // Apply pagination
+    displayPage(sortedLedger, 0, customerLedgerTable, 10); // Display initial page
+
+    paginateTable(customerLedgerTable, paginationContainerCustomer, 10, sortedLedger.length); 
 
     // Add search and sort functionality for customer ledger
     const customerSearchInput = document.getElementById('customerSearch');
@@ -65,23 +61,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             const columnIndex = this.cellIndex;
             const sortDirection = this.dataset.sortDirection || 'asc';
 
-            sortCustomerLedger(columnIndex, sortDirection);
+            sortedLedger = sortLedgerData(sortedLedger, columnIndex, sortDirection); 
 
             // Update sort direction indicator (optional)
             this.dataset.sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+
+            // Update the displayed page after sorting
+            displayPage(sortedLedger, 0, customerLedgerTable, 10); 
         });
     });
 
-    function sortCustomerLedger(columnIndex, sortDirection) {
-        const tableBody = customerLedgerTable.querySelector('tbody');
-        const rows = Array.from(tableBody.querySelectorAll('tr'));
+    function sortLedgerData(data, columnIndex, sortDirection) {
+        return data.sort((a, b) => {
+            const cellA = a[columnIndex];
+            const cellB = b[columnIndex];
 
-        rows.sort((a, b) => {
-            const cellA = a.querySelectorAll('td')[columnIndex];
-            const cellB = b.querySelectorAll('td')[columnIndex];
-
-            let valueA = cellA.textContent.trim();
-            let valueB = cellB.textContent.trim();
+            let valueA = cellA.trim();
+            let valueB = cellB.trim();
 
             // Handle potential empty cells
             if (!valueA) {
@@ -105,9 +101,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return 0;
             }
         });
+    }
 
-        tableBody.innerHTML = '';
-        rows.forEach(row => tableBody.appendChild(row));
+    function displayPage(data, page, table, pageSize) {
+        const startIndex = page * pageSize;
+        const endIndex = startIndex + pageSize;
+        const pageData = data.slice(startIndex, endIndex);
+
+        table.querySelector('tbody').innerHTML = '';
+        pageData.forEach(row => {
+            const tr = document.createElement('tr');
+            row.forEach(cell => {
+                const td = document.createElement('td');
+                td.textContent = cell;
+                tr.appendChild(td);
+            });
+            table.querySelector('tbody').appendChild(tr);
+        });
     }
 
     function calculateCustomerBalances(ledger) {
