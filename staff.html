@@ -59,6 +59,34 @@
         </div>
         <div id="paginationContainerCustomer" class="d-flex justify-content-center align-items-center mt-3"></div>
     </section>
+<button id="addDispatchFormBtn" class="btn btn-primary">Add Dispatch</button>
+
+    <div id="dispatchForm" style="display: none;"> 
+        <h2>Dispatch Details</h2>
+        <form id="dispatchForm">
+            <div class="mb-3">
+                <label for="date" class="form-label">Date:</label>
+                <input type="date" class="form-control" id="date" required>
+            </div>
+            <div class="mb-3">
+                <label for="billNumber" class="form-label">Bill Number:</label>
+                <input type="text" class="form-control" id="billNumber" required>
+            </div>
+            <div class="mb-3">
+                <label for="shopName" class="form-label">Shop Name:</label>
+                <input type="text" class="form-control" id="shopName" required>
+            </div>
+            <div class="mb-3">
+                <label for="transport" class="form-label">Transport:</label>
+                <input type="text" class="form-control" id="transport" required>
+            </div>
+            <div class="mb-3">
+                <label for="dispatchTime" class="form-label">Dispatch Time:</label>
+                <input type="time" class="form-control" id="dispatchTime" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
   </main>
 
   <script src="scripts/pagination.js"></script>
