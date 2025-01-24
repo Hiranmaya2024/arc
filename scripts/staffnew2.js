@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         table.querySelector('tbody').innerHTML = '';
         pageData.forEach(row => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${row[5]}</td>`; // Assuming customer name is in the second column
+            tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${row[5]}</td>`; // Assuming customer name is at index 1
             table.querySelector('tbody').appendChild(tr);
         });
     }
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const saleThisMonth = parseFloat(row[3]);
             const paymentThisMonth = parseFloat(row[4]);
             const updatedBalance = balance + saleThisYear + saleThisMonth - paymentThisMonth;
-            return [...row.slice(0, 1), updatedBalance, ...row.slice(2)]; // Replace original balance with updated balance
+            return [null, ...row]; // Add null for rank initially
         });
     }
 
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentValue = data[i][columnIndex + 1]; // Adjust for the added Rank column
 
             if (currentValue !== prevValue) {
-                data[i][0] = rank; // Assign rank in the first column
+                data[i][0] = rank; // Assign rank in the first position
                 prevValue = currentValue;
                 rank++;
             } else {
