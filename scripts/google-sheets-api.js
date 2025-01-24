@@ -46,3 +46,45 @@ async function fetchSheetData(range) {
         throw error;
     }
 }
+// Function to save dispatch data to Google Sheet
+async function saveDispatchData(date, billNumber, shopName, transport, dispatchTime) {
+    const data = [[date, billNumber, shopName, transport, dispatchTime]];
+    const range = 'Dispatch!A:E'; // Adjust the range as needed
+
+    try {
+        const response = await appendDataToSheet(range, data);
+        return response;
+    } catch (error) {
+        console.error('Error saving dispatch data:', error);
+        throw error;
+    }
+}
+
+// Function to append data to Google Sheet (modify google-sheets-api.js accordingly)
+async function appendDataToSheet(range, data) {
+    const API_KEY = getApiKey();
+    const url = `${BASE_URL}/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS&key=${API_KEY}`;
+
+    const requestBody = {
+        values: data
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error appending data: ${response.statusText}`);
+        }
+
+        return response;
+    } catch (error) {
+        console.error('Error appending data:', error);
+        throw error;
+    }
+}
