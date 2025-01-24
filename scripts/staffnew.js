@@ -130,4 +130,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             return [...row.slice(0, 1), updatedBalance, ...row.slice(2)]; // Replace original balance with updated balance
         });
     }
+const addDispatchFormBtn = document.getElementById('addDispatchFormBtn');
+    const dispatchForm = document.getElementById('dispatchForm');
+
+    addDispatchFormBtn.addEventListener('click', () => {
+        dispatchForm.style.display = dispatchForm.style.display === 'none' ? 'block' : 'none';
+    });
+
+    const dispatchFormElement = document.getElementById('dispatchForm');
+    dispatchFormElement.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const date = document.getElementById('date').value;
+        const billNumber = document.getElementById('billNumber').value;
+        const shopName = document.getElementById('shopName').value;
+        const transport = document.getElementById('transport').value;
+        const dispatchTime = document.getElementById('dispatchTime').value;
+
+        try {
+            const response = await saveDispatchData(date, billNumber, shopName, transport, dispatchTime);
+            if (response.status === 200) {
+                alert('Dispatch data saved successfully!');
+                // Clear form fields (optional)
+                document.getElementById('date').value = '';
+                document.getElementById('billNumber').value = '';
+                document.getElementById('shopName').value = '';
+                document.getElementById('transport').value = '';
+                document.getElementById('dispatchTime').value = '';
+            } else {
+                alert('Error saving dispatch data.');
+            }
+        } catch (error) {
+            console.error('Error saving dispatch data:', error);
+            alert('Error saving dispatch data. Please try again.');
+        }
+    });
 });
