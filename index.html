@@ -10,10 +10,11 @@
     :root {
       --primary: #2e7d32;
       --secondary: #1565c0;
+      --danger: #c62828;
       --light-bg: #f5f9fc;
       --border: #b0bec5;
-      --error-bg: #ffebee;
-      --error-text: #d32f2f;
+      --disabled-bg: #f5f5f5;
+      --disabled-text: #bdbdbd;
     }
     
     body {
@@ -51,8 +52,14 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
     }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
 
-    .form-group {
+    .form-group, .search-container {
       margin-bottom: 20px;
     }
 
@@ -62,13 +69,18 @@
       font-weight: 500;
     }
 
-    select, input {
+    select, input[type="text"], input[type="number"] {
       width: 100%;
       padding: 10px;
       border-radius: 6px;
       border: 1px solid var(--border);
       font-size: 1rem;
-      box-sizing: border-box; /* Ensures padding doesn't affect width */
+      box-sizing: border-box;
+    }
+    
+    input:disabled {
+        background-color: var(--disabled-bg);
+        cursor: not-allowed;
     }
 
     table {
@@ -92,58 +104,90 @@
     tr:nth-child(even) {
       background-color: #f8fdff;
     }
+    
+    tr.out-of-stock {
+        background-color: var(--disabled-bg);
+        color: var(--disabled-text);
+    }
 
-    .loading {
+    .loading, .no-results {
       text-align: center;
       padding: 20px;
       color: var(--secondary);
     }
+    
+    .stock-info {
+        font-size: 0.85rem;
+        color: #555;
+    }
 
-    .error-message {
-      color: var(--error-text);
-      padding: 10px;
-      background: var(--error-bg);
-      border: 1px solid var(--error-text);
+    .error-message, .success-message {
+      padding: 12px;
       border-radius: 4px;
       margin: 15px 0;
       text-align: center;
     }
     
-    .action-btn {
+    .error-message {
+      color: var(--danger);
+      background: #ffcdd2;
+      border: 1px solid var(--danger);
+    }
+    
+    .success-message {
+      color: var(--primary);
+      background: #c8e6c9;
+      border: 1px solid var(--primary);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .btn {
       padding: 12px 25px;
-      background: var(--primary);
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-size: 1rem;
-      margin-top: 15px;
       transition: background-color 0.3s;
+      text-align: center;
     }
-    .action-btn:hover {
-        background-color: #1b5e20;
+    .btn-primary { background-color: var(--primary); }
+    .btn-primary:hover { background-color: #1b5e20; }
+    
+    .btn-secondary { background-color: var(--secondary); }
+    .btn-secondary:hover { background-color: #0d47a1; }
+    
+    .btn-danger { background-color: var(--danger); }
+    .btn-danger:hover { background-color: #b71c1c; }
+
+    #messageArea { min-height: 20px; }
+    
+    #orderSummaryContainer tfoot .total-in-words {
+        font-weight: bold;
+        color: var(--primary);
+        font-style: italic;
     }
 
-    /* Message area for notifications */
-    #messageArea {
-        min-height: 20px;
-        margin-top: 15px;
+    .remove-item-btn {
+        background: none;
+        border: none;
+        color: var(--danger);
+        cursor: pointer;
+        font-size: 1.2rem;
     }
 
-    /* Responsive table styles */
     @media (max-width: 768px) {
-      table, thead, tbody, th, td, tr {
+      table:not(.summary-table), thead:not(.summary-table thead), tbody, th, td, tr {
         display: block;
       }
-      thead tr {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-      }
-      tr {
-        border: 1px solid var(--border);
-        margin-bottom: 10px;
-      }
+      thead tr { display: none; }
+      tr { border: 1px solid var(--border); margin-bottom: 10px; }
       td {
         border: none;
         border-bottom: 1px solid #eee;
@@ -166,18 +210,26 @@
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Pharmaceutical Order System</h1>
-    </header>
+    <header><h1>Pharmaceutical Order System</h1></header>
     
-    <!-- Div for displaying messages instead of alerts -->
     <div id="messageArea"></div>
 
-    <div class="form-group">
-      <label for="companySelect">Select Company</label>
-      <select id="companySelect" onchange="loadItems()">
-        <option value="">-- Loading Companies --</option>
-      </select>
+    <div class="form-grid">
+        <div class="form-group">
+          <label for="customerName">Customer / Shop Name</label>
+          <input type="text" id="customerName" placeholder="Enter name here">
+        </div>
+        <div class="form-group">
+          <label for="companySelect">Select Company</label>
+          <select id="companySelect" onchange="handleCompanyChange()">
+            <option value="">-- Loading Companies --</option>
+          </select>
+        </div>
+    </div>
+    
+    <div class="search-container">
+        <label for="itemSearch">Search Products</label>
+        <input type="text" id="itemSearch" oninput="renderProductList()" placeholder="Start typing to search for a product...">
     </div>
 
     <h2>Product List</h2>
@@ -192,81 +244,52 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td colspan="4" class="loading">Select a company to view products</td>
-          </tr>
+          <tr><td colspan="4" class="loading">Select a company to view products</td></tr>
         </tbody>
       </table>
     </div>
     
-    <button class="action-btn" onclick="placeOrder()">Place Order</button>
-
-    <!-- Div for displaying the order summary -->
     <div id="orderSummaryContainer"></div>
+    
   </div>
 
   <script>
     // --- Global Variables ---
     let allItems = [];
-    // The public URL of the Google Sheet, published as a CSV file.
+    let orderCart = []; // Persistent cart for the order
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQr4sjY3X6feIrArFpABeMXbtHTOZb5X-psMFvsAXl2KPivzS8xfE_x-HPVmWcw-TnGgW2EiUVRWEDC/pub?output=csv';
     
     // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', function() {
-      loadCSVData();
-    });
+    document.addEventListener('DOMContentLoaded', () => loadCSVData());
 
-    /**
-     * @function loadCSVData
-     * @description Fetches and parses CSV data from Google Sheets using PapaParse's built-in download feature.
-     * This is more reliable than a manual fetch() for cross-origin requests.
-     */
     function loadCSVData() {
       Papa.parse(CSV_URL, {
-        download: true, // Key change: Instructs PapaParse to handle the download.
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          if (results.errors.length > 0) {
-              console.error("Errors during parsing:", results.errors);
-              displayMessage('Error parsing some of the data.', 'error');
-          }
-
-          // Normalize headers to lowercase for consistent and case-insensitive access (e.g., 'Company' becomes 'company').
+        download: true, header: true, skipEmptyLines: true,
+        complete: results => {
+          if (results.errors.length) console.error("Errors during parsing:", results.errors);
           allItems = results.data.map(row => {
             const normalized = {};
             for (const key in row) {
-              // Use a robust way to check for property ownership.
               if (Object.prototype.hasOwnProperty.call(row, key)) {
-                const normalizedKey = key.trim().toLowerCase();
-                normalized[normalizedKey] = row[key];
+                normalized[key.trim().toLowerCase()] = row[key].trim();
               }
             }
             return normalized;
           });
-          
           populateCompanyDropdown();
+          renderOrderSummary(); // Initial empty summary
         },
-        error: function(error) {
+        error: error => {
           console.error('Error loading CSV:', error);
-          const tableBody = document.querySelector('#itemsTable tbody');
-          tableBody.innerHTML = `<tr><td colspan="4"><div class="error-message">Failed to load data. Please check the sheet URL or your internet connection.</div></td></tr>`;
+          displayMessage('Failed to load data. Please check the sheet URL or your connection.', 'error');
         }
       });
     }
 
-    /**
-     * @function populateCompanyDropdown
-     * @description Populates the company selection dropdown with unique company names from the data.
-     */
     function populateCompanyDropdown() {
       const companySelect = document.getElementById('companySelect');
       companySelect.innerHTML = '<option value="">-- Select Company --</option>';
-      
-      // Extract unique, non-empty company names using a Set for efficiency.
-      const companies = [...new Set(allItems.map(row => row.company).filter(Boolean))];
-      companies.sort(); // Sort companies alphabetically.
-      
+      const companies = [...new Set(allItems.map(row => row.company).filter(Boolean))].sort();
       companies.forEach(company => {
         const option = document.createElement('option');
         option.value = company;
@@ -275,113 +298,212 @@
       });
     }
 
-    /**
-     * @function loadItems
-     * @description Displays the products in the table based on the selected company.
-     */
-    function loadItems() {
+    function handleCompanyChange() {
+        document.getElementById('itemSearch').value = ''; // Reset search on company change
+        renderProductList();
+    }
+
+    function renderProductList() {
       const selectedCompany = document.getElementById('companySelect').value;
+      const searchQuery = document.getElementById('itemSearch').value.toLowerCase();
       const tbody = document.querySelector('#itemsTable tbody');
-      tbody.innerHTML = ''; // Clear previous items
-      document.getElementById('orderSummaryContainer').innerHTML = ''; // Clear old summary
+      tbody.innerHTML = '';
 
       if (!selectedCompany) {
         tbody.innerHTML = '<tr><td colspan="4" class="loading">Select a company to view products</td></tr>';
         return;
       }
       
-      const filteredItems = allItems.filter(row => row.company === selectedCompany);
+      let filteredItems = allItems.filter(row => row.company === selectedCompany);
+      if(searchQuery) {
+          filteredItems = filteredItems.filter(row => row.item.toLowerCase().includes(searchQuery));
+      }
       
       if (filteredItems.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="loading">No products found for this company</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="4" class="no-results">No products found for this company ${searchQuery ? 'matching your search' : ''}.</td></tr>`;
         return;
       }
       
       filteredItems.forEach(row => {
-        const tr = document.createElement('tr');
-        // Ensure numeric values are parsed correctly, providing fallbacks for missing data.
-        const rate = parseFloat(row.rate || 0);
         const stock = parseInt(row.stock || 0, 10);
+        const rate = parseFloat(row.rate || 0);
+        const cartItem = orderCart.find(item => item.id === `${row.company}-${row.item}`);
+        const currentQty = cartItem ? cartItem.quantity : 0;
+        const remainingStock = stock - currentQty;
+
+        const tr = document.createElement('tr');
+        if (stock === 0) tr.classList.add('out-of-stock');
         
         tr.innerHTML = `
           <td data-label="Item">${row.item || 'N/A'}</td>
           <td data-label="Rate">₹${rate.toFixed(2)}</td>
-          <td data-label="Stock">${stock}</td>
+          <td data-label="Stock">
+            <div>${stock}</div>
+            <div class="stock-info">Rem: <span id="rem-stock-${row.company}-${row.item}">${remainingStock}</span></div>
+          </td>
           <td data-label="Quantity">
-            <input type="number" min="0" max="${stock}" value="0" 
-                   data-item="${row.item || 'N/A'}" data-rate="${rate}">
+            <input 
+              type="number" 
+              min="0" 
+              max="${stock}" 
+              value="${currentQty}" 
+              oninput="handleQuantityChange(this, '${row.company}', '${row.item}', ${rate}, ${stock})"
+              ${stock === 0 ? 'disabled' : ''}
+            >
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    /**
-     * @function placeOrder
-     * @description Gathers selected items and quantities to create and display an order summary.
-     */
-    function placeOrder() {
-      const inputs = document.querySelectorAll('#itemsTable input[type="number"]');
-      const selectedItems = Array.from(inputs).filter(input => parseInt(input.value, 10) > 0);
-      
-      // Clear previous messages and summaries
-      clearMessage();
-      document.getElementById('orderSummaryContainer').innerHTML = '';
-
-      if (selectedItems.length === 0) {
-        displayMessage("Please select at least one item with a quantity greater than 0.", 'error');
-        return;
-      }
-      
-      // Create order summary table
-      let html = '<h2>Order Summary</h2><table><thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody>';
-      let grandTotal = 0;
-      
-      selectedItems.forEach(input => {
-        const item = input.dataset.item;
-        const qty = parseInt(input.value, 10);
-        const rate = parseFloat(input.dataset.rate);
-        const itemTotal = qty * rate;
-        grandTotal += itemTotal;
+    function handleQuantityChange(input, company, itemName, rate, stock) {
+        let quantity = parseInt(input.value, 10);
         
-        html += `<tr>
-          <td>${item}</td>
-          <td>${qty}</td>
-          <td>₹${rate.toFixed(2)}</td>
-          <td>₹${itemTotal.toFixed(2)}</td>
-        </tr>`;
-      });
-      
-      html += `</tbody><tfoot><tr style="font-weight:bold;">
-        <td colspan="3">Grand Total</td>
-        <td>₹${grandTotal.toFixed(2)}</td>
-      </tr></tfoot></table>`;
-      
-      // Display order summary in its container
-      document.getElementById('orderSummaryContainer').innerHTML = html;
+        // --- Input Validation ---
+        if (isNaN(quantity) || quantity < 0) quantity = 0;
+        if (quantity > stock) {
+            quantity = stock;
+            input.value = stock;
+        }
+
+        const remainingStockSpan = document.getElementById(`rem-stock-${company}-${itemName}`);
+        if(remainingStockSpan) remainingStockSpan.textContent = stock - quantity;
+
+        const itemId = `${company}-${itemName}`;
+        const existingItemIndex = orderCart.findIndex(item => item.id === itemId);
+
+        if (quantity > 0) {
+            const orderItem = { id: itemId, company, name: itemName, rate, quantity, stock };
+            if (existingItemIndex > -1) {
+                orderCart[existingItemIndex] = orderItem; // Update quantity
+            } else {
+                orderCart.push(orderItem); // Add new item
+            }
+        } else {
+            if (existingItemIndex > -1) {
+                orderCart.splice(existingItemIndex, 1); // Remove if quantity is 0
+            }
+        }
+        renderOrderSummary();
+    }
+    
+    function removeFromCart(itemId) {
+        orderCart = orderCart.filter(item => item.id !== itemId);
+        renderProductList(); // Re-render product list to update quantities
+        renderOrderSummary(); // Re-render summary
     }
 
-    /**
-     * @function displayMessage
-     * @description Shows a message to the user in the message area.
-     * @param {string} message - The text to display.
-     * @param {string} type - The type of message ('error' or 'success').
-     */
+    function renderOrderSummary() {
+      const container = document.getElementById('orderSummaryContainer');
+      container.innerHTML = '';
+      if (orderCart.length === 0) return;
+
+      let grandTotal = 0;
+      let summaryHtml = `
+        <h2>Order Summary</h2>
+        <table class="summary-table">
+          <thead><tr><th>Company</th><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th><th>Action</th></tr></thead>
+          <tbody>`;
+
+      orderCart.forEach(item => {
+        const itemTotal = item.quantity * item.rate;
+        grandTotal += itemTotal;
+        summaryHtml += `
+          <tr>
+            <td>${item.company}</td>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>₹${item.rate.toFixed(2)}</td>
+            <td>₹${itemTotal.toFixed(2)}</td>
+            <td><button class="remove-item-btn" onclick="removeFromCart('${item.id}')">&times;</button></td>
+          </tr>`;
+      });
+      
+      summaryHtml += `
+          </tbody>
+          <tfoot>
+            <tr style="font-weight:bold;">
+              <td colspan="4">Grand Total</td>
+              <td colspan="2">₹${grandTotal.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td colspan="6" class="total-in-words">Rupees ${numberToWords(grandTotal)} Only</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="sendOnWhatsApp()">Send on WhatsApp</button>
+            <button class="btn btn-danger" onclick="clearOrder()">Clear Order</button>
+        </div>`;
+
+      container.innerHTML = summaryHtml;
+    }
+    
+    function clearOrder() {
+        orderCart = [];
+        document.getElementById('customerName').value = '';
+        document.getElementById('itemSearch').value = '';
+        renderProductList();
+        renderOrderSummary();
+    }
+
+    function sendOnWhatsApp() {
+        const customerName = document.getElementById('customerName').value.trim();
+        if (!customerName) {
+            displayMessage("Please enter a customer or shop name before sending.", 'error');
+            return;
+        }
+        if (orderCart.length === 0) {
+            displayMessage("Your cart is empty. Please add items to place an order.", 'error');
+            return;
+        }
+
+        let message = `*New Order*\n\n*Customer:* ${customerName}\n\n`;
+        let grandTotal = 0;
+
+        orderCart.forEach(item => {
+            const total = item.quantity * item.rate;
+            grandTotal += total;
+            message += `*Item:* ${item.name}\n`;
+            message += `*Company:* ${item.company}\n`;
+            message += `*Qty:* ${item.quantity} x ₹${item.rate.toFixed(2)} = ₹${total.toFixed(2)}\n\n`;
+        });
+        
+        message += `*Grand Total: ₹${grandTotal.toFixed(2)}*\n`;
+        message += `(${numberToWords(grandTotal)} Only)`;
+
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+    }
+
+    function numberToWords(num) {
+        if (num === 0) return 'Zero';
+        const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        const transform = (n) => {
+            let str = '';
+            if (n > 99) str += a[Math.floor(n / 100)] + ' Hundred ';
+            n %= 100;
+            if (n > 19) str += b[Math.floor(n / 10)] + ' ' + a[n % 10];
+            else str += a[n];
+            return str.trim();
+        };
+        let result = '';
+        if (num > 9999999) { result += transform(Math.floor(num / 10000000)) + ' Crore '; num %= 10000000; }
+        if (num > 99999) { result += transform(Math.floor(num / 100000)) + ' Lakh '; num %= 100000; }
+        if (num > 999) { result += transform(Math.floor(num / 1000)) + ' Thousand '; num %= 1000; }
+        result += transform(num);
+        return result.trim().replace(/\s+/g, ' ');
+    }
+
     function displayMessage(message, type = 'error') {
         const messageArea = document.getElementById('messageArea');
         const messageDiv = document.createElement('div');
         messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
         messageDiv.textContent = message;
-        messageArea.innerHTML = ''; // Clear previous messages
+        messageArea.innerHTML = '';
         messageArea.appendChild(messageDiv);
-    }
-
-    /**
-     * @function clearMessage
-     * @description Clears any messages from the message area.
-     */
-    function clearMessage() {
-        document.getElementById('messageArea').innerHTML = '';
+        setTimeout(() => messageArea.innerHTML = '', 4000);
     }
   </script>
 </body>
