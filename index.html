@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pharma Order Form</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,6 +21,10 @@
       padding: 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       border-radius: 8px;
+    }
+    h1 {
+      color: #27ae60;
+      text-align: center;
     }
     h2 {
       color: #2c3e50;
@@ -71,6 +76,13 @@
       border: 1px solid #ccc;
       margin-bottom: 1rem;
     }
+    .success-message {
+      color: green;
+      font-weight: bold;
+      font-size: 1.2rem;
+      text-align: center;
+      margin-top: 10px;
+    }
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -104,6 +116,7 @@
 </head>
 <body>
   <div class="container">
+    <h1>WELCOME TO AARADHYA PHARMACEUTICALS</h1>
     <h2>Select Company</h2>
     <select id="companySelect" onchange="filterItems()">
       <option value="">-- Select Company --</option>
@@ -132,11 +145,89 @@
       <label>Shop Name: <input id="shopName" type="text"></label><br><br>
       <div id="orderDetails"></div>
       <button onclick="sendWhatsAppOrder()">Confirm & Send via WhatsApp</button>
+      <p class="success-message" id="successMsg" style="display:none">THANKS FOR YOUR ORDER</p>
     </div>
   </div>
 
   <script>
-    // existing JavaScript remains unchanged
+    let allItems = [];
+
+    // Fetch CSV data and populate company dropdown
+    fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQr4sjY3X6feIrArFpABeMXbtHTOZb5X-psMFvsAXl2KPivzS8xfE_x-HPVmWcw-TnGgW2EiUVRWEDC/pub?output=csv')
+      .then(response => response.text())
+      .then(csv => {
+        const parsed = Papa.parse(csv, { header: true });
+        allItems = parsed.data;
+
+        const companies = [...new Set(allItems.map(row => row["Company"]).filter(Boolean))];
+        const companySelect = document.getElementById('companySelect');
+        companies.forEach(company => {
+          const option = document.createElement('option');
+          option.value = company;
+          option.textContent = company;
+          companySelect.appendChild(option);
+        });
+      });
+
+    function filterItems() {
+      const selectedCompany = document.getElementById('companySelect').value;
+      const tbody = document.querySelector('#itemsTable tbody');
+      tbody.innerHTML = '';
+
+      allItems
+        .filter(row => row["Company"] === selectedCompany)
+        .forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row["Item"]}</td>
+            <td>${row["Rate"]}</td>
+            <td>${row["Stock"]}</td>
+            <td><input type="number" min="0" value="0" data-item="${row["Item"]}" data-rate="${row["Rate"]}"/></td>
+          `;
+          tbody.appendChild(tr);
+        });
+    }
+
+    function placeOrder() {
+      const inputs = document.querySelectorAll('#itemsTable input[type="number"]');
+      const selectedItems = Array.from(inputs).filter(input => parseInt(input.value) > 0);
+      if (!selectedItems.length) return alert("Please select at least one item.");
+
+      let html = '<table><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr>';
+      let total = 0;
+      selectedItems.forEach(input => {
+        const item = input.dataset.item;
+        const qty = parseInt(input.value);
+        const rate = parseFloat(input.dataset.rate);
+        const cost = qty * rate;
+        total += cost;
+        html += `<tr><td>${item}</td><td>${qty}</td><td>${rate.toFixed(2)}</td><td>${cost.toFixed(2)}</td></tr>`;
+      });
+      html += `<tr><td colspan="3"><strong>Total</strong></td><td><strong>${total.toFixed(2)}</strong></td></tr></table>`;
+      document.getElementById('orderDetails').innerHTML = html;
+      document.getElementById('orderSummary').classList.remove('hidden');
+    }
+
+    function sendWhatsAppOrder() {
+      const customer = document.getElementById('customerName').value;
+      const shop = document.getElementById('shopName').value;
+      const table = document.querySelector('#orderDetails table');
+
+      if (!customer || !shop) return alert("Please fill customer and shop name.");
+
+      let message = `Order from ${customer} (${shop}):\n\n`;
+      const rows = table.querySelectorAll('tr');
+      rows.forEach((row, idx) => {
+        const cells = row.querySelectorAll('td, th');
+        const rowText = Array.from(cells).map(cell => cell.innerText).join(' | ');
+        message += rowText + '\n';
+      });
+
+      const encodedMsg = encodeURIComponent(message);
+      const whatsappURL = `https://wa.me/?text=${encodedMsg}`;
+      window.open(whatsappURL, '_blank');
+      document.getElementById('successMsg').style.display = 'block';
+    }
   </script>
 </body>
 </html>
