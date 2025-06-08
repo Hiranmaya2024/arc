@@ -4,17 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pharmaceutical Order System</title>
-  <!-- PapaParse library for CSV parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --primary: #2e7d32;
+      --primary-dark: #1b5e20;
       --secondary: #1565c0;
+      --secondary-dark: #0d47a1;
       --danger: #c62828;
+      --danger-dark: #b71c1c;
       --light-bg: #f5f9fc;
       --border: #b0bec5;
       --disabled-bg: #f5f5f5;
       --disabled-text: #bdbdbd;
+      --success-bg: #c8e6c9;
+      --error-bg: #ffcdd2;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     
     body {
@@ -23,6 +34,8 @@
       background: var(--light-bg);
       color: #333;
       line-height: 1.6;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f9fc 0%, #e8f4f8 100%);
     }
 
     .container {
@@ -30,8 +43,8 @@
       margin: 20px auto;
       background: white;
       padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
     }
 
     header {
@@ -39,11 +52,20 @@
       margin-bottom: 30px;
       padding-bottom: 15px;
       border-bottom: 2px solid var(--primary);
+      position: relative;
     }
 
     h1 {
       color: var(--primary);
       margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .app-subtitle {
+      color: #555;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      margin-top: 5px;
     }
 
     h2 {
@@ -51,12 +73,20 @@
       margin-top: 25px;
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
+      font-size: clamp(1.3rem, 3vw, 1.8rem);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
     .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      background: #f8fbfd;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
     }
 
     .form-group, .search-container {
@@ -66,39 +96,64 @@
     label {
       display: block;
       margin-bottom: 8px;
-      font-weight: 500;
+      font-weight: 600;
+      font-size: clamp(0.9rem, 3vw, 1rem);
+      color: #444;
     }
 
     select, input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 12px 15px;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      font-size: 1rem;
-      box-sizing: border-box;
+      font-size: clamp(0.9rem, 3vw, 1rem);
+      transition: all 0.3s;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    select:focus, input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--secondary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.2);
     }
     
     input:disabled {
-        background-color: var(--disabled-bg);
-        cursor: not-allowed;
+      background-color: var(--disabled-bg);
+      cursor: not-allowed;
+    }
+
+    /* Table styling */
+    .table-container {
+      overflow-x: auto;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      max-height: 400px;
+      position: relative;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 20px 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      min-width: 600px;
     }
 
     th, td {
-      padding: 12px 10px;
-      border: 1px solid var(--border);
+      padding: 12px 15px;
       text-align: left;
+      border-bottom: 1px solid var(--border);
     }
 
     th {
       background-color: #e3f2fd;
       font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      color: var(--secondary-dark);
     }
 
     tr:nth-child(even) {
@@ -106,114 +161,378 @@
     }
     
     tr.out-of-stock {
-        background-color: var(--disabled-bg);
-        color: var(--disabled-text);
+      background-color: var(--disabled-bg);
+      color: var(--disabled-text);
     }
 
     .loading, .no-results {
       text-align: center;
-      padding: 20px;
+      padding: 30px;
       color: var(--secondary);
+      font-size: 1.1rem;
     }
     
     .stock-info {
-        font-size: 0.85rem;
-        color: #555;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    
+    .stock-low {
+      color: #e65100;
+      font-weight: bold;
     }
 
-    .error-message, .success-message {
-      padding: 12px;
-      border-radius: 4px;
-      margin: 15px 0;
-      text-align: center;
-    }
-    
-    .error-message {
-      color: var(--danger);
-      background: #ffcdd2;
-      border: 1px solid var(--danger);
-    }
-    
-    .success-message {
-      color: var(--primary);
-      background: #c8e6c9;
-      border: 1px solid var(--primary);
-    }
-    
+    /* Buttons */
     .action-buttons {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      justify-content: center;
     }
 
     .btn {
-      padding: 12px 25px;
+      padding: 14px 25px;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.3s;
+      font-size: clamp(0.9rem, 3vw, 1rem);
+      transition: all 0.3s;
       text-align: center;
+      flex: 1;
+      min-width: 150px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 600;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .btn-primary { background-color: var(--primary); }
-    .btn-primary:hover { background-color: #1b5e20; }
     
-    .btn-secondary { background-color: var(--secondary); }
-    .btn-secondary:hover { background-color: #0d47a1; }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+    }
     
-    .btn-danger { background-color: var(--danger); }
-    .btn-danger:hover { background-color: #b71c1c; }
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .btn-primary { 
+      background-color: var(--primary); 
+      background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+    }
+    .btn-primary:hover { background: linear-gradient(to bottom, var(--primary), #145a1d); }
+    
+    .btn-secondary { 
+      background-color: var(--secondary); 
+      background: linear-gradient(to bottom, var(--secondary), var(--secondary-dark));
+    }
+    .btn-secondary:hover { background: linear-gradient(to bottom, var(--secondary), #0a3d8a); }
+    
+    .btn-danger { 
+      background-color: var(--danger); 
+      background: linear-gradient(to bottom, var(--danger), var(--danger-dark));
+    }
+    .btn-danger:hover { background: linear-gradient(to bottom, var(--danger), #a31818); }
+    
+    .btn-whatsapp {
+      background: linear-gradient(to bottom, #25D366, #128C7E);
+    }
+    
+    .btn-whatsapp:hover {
+      background: linear-gradient(to bottom, #22c15e, #0f7a6d);
+    }
 
-    #messageArea { min-height: 20px; }
-    
+    /* Order summary */
     #orderSummaryContainer tfoot .total-in-words {
-        font-weight: bold;
-        color: var(--primary);
-        font-style: italic;
+      font-weight: bold;
+      color: var(--primary);
+      font-style: italic;
+      font-size: clamp(0.9rem, 3vw, 1rem);
+      padding: 15px;
+      background: #f0f7f0;
+      border-radius: 8px;
+      margin-top: 10px;
     }
 
     .remove-item-btn {
-        background: none;
-        border: none;
-        color: var(--danger);
-        cursor: pointer;
-        font-size: 1.2rem;
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 1.5rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    
+    .remove-item-btn:hover {
+      background-color: rgba(198, 40, 40, 0.1);
+      transform: scale(1.1);
     }
 
+    /* Scrollbar styling */
+    .table-container::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #a0a0a0;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #707070;
+    }
+
+    /* Responsive design */
     @media (max-width: 768px) {
-      table:not(.summary-table), thead:not(.summary-table thead), tbody, th, td, tr {
-        display: block;
+      .container {
+        padding: 15px;
+        margin: 10px auto;
       }
-      thead tr { display: none; }
-      tr { border: 1px solid var(--border); margin-bottom: 10px; }
-      td {
+      
+      header {
+        margin-bottom: 20px;
+      }
+      
+      .table-container {
+        max-height: 350px;
         border: none;
-        border-bottom: 1px solid #eee;
-        position: relative;
-        padding-left: 50%;
-        text-align: right;
       }
-      td:before {
-        position: absolute;
-        left: 10px;
-        width: 45%;
-        padding-right: 10px;
-        white-space: nowrap;
-        content: attr(data-label);
-        font-weight: bold;
-        text-align: left;
+      
+      .form-grid {
+        gap: 15px;
+        padding: 15px;
       }
+      
+      .btn {
+        padding: 12px 20px;
+        min-width: 140px;
+      }
+      
+      h2 {
+        margin-top: 20px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 12px;
+      }
+      
+      .action-buttons {
+        gap: 10px;
+      }
+      
+      .btn {
+        flex: 1 0 100%;
+        padding: 12px;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Alert modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    
+    .modal-content {
+      background-color: white;
+      margin: auto;
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: modalAppear 0.3s ease-out;
+    }
+    
+    @keyframes modalAppear {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-title {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: var(--danger);
+    }
+    
+    .modal-message {
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+      color: #444;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    
+    .modal-btn {
+      padding: 12px 25px;
+      min-width: 120px;
+      font-size: 1rem;
+    }
+    
+    /* Badge for cart items */
+    .cart-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--danger);
+      color: white;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .btn-with-badge {
+      position: relative;
+    }
+    
+    /* Export options */
+    .export-options {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .export-btn {
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+    
+    .export-btn:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+    }
+    
+    /* App footer */
+    .app-footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #777;
+      font-size: 0.9rem;
+    }
+    
+    /* Export header */
+    .export-header {
+      background: #2e7d32;
+      color: white;
+      padding: 20px;
+      border-radius: 10px 10px 0 0;
+      text-align: center;
+      margin-bottom: -1px;
+    }
+    
+    .export-header h2 {
+      color: white;
+      border: none;
+      margin: 0;
+      padding: 0;
+      font-size: 1.8rem;
+    }
+    
+    .export-header p {
+      margin: 5px 0 0;
+      font-size: 1.1rem;
+    }
+    
+    /* Export container */
+    #exportContainer {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 800px;
+      max-width: 100%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    
+    /* Full order summary for export */
+    #fullOrderSummary {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    #fullOrderSummary th, 
+    #fullOrderSummary td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    #fullOrderSummary th {
+      background-color: #e3f2fd;
+      font-weight: 600;
+      color: var(--secondary-dark);
+    }
+    
+    #fullOrderSummary tr:nth-child(even) {
+      background-color: #f8fdff;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <header><h1>Pharmaceutical Order System</h1></header>
+    <header>
+      <h1>Pharmaceutical Order System</h1>
+      <p class="app-subtitle">Create orders and export complete order images</p>
+    </header>
     
-    <div id="messageArea"></div>
-
     <div class="form-grid">
         <div class="form-group">
           <label for="customerName">Customer / Shop Name</label>
@@ -232,8 +551,8 @@
         <input type="text" id="itemSearch" oninput="renderProductList()" placeholder="Start typing to search for a product...">
     </div>
 
-    <h2>Product List</h2>
-    <div id="itemsTableContainer">
+    <h2><i class="icon">📋</i> Product List</h2>
+    <div class="table-container" id="itemsTableContainer">
       <table id="itemsTable">
         <thead>
           <tr>
@@ -251,22 +570,122 @@
     
     <div id="orderSummaryContainer"></div>
     
+    <div class="action-buttons">
+      <button class="btn btn-primary btn-with-badge" onclick="sendOnWhatsApp()">
+        <i class="icon whatsapp-icon"></i>
+        <span>Send to WhatsApp</span>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+      <button class="btn btn-danger" onclick="clearOrder()">
+        <i class="icon">❌</i>
+        Clear Order
+      </button>
+    </div>
+    
+    <div class="app-footer">
+      <p>PharmaOrder Pro v1.6 • Complete order image export</p>
+    </div>
+  </div>
+
+  <!-- Hidden export container -->
+  <div id="exportContainer">
+    <div class="export-header">
+      <h2>ORDER FOR AARADHYA PHARMACEUTICALS</h2>
+      <p id="exportShopName">Shop: </p>
+      <p id="exportDateTime">Date: </p>
+    </div>
+    <div class="table-container">
+      <table id="fullOrderSummary">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="exportOrderItems">
+          <!-- Order items will be added here -->
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:bold;">
+            <td colspan="4">Grand Total</td>
+            <td id="exportGrandTotal">₹0.00</td>
+          </tr>
+          <tr>
+            <td colspan="5" class="total-in-words" id="exportTotalInWords">Rupees Zero Only</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div id="alertModal" class="modal">
+    <div class="modal-content">
+      <h3 class="modal-title" id="modalTitle">Alert</h3>
+      <p class="modal-message" id="modalMessage"></p>
+      <div class="modal-buttons">
+        <button class="btn btn-primary modal-btn" onclick="closeModal()">OK</button>
+      </div>
+    </div>
   </div>
 
   <script>
     // --- Global Variables ---
     let allItems = [];
-    let orderCart = []; // Persistent cart for the order
+    let orderCart = [];
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQr4sjY3X6feIrArFpABeMXbtHTOZb5X-psMFvsAXl2KPivzS8xfE_x-HPVmWcw-TnGgW2EiUVRWEDC/pub?output=csv';
+    
+    // --- DOM Elements Cache ---
+    const elements = {
+      companySelect: document.getElementById('companySelect'),
+      itemSearch: document.getElementById('itemSearch'),
+      itemsTableContainer: document.getElementById('itemsTableContainer'),
+      customerName: document.getElementById('customerName'),
+      orderSummaryContainer: document.getElementById('orderSummaryContainer'),
+      alertModal: document.getElementById('alertModal'),
+      modalTitle: document.getElementById('modalTitle'),
+      modalMessage: document.getElementById('modalMessage'),
+      cartBadge: document.getElementById('cartBadge'),
+      exportContainer: document.getElementById('exportContainer'),
+      exportOrderItems: document.getElementById('exportOrderItems'),
+      exportShopName: document.getElementById('exportShopName'),
+      exportDateTime: document.getElementById('exportDateTime'),
+      exportGrandTotal: document.getElementById('exportGrandTotal'),
+      exportTotalInWords: document.getElementById('exportTotalInWords')
+    };
     
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => loadCSVData());
+    
+    // --- Modal Functions ---
+    function showModal(title, message) {
+      elements.modalTitle.textContent = title;
+      elements.modalMessage.textContent = message;
+      elements.alertModal.style.display = 'flex';
+    }
+    
+    function closeModal() {
+      elements.alertModal.style.display = 'none';
+    }
 
     function loadCSVData() {
+      // Show loading indicator
+      document.querySelector('#itemsTable tbody').innerHTML = '<tr><td colspan="4" class="loading">Loading product data...</td></tr>';
+      
       Papa.parse(CSV_URL, {
-        download: true, header: true, skipEmptyLines: true,
+        download: true, 
+        header: true, 
+        skipEmptyLines: true,
         complete: results => {
-          if (results.errors.length) console.error("Errors during parsing:", results.errors);
+          if (results.errors.length) {
+            console.error("Errors during parsing:", results.errors);
+            showModal("Data Error", "Failed to load product data. Please try again later.");
+            return;
+          }
+          
           allItems = results.data.map(row => {
             const normalized = {};
             for (const key in row) {
@@ -276,36 +695,37 @@
             }
             return normalized;
           });
+          
           populateCompanyDropdown();
-          renderOrderSummary(); // Initial empty summary
+          renderOrderSummary();
         },
         error: error => {
           console.error('Error loading CSV:', error);
-          displayMessage('Failed to load data. Please check the sheet URL or your connection.', 'error');
+          showModal("Connection Error", "Failed to load data. Please check your internet connection.");
         }
       });
     }
 
     function populateCompanyDropdown() {
-      const companySelect = document.getElementById('companySelect');
-      companySelect.innerHTML = '<option value="">-- Select Company --</option>';
+      elements.companySelect.innerHTML = '<option value="">-- Select Company --</option>';
       const companies = [...new Set(allItems.map(row => row.company).filter(Boolean))].sort();
+      
       companies.forEach(company => {
         const option = document.createElement('option');
         option.value = company;
         option.textContent = company;
-        companySelect.appendChild(option);
+        elements.companySelect.appendChild(option);
       });
     }
 
     function handleCompanyChange() {
-        document.getElementById('itemSearch').value = ''; // Reset search on company change
+        elements.itemSearch.value = '';
         renderProductList();
     }
 
     function renderProductList() {
-      const selectedCompany = document.getElementById('companySelect').value;
-      const searchQuery = document.getElementById('itemSearch').value.toLowerCase();
+      const selectedCompany = elements.companySelect.value;
+      const searchQuery = elements.itemSearch.value.toLowerCase();
       const tbody = document.querySelector('#itemsTable tbody');
       tbody.innerHTML = '';
 
@@ -315,12 +735,16 @@
       }
       
       let filteredItems = allItems.filter(row => row.company === selectedCompany);
-      if(searchQuery) {
-          filteredItems = filteredItems.filter(row => row.item.toLowerCase().includes(searchQuery));
+      
+      if (searchQuery) {
+        filteredItems = filteredItems.filter(row => 
+          row.item.toLowerCase().includes(searchQuery) ||
+          (row.code && row.code.toLowerCase().includes(searchQuery))
+        );
       }
       
       if (filteredItems.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="no-results">No products found for this company ${searchQuery ? 'matching your search' : ''}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="no-results">No products found ${searchQuery ? 'matching your search' : ''}.</td></tr>`;
         return;
       }
       
@@ -333,6 +757,7 @@
 
         const tr = document.createElement('tr');
         if (stock === 0) tr.classList.add('out-of-stock');
+        if (stock > 0 && stock < 10) tr.querySelector('.stock-info')?.classList.add('stock-low');
         
         tr.innerHTML = `
           <td data-label="Item">${row.item || 'N/A'}</td>
@@ -354,156 +779,274 @@
         `;
         tbody.appendChild(tr);
       });
+      
+      // Add scrollbar if more than 10 items
+      elements.itemsTableContainer.style.overflowY = filteredItems.length > 10 ? 'auto' : 'visible';
     }
 
     function handleQuantityChange(input, company, itemName, rate, stock) {
         let quantity = parseInt(input.value, 10);
         
-        // --- Input Validation ---
-        if (isNaN(quantity) || quantity < 0) quantity = 0;
+        // Input validation
+        if (isNaN(quantity) || quantity < 0) {
+            quantity = 0;
+            input.value = 0;
+            showModal("Invalid Input", "Quantity must be a positive number");
+        }
+        
         if (quantity > stock) {
             quantity = stock;
             input.value = stock;
+            showModal("Stock Limit", `Cannot order more than available stock (${stock}) for ${itemName}`);
         }
 
         const remainingStockSpan = document.getElementById(`rem-stock-${company}-${itemName}`);
-        if(remainingStockSpan) remainingStockSpan.textContent = stock - quantity;
+        if (remainingStockSpan) {
+          remainingStockSpan.textContent = stock - quantity;
+          if (stock - quantity < 10) {
+            remainingStockSpan.parentElement.classList.add('stock-low');
+          } else {
+            remainingStockSpan.parentElement.classList.remove('stock-low');
+          }
+        }
 
         const itemId = `${company}-${itemName}`;
         const existingItemIndex = orderCart.findIndex(item => item.id === itemId);
 
         if (quantity > 0) {
-            const orderItem = { id: itemId, company, name: itemName, rate, quantity, stock };
+            const orderItem = { 
+              id: itemId, 
+              company, 
+              name: itemName, 
+              rate, 
+              quantity, 
+              stock 
+            };
             if (existingItemIndex > -1) {
-                orderCart[existingItemIndex] = orderItem; // Update quantity
+                orderCart[existingItemIndex] = orderItem;
             } else {
-                orderCart.push(orderItem); // Add new item
+                orderCart.push(orderItem);
             }
-        } else {
-            if (existingItemIndex > -1) {
-                orderCart.splice(existingItemIndex, 1); // Remove if quantity is 0
-            }
+        } else if (existingItemIndex > -1) {
+            orderCart.splice(existingItemIndex, 1);
         }
+        
+        // Update cart badge
+        elements.cartBadge.textContent = orderCart.reduce((sum, item) => sum + item.quantity, 0);
+        
         renderOrderSummary();
     }
     
     function removeFromCart(itemId) {
         orderCart = orderCart.filter(item => item.id !== itemId);
-        renderProductList(); // Re-render product list to update quantities
-        renderOrderSummary(); // Re-render summary
+        renderProductList();
+        renderOrderSummary();
     }
 
     function renderOrderSummary() {
-      const container = document.getElementById('orderSummaryContainer');
-      container.innerHTML = '';
+      elements.orderSummaryContainer.innerHTML = '';
       if (orderCart.length === 0) return;
 
       let grandTotal = 0;
       let summaryHtml = `
-        <h2>Order Summary</h2>
-        <table class="summary-table">
-          <thead><tr><th>Company</th><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th><th>Action</th></tr></thead>
-          <tbody>`;
+        <h2><i class="icon">🛒</i> Order Summary (${orderCart.length} items)</h2>
+        <div class="table-container">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Total</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>`;
 
       orderCart.forEach(item => {
         const itemTotal = item.quantity * item.rate;
         grandTotal += itemTotal;
         summaryHtml += `
-          <tr>
-            <td>${item.company}</td>
-            <td>${item.name}</td>
-            <td>${item.quantity}</td>
-            <td>₹${item.rate.toFixed(2)}</td>
-            <td>₹${itemTotal.toFixed(2)}</td>
-            <td><button class="remove-item-btn" onclick="removeFromCart('${item.id}')">&times;</button></td>
+          <tr class="cart-item">
+            <td data-label="Company">${item.company}</td>
+            <td data-label="Item">${item.name}</td>
+            <td data-label="Qty">${item.quantity}</td>
+            <td data-label="Rate">₹${item.rate.toFixed(2)}</td>
+            <td data-label="Total">₹${itemTotal.toFixed(2)}</td>
+            <td data-label="Action">
+              <button class="remove-item-btn" onclick="removeFromCart('${item.id}')" title="Remove item">
+                ×
+              </button>
+            </td>
           </tr>`;
       });
       
       summaryHtml += `
-          </tbody>
-          <tfoot>
-            <tr style="font-weight:bold;">
-              <td colspan="4">Grand Total</td>
-              <td colspan="2">₹${grandTotal.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <td colspan="6" class="total-in-words">Rupees ${numberToWords(grandTotal)} Only</td>
-            </tr>
-          </tfoot>
-        </table>
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="sendOnWhatsApp()">Send on WhatsApp</button>
-            <button class="btn btn-danger" onclick="clearOrder()">Clear Order</button>
+            </tbody>
+            <tfoot>
+              <tr style="font-weight:bold;">
+                <td colspan="4">Grand Total</td>
+                <td colspan="2">₹${grandTotal.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td colspan="6" class="total-in-words">Rupees ${numberToWords(grandTotal)} Only</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="export-options">
+          <button class="export-btn" onclick="generateImage()">
+            <i class="icon">📷</i> Download Complete Order Image
+          </button>
         </div>`;
 
-      container.innerHTML = summaryHtml;
+      elements.orderSummaryContainer.innerHTML = summaryHtml;
     }
     
     function clearOrder() {
-        orderCart = [];
-        document.getElementById('customerName').value = '';
-        document.getElementById('itemSearch').value = '';
-        renderProductList();
-        renderOrderSummary();
+        if (orderCart.length === 0) {
+            showModal("Empty Order", "Your cart is already empty.");
+            return;
+        }
+        
+        if (confirm("Are you sure you want to clear your entire order?")) {
+            orderCart = [];
+            elements.customerName.value = '';
+            elements.itemSearch.value = '';
+            elements.cartBadge.textContent = '0';
+            renderProductList();
+            renderOrderSummary();
+        }
     }
 
     function sendOnWhatsApp() {
-        const customerName = document.getElementById('customerName').value.trim();
+        const customerName = elements.customerName.value.trim();
         if (!customerName) {
-            displayMessage("Please enter a customer or shop name before sending.", 'error');
+            showModal("Missing Information", "Please enter a customer or shop name before sending.");
             return;
         }
         if (orderCart.length === 0) {
-            displayMessage("Your cart is empty. Please add items to place an order.", 'error');
+            showModal("Empty Order", "Your cart is empty. Please add items to place an order.");
             return;
         }
 
-        let message = `*New Order*\n\n*Customer:* ${customerName}\n\n`;
-        let grandTotal = 0;
+        generateImage(true);
+    }
 
-        orderCart.forEach(item => {
-            const total = item.quantity * item.rate;
-            grandTotal += total;
-            message += `*Item:* ${item.name}\n`;
-            message += `*Company:* ${item.company}\n`;
-            message += `*Qty:* ${item.quantity} x ₹${item.rate.toFixed(2)} = ₹${total.toFixed(2)}\n\n`;
-        });
+    function generateImage(whatsappShare = false) {
+      if (orderCart.length === 0) {
+        showModal("Empty Order", "Your cart is empty. Nothing to download.");
+        return;
+      }
+
+      const customerName = elements.customerName.value.trim() || 'N/A';
+      const date = new Date();
+      const dateStr = date.toLocaleDateString('en-GB');
+      const timeStr = date.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
+      
+      // Update export container
+      elements.exportShopName.textContent = `Shop: ${customerName}`;
+      elements.exportDateTime.textContent = `Date: ${dateStr} ${timeStr}`;
+      
+      // Clear previous items
+      elements.exportOrderItems.innerHTML = '';
+      
+      // Add all order items to export table
+      let grandTotal = 0;
+      orderCart.forEach(item => {
+        const itemTotal = item.quantity * item.rate;
+        grandTotal += itemTotal;
         
-        message += `*Grand Total: ₹${grandTotal.toFixed(2)}*\n`;
-        message += `(${numberToWords(grandTotal)} Only)`;
-
-        const encodedMessage = encodeURIComponent(message);
-        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.company}</td>
+          <td>${item.name}</td>
+          <td>${item.quantity}</td>
+          <td>₹${item.rate.toFixed(2)}</td>
+          <td>₹${itemTotal.toFixed(2)}</td>
+        `;
+        elements.exportOrderItems.appendChild(tr);
+      });
+      
+      // Update totals
+      elements.exportGrandTotal.textContent = `₹${grandTotal.toFixed(2)}`;
+      elements.exportTotalInWords.textContent = `Rupees ${numberToWords(grandTotal)} Only`;
+      
+      // Show the export container temporarily
+      elements.exportContainer.style.display = 'block';
+      
+      // Use html2canvas to capture the entire export container
+      html2canvas(elements.exportContainer, {
+        scale: 2,
+        backgroundColor: "#FFFFFF",
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: elements.exportContainer.scrollWidth,
+        windowHeight: elements.exportContainer.scrollHeight
+      }).then(canvas => {
+        // Hide the export container again
+        elements.exportContainer.style.display = 'none';
+        
+        const imgData = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        const fileName = `Aaradhya_Order_${customerName.replace(/\s+/g, '_')}_${dateStr.replace(/\//g, '-')}.png`;
+        
+        link.href = imgData;
+        link.download = fileName;
+        link.click();
+        
+        if (whatsappShare) {
+          showModal("Image Ready", "Your complete order image has been downloaded. Please attach it to WhatsApp manually.");
+        }
+      });
     }
 
     function numberToWords(num) {
-        if (num === 0) return 'Zero';
-        const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        if (isNaN(num)) return "Invalid Number";
+        const n = Math.floor(num);
+        if (n === 0) return 'Zero';
+        
+        const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 
+                  'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
         const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        
         const transform = (n) => {
             let str = '';
-            if (n > 99) str += a[Math.floor(n / 100)] + ' Hundred ';
-            n %= 100;
-            if (n > 19) str += b[Math.floor(n / 10)] + ' ' + a[n % 10];
-            else str += a[n];
+            if (n > 99) {
+                str += a[Math.floor(n / 100)] + ' Hundred ';
+                n %= 100;
+            }
+            if (n > 19) {
+                str += b[Math.floor(n / 10)] + ' ' + a[n % 10];
+            } else {
+                str += a[n];
+            }
             return str.trim();
         };
+        
         let result = '';
-        if (num > 9999999) { result += transform(Math.floor(num / 10000000)) + ' Crore '; num %= 10000000; }
-        if (num > 99999) { result += transform(Math.floor(num / 100000)) + ' Lakh '; num %= 100000; }
-        if (num > 999) { result += transform(Math.floor(num / 1000)) + ' Thousand '; num %= 1000; }
-        result += transform(num);
-        return result.trim().replace(/\s+/g, ' ');
-    }
+        let remaining = n;
 
-    function displayMessage(message, type = 'error') {
-        const messageArea = document.getElementById('messageArea');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
-        messageDiv.textContent = message;
-        messageArea.innerHTML = '';
-        messageArea.appendChild(messageDiv);
-        setTimeout(() => messageArea.innerHTML = '', 4000);
+        if (remaining > 9999999) {
+            const crores = Math.floor(remaining / 10000000);
+            result += transform(crores) + ' Crore ';
+            remaining %= 10000000;
+        }
+        if (remaining > 99999) {
+            const lakhs = Math.floor(remaining / 100000);
+            result += transform(lakhs) + ' Lakh ';
+            remaining %= 100000;
+        }
+        if (remaining > 999) {
+            const thousands = Math.floor(remaining / 1000);
+            result += transform(thousands) + ' Thousand ';
+            remaining %= 1000;
+        }
+        result += transform(remaining);
+
+        return result.trim().replace(/\s+/g, ' ');
     }
   </script>
 </body>
