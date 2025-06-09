@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PharmaOrder Pro | Pharmaceutical Order System</title>
+  <title>PharmaOrder Pro BY AAradhya Pharmaceuticals | Pharmaceutical Order System</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -440,7 +440,7 @@
       position: absolute;
       left: -9999px;
       top: -9999px;
-      width: 800px;
+      width: 1000px; /* Increased width to prevent cropping */
       background: white;
       border-radius: 10px;
       box-shadow: 0 0 20px rgba(0,0,0,0.2);
@@ -497,9 +497,9 @@
       word-wrap: break-word;
     }
     
-    /* Fixed column widths for consistent display */
-    .export-table th:nth-child(1), .export-table td:nth-child(1) { width: 20%; }
-    .export-table th:nth-child(2), .export-table td:nth-child(2) { width: 35%; }
+    /* Fixed column widths for consistent display - adjusted percentages */
+    .export-table th:nth-child(1), .export-table td:nth-child(1) { width: 15%; }
+    .export-table th:nth-child(2), .export-table td:nth-child(2) { width: 40%; }
     .export-table th:nth-child(3), .export-table td:nth-child(3) { width: 10%; }
     .export-table th:nth-child(4), .export-table td:nth-child(4) { width: 15%; }
     .export-table th:nth-child(5), .export-table td:nth-child(5) { width: 20%; }
@@ -614,7 +614,7 @@
       <div class="pharma-icon">
         <i class="fas fa-pills fa-2x"></i>
       </div>
-      <h1>PharmaOrder Pro</h1>
+      <h1>PharmaOrder Pro by AAradhya Pharmaceuticals</h1>
       <p class="app-subtitle">Advanced Pharmaceutical Order Management System</p>
     </header>
     
@@ -680,14 +680,14 @@
     </div>
     
     <div class="app-footer">
-      <p><i class="fas fa-shield-alt"></i> PharmaOrder Pro v2.0 • Secure Pharmaceutical Order Management</p>
+      <p><i class="fas fa-shield-alt"></i> PharmaOrder Pro v2.1 BY AAradhya Pharmaceuticals • Secure Pharmaceutical Order Management</p>
     </div>
   </div>
 
   <!-- Hidden export container -->
   <div id="exportContainer">
     <div class="export-header">
-      <h2>PHARMAORDER PRO - ORDER SUMMARY</h2>
+      <h2>PHARMAORDER PRO BY AAradhya Pharmaceuticals - ORDER SUMMARY</h2>
       <p id="exportShopName">Customer: </p>
       <p id="exportDateTime">Date: </p>
     </div>
@@ -996,6 +996,9 @@
           </tr>`;
       });
       
+      // Round grand total to avoid decimal issues in words conversion
+      const roundedTotal = Math.round(grandTotal);
+      
       summaryHtml += `
             </tbody>
             <tfoot>
@@ -1006,7 +1009,7 @@
             </tfoot>
           </table>
         </div>
-        <div class="total-in-words">Rupees ${numberToWords(grandTotal)} Only</div>`;
+        <div class="total-in-words">Rupees ${numberToWords(roundedTotal)} Only</div>`;
 
       elements.orderSummaryContainer.innerHTML = summaryHtml;
     }
@@ -1077,9 +1080,12 @@
         elements.exportOrderItems.appendChild(tr);
       });
       
+      // Round grand total to avoid decimal issues in words conversion
+      const roundedTotal = Math.round(grandTotal);
+      
       // Update totals
       elements.exportGrandTotal.textContent = `₹${grandTotal.toFixed(2)}`;
-      elements.exportTotalInWords.textContent = `Rupees ${numberToWords(grandTotal)} Only`;
+      elements.exportTotalInWords.textContent = `Rupees ${numberToWords(roundedTotal)} Only`;
       
       // Show the export container temporarily for rendering
       elements.exportContainer.style.display = 'block';
@@ -1125,22 +1131,23 @@
 
     function numberToWords(n) {
         if (isNaN(n) || n < 0) return "Invalid Number";
+        n = Math.round(n); // Ensure integer
         if (n === 0) return 'Zero';
         
         const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 
                   'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
         const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
         
-        const transform = (n) => {
+        const transform = (num) => {
             let str = '';
-            if (n > 99) {
-                str += a[Math.floor(n / 100)] + ' Hundred ';
-                n %= 100;
+            if (num > 99) {
+                str += a[Math.floor(num / 100)] + ' Hundred ';
+                num %= 100;
             }
-            if (n > 19) {
-                str += b[Math.floor(n / 10)] + ' ' + a[n % 10];
+            if (num > 19) {
+                str += b[Math.floor(num / 10)] + ' ' + a[num % 10];
             } else {
-                str += a[n];
+                str += a[num];
             }
             return str.trim();
         };
@@ -1163,7 +1170,9 @@
             result += transform(thousands) + ' Thousand ';
             remaining %= 1000;
         }
-        result += transform(remaining);
+        if (remaining > 0) {
+            result += transform(remaining);
+        }
 
         return result.trim().replace(/\s+/g, ' ');
     }
