@@ -30,12 +30,18 @@ max-width:1400px;
 margin:auto;
 }
 
-.search{
-width:100%;
+.controls{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.search, .filter{
 padding:12px;
 border-radius:8px;
 border:1px solid #ccc;
-margin-bottom:20px;
+flex:1;
 }
 
 .table-box{
@@ -54,18 +60,38 @@ th,td{
 padding:12px;
 border-bottom:1px solid #eee;
 font-size:14px;
-text-align:left;
 }
 
 th{
 background:#f1f3f6;
+}
+
+.low-stock{
+color:#d9534f;
 font-weight:600;
+}
+
+.good-stock{
+color:#28a745;
+font-weight:600;
+}
+
+.exp-warning{
+background:#fff3cd;
+}
+
+.exp-danger{
+background:#f8d7da;
 }
 
 .loading{
 text-align:center;
 padding:40px;
 font-size:18px;
+}
+
+@media(max-width:768px){
+th,td{font-size:12px}
 }
 
 </style>
@@ -75,12 +101,20 @@ font-size:18px;
 <body>
 
 <header>
-Aaradhya Pharmaceuticals Stock Dashboard
+Aaradhya Pharmaceuticals Smart Stock
 </header>
 
 <div class="container">
 
+<div class="controls">
+
 <input type="text" id="search" class="search" placeholder="Search medicine or company">
+
+<select id="companyFilter" class="filter">
+<option value="">All Companies</option>
+</select>
+
+</div>
 
 <div class="table-box">
 
@@ -91,15 +125,17 @@ Loading Stock Data...
 <table id="table" style="display:none;">
 
 <thead>
+
 <tr>
 <th>Company</th>
-<th>Item Name</th>
+<th>Item</th>
 <th>Batch</th>
 <th>MRP</th>
 <th>Expiry</th>
 <th>Stock</th>
 <th>Rate</th>
 </tr>
+
 </thead>
 
 <tbody id="tbody"></tbody>
@@ -112,15 +148,17 @@ Loading Stock Data...
 
 <script>
 
-const url="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv";
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv";
 
 let rows=[];
 
-fetch(url)
+fetch(sheetURL)
 .then(res=>res.text())
 .then(data=>{
 
 rows=data.split("\n").slice(1).map(r=>r.split(","));
+
+initCompanyFilter();
 
 render(rows);
 
@@ -128,6 +166,24 @@ document.getElementById("loading").style.display="none";
 document.getElementById("table").style.display="table";
 
 });
+
+function initCompanyFilter(){
+
+let companies=[...new Set(rows.map(r=>r[0]))];
+
+let select=document.getElementById("companyFilter");
+
+companies.forEach(c=>{
+
+let opt=document.createElement("option");
+opt.value=c;
+opt.textContent=c;
+
+select.appendChild(opt);
+
+});
+
+}
 
 function render(data){
 
@@ -137,14 +193,26 @@ data.forEach(r=>{
 
 if(r.length<7) return;
 
+let stockClass=r[5]<5?"low-stock":"good-stock";
+
+let expClass="";
+
+let expDate=new Date(r[4]);
+let today=new Date();
+
+let diff=(expDate-today)/(1000*60*60*24);
+
+if(diff<90) expClass="exp-danger";
+else if(diff<180) expClass="exp-warning";
+
 html+=`
-<tr>
+<tr class="${expClass}">
 <td>${r[0]}</td>
 <td>${r[1]}</td>
 <td>${r[2]}</td>
 <td>${r[3]}</td>
 <td>${r[4]}</td>
-<td>${r[5]}</td>
+<td class="${stockClass}">${r[5]}</td>
 <td>${r[6]}</td>
 </tr>
 `;
@@ -155,15 +223,27 @@ document.getElementById("tbody").innerHTML=html;
 
 }
 
-document.getElementById("search").addEventListener("keyup",function(){
+document.getElementById("search").addEventListener("keyup",filter);
 
-let value=this.value.toLowerCase();
+document.getElementById("companyFilter").addEventListener("change",filter);
 
-let filtered=rows.filter(r=>r.join(" ").toLowerCase().includes(value));
+function filter(){
+
+let text=document.getElementById("search").value.toLowerCase();
+let company=document.getElementById("companyFilter").value;
+
+let filtered=rows.filter(r=>{
+
+let matchSearch=r.join(" ").toLowerCase().includes(text);
+let matchCompany=!company || r[0]==company;
+
+return matchSearch && matchCompany;
+
+});
 
 render(filtered);
 
-});
+}
 
 </script>
 
