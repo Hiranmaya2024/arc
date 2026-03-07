@@ -3,7 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharma Smart Ordering</title>
+<title>Aaradhya Digital Ordering Portal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -18,9 +18,8 @@ background:#f4f6f9;
 header{
 background:#0b5ed7;
 color:white;
-padding:16px;
+padding:15px;
 text-align:center;
-font-size:20px;
 font-weight:600;
 }
 
@@ -34,14 +33,13 @@ padding:15px;
 display:flex;
 gap:10px;
 flex-wrap:wrap;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
-.search,.filter{
+input,select{
 padding:10px;
 border-radius:6px;
 border:1px solid #ccc;
-flex:1;
 }
 
 .table-box{
@@ -57,7 +55,7 @@ border-collapse:collapse;
 }
 
 th,td{
-padding:10px;
+padding:8px;
 border-bottom:1px solid #eee;
 font-size:13px;
 }
@@ -68,33 +66,26 @@ background:#f1f3f6;
 
 .qty{
 display:flex;
-gap:5px;
-align-items:center;
+gap:4px;
 }
 
 .qty button{
-width:26px;
-height:26px;
+width:24px;
+height:24px;
 border:none;
 background:#0b5ed7;
 color:white;
 border-radius:4px;
 }
 
-.low-stock{color:red;font-weight:600;}
-.good-stock{color:green;font-weight:600;}
-
-.exp-warning{background:#fff3cd;}
-.exp-danger{background:#f8d7da;}
-
 .pagination{
-margin-top:15px;
 text-align:center;
+margin:10px;
 }
 
 .pagination button{
 margin:3px;
-padding:6px 10px;
+padding:5px 10px;
 border:none;
 background:#0b5ed7;
 color:white;
@@ -102,27 +93,31 @@ border-radius:4px;
 }
 
 .cart{
-margin-top:20px;
 background:white;
 padding:15px;
 border-radius:10px;
+margin-top:15px;
 box-shadow:0 3px 12px rgba(0,0,0,0.1);
 }
 
-.order-btn{
-background:#25D366;
-border:none;
-color:white;
+.cart-table{
 width:100%;
-padding:12px;
-border-radius:8px;
+}
+
+.total{
+font-weight:600;
 font-size:16px;
 margin-top:10px;
 }
 
-.loading{
-text-align:center;
-padding:40px;
+.order-btn{
+background:#25D366;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+border-radius:8px;
+margin-top:10px;
 }
 
 </style>
@@ -130,17 +125,19 @@ padding:40px;
 
 <body>
 
-<header>
-Aaradhya Pharma Smart Order System
-</header>
+<header>Aaradhya Pharmaceuticals Ordering Portal</header>
 
 <div class="container">
 
 <div class="controls">
 
-<input type="text" id="search" class="search" placeholder="Search medicine">
+<input id="shopName" placeholder="Shop Name">
 
-<select id="companyFilter" class="filter">
+<input id="mobile" placeholder="Mobile Number">
+
+<input id="search" placeholder="Search medicine">
+
+<select id="companyFilter">
 <option value="">All Companies</option>
 </select>
 
@@ -148,9 +145,7 @@ Aaradhya Pharma Smart Order System
 
 <div class="table-box">
 
-<div id="loading" class="loading">Loading Stock...</div>
-
-<table id="table" style="display:none">
+<table id="table">
 
 <thead>
 <tr>
@@ -158,7 +153,6 @@ Aaradhya Pharma Smart Order System
 <th>Company</th>
 <th>Batch</th>
 <th>MRP</th>
-<th>Expiry</th>
 <th>Stock</th>
 <th>Rate</th>
 <th>Qty</th>
@@ -177,7 +171,22 @@ Aaradhya Pharma Smart Order System
 
 <h3>Order Cart</h3>
 
-<div id="cartItems"></div>
+<table class="cart-table">
+
+<thead>
+<tr>
+<th>Item</th>
+<th>Rate</th>
+<th>Qty</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody id="cartItems"></tbody>
+
+</table>
+
+<div class="total" id="grandTotal">Total: ₹0</div>
 
 <button class="order-btn" onclick="sendWhatsApp()">Send Order on WhatsApp</button>
 
@@ -201,31 +210,24 @@ fetch(sheetURL)
 .then(data=>{
 
 rows=data.split("\n").slice(1).map(r=>r.split(","));
-
 filteredRows=[...rows];
 
-initCompanyFilter();
+initCompanies();
 renderPage();
-
-document.getElementById("loading").style.display="none";
-document.getElementById("table").style.display="table";
 
 });
 
-function initCompanyFilter(){
+function initCompanies(){
 
 let companies=[...new Set(rows.map(r=>r[0]))];
 
 let select=document.getElementById("companyFilter");
 
 companies.forEach(c=>{
-
-let opt=document.createElement("option");
-opt.value=c;
-opt.textContent=c;
-
-select.appendChild(opt);
-
+let o=document.createElement("option");
+o.value=c;
+o.textContent=c;
+select.appendChild(o);
 });
 
 }
@@ -235,47 +237,32 @@ function renderPage(){
 let start=(currentPage-1)*perPage;
 let pageRows=filteredRows.slice(start,start+perPage);
 
-render(pageRows);
-renderPagination();
-
-}
-
-function render(data){
-
 let html="";
 
-data.forEach((r,i)=>{
-
-if(r.length<7) return;
-
-let stockClass=r[5]<5?"low-stock":"good-stock";
-
-let expClass="";
-let expDate=new Date(r[4]);
-let diff=(expDate-new Date())/(1000*60*60*24);
-
-if(diff<90) expClass="exp-danger";
-else if(diff<180) expClass="exp-warning";
+pageRows.forEach(r=>{
 
 let index=rows.indexOf(r);
 
 html+=`
-<tr class="${expClass}">
+<tr>
+
 <td>${r[1]}</td>
 <td>${r[0]}</td>
 <td>${r[2]}</td>
 <td>${r[3]}</td>
-<td>${r[4]}</td>
-<td class="${stockClass}">${r[5]}</td>
+<td>${r[5]}</td>
 <td>${r[6]}</td>
 
 <td class="qty">
 
 <button onclick="changeQty(${index},-1)">-</button>
-<span id="qty${index}">${cart[r[1]]||0}</span>
+
+<span id="qty${index}">${cart[r[1]]?.qty||0}</span>
+
 <button onclick="changeQty(${index},1)">+</button>
 
 </td>
+
 </tr>
 `;
 
@@ -283,15 +270,17 @@ html+=`
 
 document.getElementById("tbody").innerHTML=html;
 
+renderPagination();
+
 }
 
 function renderPagination(){
 
-let totalPages=Math.ceil(filteredRows.length/perPage);
+let pages=Math.ceil(filteredRows.length/perPage);
 
 let html="";
 
-for(let i=1;i<=totalPages;i++){
+for(let i=1;i<=pages;i++){
 
 html+=`<button onclick="goPage(${i})">${i}</button>`;
 
@@ -311,14 +300,15 @@ renderPage();
 function changeQty(index,change){
 
 let item=rows[index][1];
+let rate=parseFloat(rows[index][6]);
 
-if(!cart[item]) cart[item]=0;
+if(!cart[item]) cart[item]={qty:0,rate:rate};
 
-cart[item]+=change;
+cart[item].qty+=change;
 
-if(cart[item]<0) cart[item]=0;
+if(cart[item].qty<0) cart[item].qty=0;
 
-document.getElementById("qty"+index).innerText=cart[item];
+document.getElementById("qty"+index).innerText=cart[item].qty;
 
 updateCart();
 
@@ -327,12 +317,26 @@ updateCart();
 function updateCart(){
 
 let html="";
+let total=0;
 
 for(let item in cart){
 
-if(cart[item]>0){
+let qty=cart[item].qty;
+let rate=cart[item].rate;
 
-html+=`${item} — ${cart[item]}<br>`;
+if(qty>0){
+
+let price=qty*rate;
+total+=price;
+
+html+=`
+<tr>
+<td>${item}</td>
+<td>${rate}</td>
+<td>${qty}</td>
+<td>${price.toFixed(2)}</td>
+</tr>
+`;
 
 }
 
@@ -340,21 +344,39 @@ html+=`${item} — ${cart[item]}<br>`;
 
 document.getElementById("cartItems").innerHTML=html;
 
+document.getElementById("grandTotal").innerText="Total: ₹"+total.toFixed(2);
+
 }
 
 function sendWhatsApp(){
 
-let msg="Order for Aaradhya Pharmaceuticals:%0A%0A";
+let shop=document.getElementById("shopName").value;
+let mobile=document.getElementById("mobile").value;
+
+let msg="Order for Aaradhya Pharmaceuticals%0A";
+
+msg+="Shop: "+shop+"%0A";
+msg+="Mobile: "+mobile+"%0A%0A";
+
+let total=0;
 
 for(let item in cart){
 
-if(cart[item]>0){
+let qty=cart[item].qty;
+let rate=cart[item].rate;
 
-msg+=item+" - "+cart[item]+"%0A";
+if(qty>0){
+
+let price=qty*rate;
+total+=price;
+
+msg+=item+" | "+rate+" x "+qty+" = "+price.toFixed(2)+"%0A";
 
 }
 
 }
+
+msg+="%0ATotal: "+total.toFixed(2);
 
 window.open("https://wa.me/?text="+msg);
 
@@ -375,7 +397,6 @@ return matchSearch && matchCompany;
 });
 
 currentPage=1;
-
 renderPage();
 
 }
