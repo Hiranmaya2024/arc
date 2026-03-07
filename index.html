@@ -23,15 +23,14 @@ padding:16px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-font-size:18px;
 }
 
 .version{
-font-size:13px;
 background:white;
 color:#0b5ed7;
 padding:4px 10px;
 border-radius:6px;
+font-size:13px;
 }
 
 .login{
@@ -55,7 +54,7 @@ button{
 background:#0b5ed7;
 color:white;
 border:none;
-padding:10px;
+padding:8px 12px;
 border-radius:6px;
 cursor:pointer;
 }
@@ -86,8 +85,7 @@ border-radius:10px;
 box-shadow:0 3px 10px rgba(0,0,0,0.08);
 display:flex;
 flex-direction:column;
-gap:4px;
-min-height:160px;
+gap:5px;
 }
 
 .medicine{
@@ -104,7 +102,6 @@ color:#666;
 .badges{
 display:flex;
 gap:6px;
-margin-top:4px;
 flex-wrap:wrap;
 }
 
@@ -185,6 +182,7 @@ display:flex;
 justify-content:center;
 gap:6px;
 margin-top:20px;
+flex-wrap:wrap;
 }
 
 .pagination button{
@@ -218,8 +216,7 @@ grid-template-columns:1fr;
 <header>
 
 <div>Aaradhya Pharmaceuticals Ordering</div>
-
-<div class="version">Version 7</div>
+<div class="version">Version 7.1</div>
 
 </header>
 
@@ -294,7 +291,7 @@ let rows=[];
 let cart={};
 
 let currentPage=1;
-let perPage=30;
+let itemsPerPage=12;
 
 fetch(SHEET_URL)
 .then(r=>r.text())
@@ -326,14 +323,30 @@ companies.forEach(c=>{
 let opt=document.createElement("option");
 opt.value=c;
 opt.textContent=c;
-
 select.appendChild(opt);
 
 });
 
 }
 
+function calculateItemsPerPage(){
+
+let gridWidth=document.getElementById("grid").offsetWidth;
+let cardWidth=240;
+
+let columns=Math.floor(gridWidth/cardWidth);
+
+let viewportHeight=window.innerHeight;
+
+let rowsVisible=Math.floor((viewportHeight-320)/180);
+
+itemsPerPage=Math.max(columns*rowsVisible,6);
+
+}
+
 function render(){
+
+calculateItemsPerPage();
 
 let search=document.getElementById("search").value?.toLowerCase() || "";
 let company=document.getElementById("companyFilter").value;
@@ -347,8 +360,8 @@ return matchSearch && matchCompany;
 
 });
 
-let start=(currentPage-1)*perPage;
-let pageItems=filtered.slice(start,start+perPage);
+let start=(currentPage-1)*itemsPerPage;
+let pageItems=filtered.slice(start,start+itemsPerPage);
 
 let html="";
 
@@ -384,9 +397,7 @@ ${expired?'<span class="badge expired">Expired</span>':''}
 <div class="qty">
 
 <button onclick="add('${item}',${rate},-1)">-</button>
-
 <span>${cart[item]?.qty||0}</span>
-
 <button onclick="add('${item}',${rate},1)">+</button>
 
 </div>
@@ -405,7 +416,7 @@ renderPagination(filtered.length);
 
 function renderPagination(total){
 
-let pages=Math.ceil(total/perPage);
+let pages=Math.ceil(total/itemsPerPage);
 
 let start=Math.max(1,currentPage-2);
 let end=Math.min(pages,start+4);
@@ -437,7 +448,6 @@ document.getElementById("pagination").innerHTML=html;
 function goPage(p){
 
 currentPage=p;
-
 render();
 
 }
@@ -493,7 +503,6 @@ html+=`
 }
 
 document.getElementById("cartItems").innerHTML=html;
-
 document.getElementById("total").innerText="Total ₹"+total.toFixed(2);
 
 }
@@ -552,6 +561,13 @@ render();
 });
 
 document.getElementById("companyFilter").addEventListener("change",function(){
+
+currentPage=1;
+render();
+
+});
+
+window.addEventListener("resize",function(){
 
 currentPage=1;
 render();
