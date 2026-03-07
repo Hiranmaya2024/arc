@@ -3,7 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharma Ordering</title>
+<title>Aaradhya Pharma Ordering Portal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -28,6 +28,9 @@ text-align:center;
 max-width:1400px;
 margin:auto;
 padding:15px;
+display:grid;
+grid-template-columns: 1fr 320px;
+gap:20px;
 }
 
 .controls{
@@ -79,6 +82,12 @@ font-size:12px;
 .low{color:red;}
 .good{color:green;}
 
+.expired{
+color:red;
+font-weight:600;
+font-size:12px;
+}
+
 .qty{
 display:flex;
 justify-content:center;
@@ -93,6 +102,7 @@ border:none;
 background:#0b5ed7;
 color:white;
 border-radius:4px;
+cursor:pointer;
 }
 
 .pagination{
@@ -107,27 +117,26 @@ border:none;
 background:#0b5ed7;
 color:white;
 border-radius:4px;
+cursor:pointer;
 }
 
 .cart{
-position:fixed;
-right:0;
-top:0;
-width:300px;
-height:100%;
 background:white;
-box-shadow:-3px 0 10px rgba(0,0,0,0.2);
 padding:15px;
-overflow:auto;
-}
-
-.cart h3{
-margin-top:0;
+border-radius:10px;
+box-shadow:0 3px 12px rgba(0,0,0,0.2);
+height:fit-content;
 }
 
 .cart table{
 width:100%;
 font-size:12px;
+border-collapse:collapse;
+}
+
+.cart th,.cart td{
+border-bottom:1px solid #eee;
+padding:6px;
 }
 
 .order-btn{
@@ -138,20 +147,20 @@ width:100%;
 padding:12px;
 border-radius:8px;
 margin-top:10px;
+font-size:15px;
+cursor:pointer;
 }
 
 @media(max-width:900px){
 
-.cart{
-position:static;
-width:100%;
-height:auto;
-margin-top:15px;
+.container{
+grid-template-columns:1fr;
 }
 
 }
 
 </style>
+
 </head>
 
 <body>
@@ -159,6 +168,8 @@ margin-top:15px;
 <header>Aaradhya Pharma Ordering Portal</header>
 
 <div class="container">
+
+<div>
 
 <div class="controls">
 
@@ -184,11 +195,26 @@ margin-top:15px;
 
 <h3>Order Cart</h3>
 
-<table id="cartItems"></table>
+<table>
 
-<div id="grandTotal">Total ₹0</div>
+<thead>
+<tr>
+<th>Item</th>
+<th>Rate</th>
+<th>Qty</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody id="cartItems"></tbody>
+
+</table>
+
+<h4 id="grandTotal">Total ₹0</h4>
 
 <button class="order-btn" onclick="sendWhatsApp()">Send Order</button>
+
+</div>
 
 </div>
 
@@ -222,13 +248,10 @@ let companies=[...new Set(rows.map(r=>r[0]))];
 let select=document.getElementById("companyFilter");
 
 companies.forEach(c=>{
-
 let o=document.createElement("option");
 o.value=c;
 o.textContent=c;
-
 select.appendChild(o);
-
 });
 
 }
@@ -243,10 +266,13 @@ let html="";
 pageRows.forEach(r=>{
 
 let item=r[1];
-let stock=r[5];
-let rate=r[6];
+let stock=parseInt(r[5])||0;
+let rate=parseFloat(r[6])||0;
 
-let stockClass=stock<5?"low":"good";
+let expiry=new Date(r[4]);
+let today=new Date();
+
+let expired = expiry < today;
 
 html+=`
 
@@ -261,11 +287,12 @@ html+=`
 
 <div class="price">₹${rate}</div>
 
-<div class="stock ${stockClass}">
-Stock: ${stock}
-</div>
+${expired ? '<div class="expired">Expired</div>' :
+`<div class="stock ${stock<5?'low':'good'}">Stock: ${stock}</div>`}
 
-<div class="qty">
+${expired ?
+'<div class="expired">Not Available</div>' :
+`<div class="qty">
 
 <button onclick="addItem('${item}',${rate},-1)">-</button>
 
@@ -273,7 +300,7 @@ Stock: ${stock}
 
 <button onclick="addItem('${item}',${rate},1)">+</button>
 
-</div>
+</div>`}
 
 </div>
 
@@ -294,9 +321,7 @@ let pages=Math.ceil(filtered.length/perPage);
 let html="";
 
 for(let i=1;i<=pages;i++){
-
 html+=`<button onclick="goPage(${i})">${i}</button>`;
-
 }
 
 document.getElementById("pagination").innerHTML=html;
@@ -304,19 +329,38 @@ document.getElementById("pagination").innerHTML=html;
 }
 
 function goPage(p){
-
 page=p;
 render();
-
 }
 
 function addItem(item,rate,change){
 
+let product = rows.find(r => r[1] === item);
+
+let stock = parseInt(product[5]) || 0;
+let expiry = new Date(product[4]);
+let today = new Date();
+
+if(expiry < today){
+alert("This batch is expired and cannot be ordered.");
+return;
+}
+
+if(stock <= 0){
+alert("Item out of stock.");
+return;
+}
+
 if(!cart[item]) cart[item]={qty:0,rate:rate};
 
-cart[item].qty+=change;
+let newQty = cart[item].qty + change;
 
-if(cart[item].qty<0) cart[item].qty=0;
+if(newQty > stock){
+alert("Only "+stock+" units available.");
+return;
+}
+
+cart[item].qty = Math.max(newQty,0);
 
 updateCart();
 render();
@@ -341,6 +385,7 @@ total+=t;
 html+=`
 <tr>
 <td>${item}</td>
+<td>${r}</td>
 <td>${q}</td>
 <td>${t.toFixed(2)}</td>
 </tr>
@@ -362,8 +407,8 @@ let mobile=document.getElementById("mobile").value;
 
 let msg="Order for Aaradhya Pharmaceuticals%0A";
 
-msg+="Shop:"+shop+"%0A";
-msg+="Mobile:"+mobile+"%0A%0A";
+msg+="Shop: "+shop+"%0A";
+msg+="Mobile: "+mobile+"%0A%0A";
 
 for(let item in cart){
 
@@ -371,9 +416,7 @@ let q=cart[item].qty;
 let r=cart[item].rate;
 
 if(q>0){
-
 msg+=item+" | "+r+" x "+q+"%0A";
-
 }
 
 }
