@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Aaradhya Pharmaceuticals Ordering</title>
+<title>Aaradhya Pharmaceuticals Ordering Portal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -42,7 +42,6 @@ padding:10px;
 margin-bottom:12px;
 border-radius:6px;
 border:1px solid #ccc;
-font-size:14px;
 }
 
 button{
@@ -53,7 +52,6 @@ padding:10px;
 width:100%;
 border-radius:6px;
 cursor:pointer;
-font-weight:500;
 }
 
 #app{
@@ -83,22 +81,11 @@ box-shadow:0 3px 12px rgba(0,0,0,0.1);
 display:flex;
 flex-direction:column;
 justify-content:space-between;
-min-height:150px;
-}
-
-.card b{
-font-size:14px;
-margin-bottom:4px;
-}
-
-.card div{
-font-size:12px;
 }
 
 .qty{
 display:flex;
 justify-content:center;
-align-items:center;
 gap:8px;
 margin-top:8px;
 }
@@ -106,17 +93,6 @@ margin-top:8px;
 .qty button{
 width:26px;
 height:26px;
-border:none;
-background:#0b5ed7;
-color:white;
-border-radius:4px;
-cursor:pointer;
-}
-
-.qty span{
-min-width:20px;
-text-align:center;
-font-weight:600;
 }
 
 .cart{
@@ -133,9 +109,9 @@ font-size:13px;
 }
 
 .cart th{
-text-align:left;
 border-bottom:1px solid #ddd;
 padding:6px;
+text-align:left;
 }
 
 .cart td{
@@ -163,10 +139,6 @@ font-weight:600;
 
 .container{
 grid-template-columns:1fr;
-}
-
-.grid{
-grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
 }
 
 }
@@ -235,7 +207,7 @@ grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
 
 const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv";
 
-const ORDER_API="https://script.google.com/macros/s/AKfycbzrJyquf2mh4gRaCBqJK-iiveUkEI8wHKAATk5Z1qgUqF93qiKxGdCdQ_0DGfDw2bkc3Q/exec";
+const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec";
 
 let rows=[];
 let cart={};
@@ -388,14 +360,18 @@ total:cart[item].rate*cart[item].qty
 
 }
 
-if(items.length==0){
+if(items.length===0){
 alert("Cart empty");
 return;
 }
 
+try{
+
 await fetch(ORDER_API,{
 method:"POST",
-mode:"no-cors",
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({
 shop:shop,
 mobile:mobile,
@@ -403,12 +379,18 @@ items:items
 })
 });
 
-alert("Order placed successfully");
+alert("Order saved successfully");
 
 cart={};
 
 updateCart();
 render();
+
+}catch(err){
+
+alert("Order failed");
+
+}
 
 }
 
