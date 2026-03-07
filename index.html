@@ -245,7 +245,7 @@ grid-template-columns:1fr;
 
 <header>
 <div>Aaradhya Pharmaceuticals Ordering</div>
-<div class="version">Version 8.1</div>
+<div class="version">Version 8.2</div>
 </header>
 
 <div class="login" id="login">
@@ -395,7 +395,8 @@ let search=document.getElementById("search").value?.toLowerCase() || "";
 let company=document.getElementById("companyFilter").value;
 
 let filtered=rows.filter(r=>{
-let matchSearch=r[1].toLowerCase().includes(search);
+let itemName=r[1].replace(/^[0-9]+[\.\-\)]\s*/,'').toLowerCase();
+let matchSearch=itemName.includes(search);
 let matchCompany=!company || r[0]==company;
 return matchSearch && matchCompany;
 });
@@ -407,14 +408,15 @@ let html="";
 
 pageItems.forEach(r=>{
 
-let item=r[1];
+let item=r[1].replace(/^[0-9]+[\.\-\)]\s*/,'');
 let stock=parseInt(r[5]);
 let rate=parseFloat(r[6]);
 let mrp=r[3];
 let batch=r[2];
-let exp=new Date(r[4]);
+let expiry=r[4];
 
-let expired=exp < new Date();
+let expDate=new Date(expiry);
+let expired=expDate < new Date();
 
 let stockClass="stock-good";
 if(stock<5) stockClass="stock-low";
@@ -431,6 +433,7 @@ html+=`
 <div class="details">MRP: ₹${mrp}</div>
 <div class="details">Rate: ₹${rate}</div>
 <div class="details">Batch: ${batch}</div>
+<div class="details">Expiry: ${expiry}</div>
 
 <div class="badges">
 
@@ -494,7 +497,7 @@ render();
 
 function add(item,rate,change){
 
-let product=rows.find(r=>r[1]==item);
+let product=rows.find(r=>r[1].replace(/^[0-9]+[\.\-\)]\s*/,'')==item);
 
 let stock=parseInt(product[5]);
 let exp=new Date(product[4]);
@@ -619,5 +622,6 @@ render();
 });
 
 </script>
+
 </body>
 </html>
