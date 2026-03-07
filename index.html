@@ -3,7 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharma Order System</title>
+<title>Aaradhya Pharma Smart Ordering</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -20,14 +20,14 @@ background:#0b5ed7;
 color:white;
 padding:16px;
 text-align:center;
-font-weight:600;
 font-size:20px;
+font-weight:600;
 }
 
 .container{
-padding:15px;
 max-width:1400px;
 margin:auto;
+padding:15px;
 }
 
 .controls{
@@ -37,11 +37,11 @@ flex-wrap:wrap;
 margin-bottom:15px;
 }
 
-.search{
-flex:1;
+.search,.filter{
 padding:10px;
 border-radius:6px;
 border:1px solid #ccc;
+flex:1;
 }
 
 .table-box{
@@ -68,18 +68,37 @@ background:#f1f3f6;
 
 .qty{
 display:flex;
-align-items:center;
 gap:5px;
+align-items:center;
 }
 
 .qty button{
-width:28px;
-height:28px;
+width:26px;
+height:26px;
 border:none;
 background:#0b5ed7;
 color:white;
 border-radius:4px;
-cursor:pointer;
+}
+
+.low-stock{color:red;font-weight:600;}
+.good-stock{color:green;font-weight:600;}
+
+.exp-warning{background:#fff3cd;}
+.exp-danger{background:#f8d7da;}
+
+.pagination{
+margin-top:15px;
+text-align:center;
+}
+
+.pagination button{
+margin:3px;
+padding:6px 10px;
+border:none;
+background:#0b5ed7;
+color:white;
+border-radius:4px;
 }
 
 .cart{
@@ -90,26 +109,20 @@ border-radius:10px;
 box-shadow:0 3px 12px rgba(0,0,0,0.1);
 }
 
-.cart h3{
-margin-top:0;
-}
-
 .order-btn{
 background:#25D366;
-color:white;
 border:none;
-padding:12px;
+color:white;
 width:100%;
-font-size:16px;
+padding:12px;
 border-radius:8px;
+font-size:16px;
 margin-top:10px;
-cursor:pointer;
 }
 
 .loading{
 text-align:center;
 padding:40px;
-font-size:18px;
 }
 
 </style>
@@ -118,7 +131,7 @@ font-size:18px;
 <body>
 
 <header>
-Aaradhya Pharma Ordering System
+Aaradhya Pharma Smart Order System
 </header>
 
 <div class="container">
@@ -127,28 +140,29 @@ Aaradhya Pharma Ordering System
 
 <input type="text" id="search" class="search" placeholder="Search medicine">
 
+<select id="companyFilter" class="filter">
+<option value="">All Companies</option>
+</select>
+
 </div>
 
 <div class="table-box">
 
-<div id="loading" class="loading">
-Loading Stock...
-</div>
+<div id="loading" class="loading">Loading Stock...</div>
 
 <table id="table" style="display:none">
 
 <thead>
-
 <tr>
 <th>Item</th>
 <th>Company</th>
 <th>Batch</th>
 <th>MRP</th>
+<th>Expiry</th>
 <th>Stock</th>
 <th>Rate</th>
 <th>Qty</th>
 </tr>
-
 </thead>
 
 <tbody id="tbody"></tbody>
@@ -156,6 +170,8 @@ Loading Stock...
 </table>
 
 </div>
+
+<div class="pagination" id="pagination"></div>
 
 <div class="cart">
 
@@ -174,7 +190,11 @@ Loading Stock...
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv";
 
 let rows=[];
+let filteredRows=[];
 let cart={};
+
+let currentPage=1;
+const perPage=20;
 
 fetch(sheetURL)
 .then(res=>res.text())
@@ -182,12 +202,43 @@ fetch(sheetURL)
 
 rows=data.split("\n").slice(1).map(r=>r.split(","));
 
-render(rows);
+filteredRows=[...rows];
+
+initCompanyFilter();
+renderPage();
 
 document.getElementById("loading").style.display="none";
 document.getElementById("table").style.display="table";
 
 });
+
+function initCompanyFilter(){
+
+let companies=[...new Set(rows.map(r=>r[0]))];
+
+let select=document.getElementById("companyFilter");
+
+companies.forEach(c=>{
+
+let opt=document.createElement("option");
+opt.value=c;
+opt.textContent=c;
+
+select.appendChild(opt);
+
+});
+
+}
+
+function renderPage(){
+
+let start=(currentPage-1)*perPage;
+let pageRows=filteredRows.slice(start,start+perPage);
+
+render(pageRows);
+renderPagination();
+
+}
 
 function render(data){
 
@@ -197,32 +248,63 @@ data.forEach((r,i)=>{
 
 if(r.length<7) return;
 
-html+=`
-<tr>
+let stockClass=r[5]<5?"low-stock":"good-stock";
 
+let expClass="";
+let expDate=new Date(r[4]);
+let diff=(expDate-new Date())/(1000*60*60*24);
+
+if(diff<90) expClass="exp-danger";
+else if(diff<180) expClass="exp-warning";
+
+let index=rows.indexOf(r);
+
+html+=`
+<tr class="${expClass}">
 <td>${r[1]}</td>
 <td>${r[0]}</td>
 <td>${r[2]}</td>
 <td>${r[3]}</td>
-<td>${r[5]}</td>
+<td>${r[4]}</td>
+<td class="${stockClass}">${r[5]}</td>
 <td>${r[6]}</td>
 
 <td class="qty">
 
-<button onclick="changeQty(${i},-1)">-</button>
-
-<span id="qty${i}">0</span>
-
-<button onclick="changeQty(${i},1)">+</button>
+<button onclick="changeQty(${index},-1)">-</button>
+<span id="qty${index}">${cart[r[1]]||0}</span>
+<button onclick="changeQty(${index},1)">+</button>
 
 </td>
-
 </tr>
 `;
 
 });
 
 document.getElementById("tbody").innerHTML=html;
+
+}
+
+function renderPagination(){
+
+let totalPages=Math.ceil(filteredRows.length/perPage);
+
+let html="";
+
+for(let i=1;i<=totalPages;i++){
+
+html+=`<button onclick="goPage(${i})">${i}</button>`;
+
+}
+
+document.getElementById("pagination").innerHTML=html;
+
+}
+
+function goPage(p){
+
+currentPage=p;
+renderPage();
 
 }
 
@@ -278,15 +360,28 @@ window.open("https://wa.me/?text="+msg);
 
 }
 
-document.getElementById("search").addEventListener("keyup",function(){
+function applyFilters(){
 
-let text=this.value.toLowerCase();
+let text=document.getElementById("search").value.toLowerCase();
+let company=document.getElementById("companyFilter").value;
 
-let filtered=rows.filter(r=>r.join(" ").toLowerCase().includes(text));
+filteredRows=rows.filter(r=>{
 
-render(filtered);
+let matchSearch=r.join(" ").toLowerCase().includes(text);
+let matchCompany=!company||r[0]==company;
+
+return matchSearch && matchCompany;
 
 });
+
+currentPage=1;
+
+renderPage();
+
+}
+
+document.getElementById("search").addEventListener("keyup",applyFilters);
+document.getElementById("companyFilter").addEventListener("change",applyFilters);
 
 </script>
 
