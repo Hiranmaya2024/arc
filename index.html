@@ -3,7 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharma Stock</title>
+<title>Aaradhya Pharma Order System</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -18,14 +18,14 @@ background:#f4f6f9;
 header{
 background:#0b5ed7;
 color:white;
-padding:18px;
+padding:16px;
 text-align:center;
-font-size:20px;
 font-weight:600;
+font-size:20px;
 }
 
 .container{
-padding:20px;
+padding:15px;
 max-width:1400px;
 margin:auto;
 }
@@ -34,21 +34,21 @@ margin:auto;
 display:flex;
 gap:10px;
 flex-wrap:wrap;
-margin-bottom:20px;
+margin-bottom:15px;
 }
 
-.search, .filter{
-padding:12px;
-border-radius:8px;
-border:1px solid #ccc;
+.search{
 flex:1;
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 .table-box{
 background:white;
 border-radius:10px;
 overflow:auto;
-box-shadow:0 3px 12px rgba(0,0,0,0.08);
+box-shadow:0 3px 12px rgba(0,0,0,0.1);
 }
 
 table{
@@ -57,31 +57,53 @@ border-collapse:collapse;
 }
 
 th,td{
-padding:12px;
+padding:10px;
 border-bottom:1px solid #eee;
-font-size:14px;
+font-size:13px;
 }
 
 th{
 background:#f1f3f6;
 }
 
-.low-stock{
-color:#d9534f;
-font-weight:600;
+.qty{
+display:flex;
+align-items:center;
+gap:5px;
 }
 
-.good-stock{
-color:#28a745;
-font-weight:600;
+.qty button{
+width:28px;
+height:28px;
+border:none;
+background:#0b5ed7;
+color:white;
+border-radius:4px;
+cursor:pointer;
 }
 
-.exp-warning{
-background:#fff3cd;
+.cart{
+margin-top:20px;
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 3px 12px rgba(0,0,0,0.1);
 }
 
-.exp-danger{
-background:#f8d7da;
+.cart h3{
+margin-top:0;
+}
+
+.order-btn{
+background:#25D366;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+font-size:16px;
+border-radius:8px;
+margin-top:10px;
+cursor:pointer;
 }
 
 .loading{
@@ -90,50 +112,41 @@ padding:40px;
 font-size:18px;
 }
 
-@media(max-width:768px){
-th,td{font-size:12px}
-}
-
 </style>
-
 </head>
 
 <body>
 
 <header>
-Aaradhya Pharmaceuticals Smart Stock
+Aaradhya Pharma Ordering System
 </header>
 
 <div class="container">
 
 <div class="controls">
 
-<input type="text" id="search" class="search" placeholder="Search medicine or company">
-
-<select id="companyFilter" class="filter">
-<option value="">All Companies</option>
-</select>
+<input type="text" id="search" class="search" placeholder="Search medicine">
 
 </div>
 
 <div class="table-box">
 
 <div id="loading" class="loading">
-Loading Stock Data...
+Loading Stock...
 </div>
 
-<table id="table" style="display:none;">
+<table id="table" style="display:none">
 
 <thead>
 
 <tr>
-<th>Company</th>
 <th>Item</th>
+<th>Company</th>
 <th>Batch</th>
 <th>MRP</th>
-<th>Expiry</th>
 <th>Stock</th>
 <th>Rate</th>
+<th>Qty</th>
 </tr>
 
 </thead>
@@ -144,6 +157,16 @@ Loading Stock Data...
 
 </div>
 
+<div class="cart">
+
+<h3>Order Cart</h3>
+
+<div id="cartItems"></div>
+
+<button class="order-btn" onclick="sendWhatsApp()">Send Order on WhatsApp</button>
+
+</div>
+
 </div>
 
 <script>
@@ -151,14 +174,13 @@ Loading Stock Data...
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv";
 
 let rows=[];
+let cart={};
 
 fetch(sheetURL)
 .then(res=>res.text())
 .then(data=>{
 
 rows=data.split("\n").slice(1).map(r=>r.split(","));
-
-initCompanyFilter();
 
 render(rows);
 
@@ -167,53 +189,34 @@ document.getElementById("table").style.display="table";
 
 });
 
-function initCompanyFilter(){
-
-let companies=[...new Set(rows.map(r=>r[0]))];
-
-let select=document.getElementById("companyFilter");
-
-companies.forEach(c=>{
-
-let opt=document.createElement("option");
-opt.value=c;
-opt.textContent=c;
-
-select.appendChild(opt);
-
-});
-
-}
-
 function render(data){
 
 let html="";
 
-data.forEach(r=>{
+data.forEach((r,i)=>{
 
 if(r.length<7) return;
 
-let stockClass=r[5]<5?"low-stock":"good-stock";
-
-let expClass="";
-
-let expDate=new Date(r[4]);
-let today=new Date();
-
-let diff=(expDate-today)/(1000*60*60*24);
-
-if(diff<90) expClass="exp-danger";
-else if(diff<180) expClass="exp-warning";
-
 html+=`
-<tr class="${expClass}">
-<td>${r[0]}</td>
+<tr>
+
 <td>${r[1]}</td>
+<td>${r[0]}</td>
 <td>${r[2]}</td>
 <td>${r[3]}</td>
-<td>${r[4]}</td>
-<td class="${stockClass}">${r[5]}</td>
+<td>${r[5]}</td>
 <td>${r[6]}</td>
+
+<td class="qty">
+
+<button onclick="changeQty(${i},-1)">-</button>
+
+<span id="qty${i}">0</span>
+
+<button onclick="changeQty(${i},1)">+</button>
+
+</td>
+
 </tr>
 `;
 
@@ -223,27 +226,67 @@ document.getElementById("tbody").innerHTML=html;
 
 }
 
-document.getElementById("search").addEventListener("keyup",filter);
+function changeQty(index,change){
 
-document.getElementById("companyFilter").addEventListener("change",filter);
+let item=rows[index][1];
 
-function filter(){
+if(!cart[item]) cart[item]=0;
 
-let text=document.getElementById("search").value.toLowerCase();
-let company=document.getElementById("companyFilter").value;
+cart[item]+=change;
 
-let filtered=rows.filter(r=>{
+if(cart[item]<0) cart[item]=0;
 
-let matchSearch=r.join(" ").toLowerCase().includes(text);
-let matchCompany=!company || r[0]==company;
+document.getElementById("qty"+index).innerText=cart[item];
 
-return matchSearch && matchCompany;
+updateCart();
 
-});
+}
+
+function updateCart(){
+
+let html="";
+
+for(let item in cart){
+
+if(cart[item]>0){
+
+html+=`${item} — ${cart[item]}<br>`;
+
+}
+
+}
+
+document.getElementById("cartItems").innerHTML=html;
+
+}
+
+function sendWhatsApp(){
+
+let msg="Order for Aaradhya Pharmaceuticals:%0A%0A";
+
+for(let item in cart){
+
+if(cart[item]>0){
+
+msg+=item+" - "+cart[item]+"%0A";
+
+}
+
+}
+
+window.open("https://wa.me/?text="+msg);
+
+}
+
+document.getElementById("search").addEventListener("keyup",function(){
+
+let text=this.value.toLowerCase();
+
+let filtered=rows.filter(r=>r.join(" ").toLowerCase().includes(text));
 
 render(filtered);
 
-}
+});
 
 </script>
 
