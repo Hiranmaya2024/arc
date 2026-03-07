@@ -3,7 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharma Platform</title>
+<title>Aaradhya Pharmaceuticals</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -49,6 +49,7 @@ border:none;
 padding:10px;
 width:100%;
 border-radius:6px;
+cursor:pointer;
 }
 
 #app{
@@ -86,19 +87,24 @@ width:24px;
 height:24px;
 }
 
+@media(max-width:900px){
+.container{
+grid-template-columns:1fr;
+}
+}
+
 </style>
 </head>
 
 <body>
 
-<header>Aaradhya Pharmaceuticals</header>
+<header>Aaradhya Pharmaceuticals Ordering</header>
 
 <div class="login" id="login">
 
 <h3>Retailer Login</h3>
 
 <input id="shop" placeholder="Shop Name">
-
 <input id="mobile" placeholder="Mobile Number">
 
 <button onclick="login()">Login</button>
@@ -139,7 +145,7 @@ height:24px;
 
 const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv";
 
-Const ORDER_API="https://script.google.com/macros/s/AKfycbzrJyquf2mh4gRaCBqJK-iiveUkEI8wHKAATk5Z1qgUqF93qiKxGdCdQ_0DGfDw2bkc3Q/exec";
+const ORDER_API="https://script.google.com/macros/s/AKfycbzrJyquf2mh4gRaCBqJK-iiveUkEI8wHKAATk5Z1qgUqF93qiKxGdCdQ_0DGfDw2bkc3Q/exec";
 
 let rows=[];
 let cart={};
@@ -247,7 +253,7 @@ let t=q*r;
 
 total+=t;
 
-html+=`${item} - ${q} × ${r} = ${t}<br>`;
+html+=`${item} - ${q} × ${r} = ₹${t}<br>`;
 
 }
 
@@ -281,8 +287,14 @@ total:cart[item].rate*cart[item].qty
 
 }
 
+if(items.length==0){
+alert("Cart empty");
+return;
+}
+
 await fetch(ORDER_API,{
 method:"POST",
+mode:"no-cors",
 body:JSON.stringify({
 shop:shop,
 mobile:mobile,
@@ -291,6 +303,10 @@ items:items
 });
 
 alert("Order placed successfully");
+
+cart={};
+updateCart();
+render();
 
 }
 
