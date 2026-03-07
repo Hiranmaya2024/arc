@@ -3,7 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Digital Ordering Portal</title>
+<title>Aaradhya Pharma Ordering</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -19,8 +19,9 @@ header{
 background:#0b5ed7;
 color:white;
 padding:15px;
-text-align:center;
+font-size:20px;
 font-weight:600;
+text-align:center;
 }
 
 .container{
@@ -33,7 +34,7 @@ padding:15px;
 display:flex;
 gap:10px;
 flex-wrap:wrap;
-margin-bottom:10px;
+margin-bottom:15px;
 }
 
 input,select{
@@ -42,36 +43,52 @@ border-radius:6px;
 border:1px solid #ccc;
 }
 
-.table-box{
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+gap:15px;
+}
+
+.card{
 background:white;
 border-radius:10px;
-overflow:auto;
+padding:12px;
 box-shadow:0 3px 12px rgba(0,0,0,0.1);
 }
 
-table{
-width:100%;
-border-collapse:collapse;
+.card h4{
+margin:0 0 5px 0;
+font-size:15px;
 }
 
-th,td{
-padding:8px;
-border-bottom:1px solid #eee;
-font-size:13px;
+.company{
+font-size:12px;
+color:#666;
 }
 
-th{
-background:#f1f3f6;
+.price{
+margin-top:5px;
+font-weight:600;
+color:#0b5ed7;
 }
+
+.stock{
+font-size:12px;
+}
+
+.low{color:red;}
+.good{color:green;}
 
 .qty{
 display:flex;
-gap:4px;
+justify-content:center;
+gap:5px;
+margin-top:8px;
 }
 
 .qty button{
-width:24px;
-height:24px;
+width:26px;
+height:26px;
 border:none;
 background:#0b5ed7;
 color:white;
@@ -80,12 +97,12 @@ border-radius:4px;
 
 .pagination{
 text-align:center;
-margin:10px;
+margin-top:15px;
 }
 
 .pagination button{
-margin:3px;
-padding:5px 10px;
+margin:4px;
+padding:6px 10px;
 border:none;
 background:#0b5ed7;
 color:white;
@@ -93,31 +110,45 @@ border-radius:4px;
 }
 
 .cart{
+position:fixed;
+right:0;
+top:0;
+width:300px;
+height:100%;
 background:white;
+box-shadow:-3px 0 10px rgba(0,0,0,0.2);
 padding:15px;
-border-radius:10px;
-margin-top:15px;
-box-shadow:0 3px 12px rgba(0,0,0,0.1);
+overflow:auto;
 }
 
-.cart-table{
+.cart h3{
+margin-top:0;
+}
+
+.cart table{
 width:100%;
-}
-
-.total{
-font-weight:600;
-font-size:16px;
-margin-top:10px;
+font-size:12px;
 }
 
 .order-btn{
 background:#25D366;
 color:white;
 border:none;
-padding:12px;
 width:100%;
+padding:12px;
 border-radius:8px;
 margin-top:10px;
+}
+
+@media(max-width:900px){
+
+.cart{
+position:static;
+width:100%;
+height:auto;
+margin-top:15px;
+}
+
 }
 
 </style>
@@ -125,7 +156,7 @@ margin-top:10px;
 
 <body>
 
-<header>Aaradhya Pharmaceuticals Ordering Portal</header>
+<header>Aaradhya Pharma Ordering Portal</header>
 
 <div class="container">
 
@@ -143,54 +174,21 @@ margin-top:10px;
 
 </div>
 
-<div class="table-box">
-
-<table id="table">
-
-<thead>
-<tr>
-<th>Item</th>
-<th>Company</th>
-<th>Batch</th>
-<th>MRP</th>
-<th>Stock</th>
-<th>Rate</th>
-<th>Qty</th>
-</tr>
-</thead>
-
-<tbody id="tbody"></tbody>
-
-</table>
-
-</div>
+<div class="grid" id="grid"></div>
 
 <div class="pagination" id="pagination"></div>
+
+</div>
 
 <div class="cart">
 
 <h3>Order Cart</h3>
 
-<table class="cart-table">
+<table id="cartItems"></table>
 
-<thead>
-<tr>
-<th>Item</th>
-<th>Rate</th>
-<th>Qty</th>
-<th>Total</th>
-</tr>
-</thead>
+<div id="grandTotal">Total ₹0</div>
 
-<tbody id="cartItems"></tbody>
-
-</table>
-
-<div class="total" id="grandTotal">Total: ₹0</div>
-
-<button class="order-btn" onclick="sendWhatsApp()">Send Order on WhatsApp</button>
-
-</div>
+<button class="order-btn" onclick="sendWhatsApp()">Send Order</button>
 
 </div>
 
@@ -199,10 +197,10 @@ margin-top:10px;
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv";
 
 let rows=[];
-let filteredRows=[];
+let filtered=[];
 let cart={};
 
-let currentPage=1;
+let page=1;
 const perPage=20;
 
 fetch(sheetURL)
@@ -210,10 +208,10 @@ fetch(sheetURL)
 .then(data=>{
 
 rows=data.split("\n").slice(1).map(r=>r.split(","));
-filteredRows=[...rows];
+filtered=[...rows];
 
 initCompanies();
-renderPage();
+render();
 
 });
 
@@ -224,51 +222,66 @@ let companies=[...new Set(rows.map(r=>r[0]))];
 let select=document.getElementById("companyFilter");
 
 companies.forEach(c=>{
+
 let o=document.createElement("option");
 o.value=c;
 o.textContent=c;
+
 select.appendChild(o);
+
 });
 
 }
 
-function renderPage(){
+function render(){
 
-let start=(currentPage-1)*perPage;
-let pageRows=filteredRows.slice(start,start+perPage);
+let start=(page-1)*perPage;
+let pageRows=filtered.slice(start,start+perPage);
 
 let html="";
 
 pageRows.forEach(r=>{
 
-let index=rows.indexOf(r);
+let item=r[1];
+let stock=r[5];
+let rate=r[6];
+
+let stockClass=stock<5?"low":"good";
 
 html+=`
-<tr>
 
-<td>${r[1]}</td>
-<td>${r[0]}</td>
-<td>${r[2]}</td>
-<td>${r[3]}</td>
-<td>${r[5]}</td>
-<td>${r[6]}</td>
+<div class="card">
 
-<td class="qty">
+<h4>${item}</h4>
 
-<button onclick="changeQty(${index},-1)">-</button>
+<div class="company">${r[0]}</div>
 
-<span id="qty${index}">${cart[r[1]]?.qty||0}</span>
+<div>Batch: ${r[2]}</div>
+<div>Expiry: ${r[4]}</div>
 
-<button onclick="changeQty(${index},1)">+</button>
+<div class="price">₹${rate}</div>
 
-</td>
+<div class="stock ${stockClass}">
+Stock: ${stock}
+</div>
 
-</tr>
+<div class="qty">
+
+<button onclick="addItem('${item}',${rate},-1)">-</button>
+
+<span>${cart[item]?.qty||0}</span>
+
+<button onclick="addItem('${item}',${rate},1)">+</button>
+
+</div>
+
+</div>
+
 `;
 
 });
 
-document.getElementById("tbody").innerHTML=html;
+document.getElementById("grid").innerHTML=html;
 
 renderPagination();
 
@@ -276,7 +289,7 @@ renderPagination();
 
 function renderPagination(){
 
-let pages=Math.ceil(filteredRows.length/perPage);
+let pages=Math.ceil(filtered.length/perPage);
 
 let html="";
 
@@ -292,15 +305,12 @@ document.getElementById("pagination").innerHTML=html;
 
 function goPage(p){
 
-currentPage=p;
-renderPage();
+page=p;
+render();
 
 }
 
-function changeQty(index,change){
-
-let item=rows[index][1];
-let rate=parseFloat(rows[index][6]);
+function addItem(item,rate,change){
 
 if(!cart[item]) cart[item]={qty:0,rate:rate};
 
@@ -308,9 +318,8 @@ cart[item].qty+=change;
 
 if(cart[item].qty<0) cart[item].qty=0;
 
-document.getElementById("qty"+index).innerText=cart[item].qty;
-
 updateCart();
+render();
 
 }
 
@@ -321,20 +330,19 @@ let total=0;
 
 for(let item in cart){
 
-let qty=cart[item].qty;
-let rate=cart[item].rate;
+let q=cart[item].qty;
+let r=cart[item].rate;
 
-if(qty>0){
+if(q>0){
 
-let price=qty*rate;
-total+=price;
+let t=q*r;
+total+=t;
 
 html+=`
 <tr>
 <td>${item}</td>
-<td>${rate}</td>
-<td>${qty}</td>
-<td>${price.toFixed(2)}</td>
+<td>${q}</td>
+<td>${t.toFixed(2)}</td>
 </tr>
 `;
 
@@ -343,8 +351,7 @@ html+=`
 }
 
 document.getElementById("cartItems").innerHTML=html;
-
-document.getElementById("grandTotal").innerText="Total: ₹"+total.toFixed(2);
+document.getElementById("grandTotal").innerText="Total ₹"+total.toFixed(2);
 
 }
 
@@ -355,28 +362,21 @@ let mobile=document.getElementById("mobile").value;
 
 let msg="Order for Aaradhya Pharmaceuticals%0A";
 
-msg+="Shop: "+shop+"%0A";
-msg+="Mobile: "+mobile+"%0A%0A";
-
-let total=0;
+msg+="Shop:"+shop+"%0A";
+msg+="Mobile:"+mobile+"%0A%0A";
 
 for(let item in cart){
 
-let qty=cart[item].qty;
-let rate=cart[item].rate;
+let q=cart[item].qty;
+let r=cart[item].rate;
 
-if(qty>0){
+if(q>0){
 
-let price=qty*rate;
-total+=price;
-
-msg+=item+" | "+rate+" x "+qty+" = "+price.toFixed(2)+"%0A";
+msg+=item+" | "+r+" x "+q+"%0A";
 
 }
 
 }
-
-msg+="%0ATotal: "+total.toFixed(2);
 
 window.open("https://wa.me/?text="+msg);
 
@@ -387,17 +387,17 @@ function applyFilters(){
 let text=document.getElementById("search").value.toLowerCase();
 let company=document.getElementById("companyFilter").value;
 
-filteredRows=rows.filter(r=>{
+filtered=rows.filter(r=>{
 
-let matchSearch=r.join(" ").toLowerCase().includes(text);
-let matchCompany=!company||r[0]==company;
+let s=r.join(" ").toLowerCase().includes(text);
+let c=!company||r[0]==company;
 
-return matchSearch && matchCompany;
+return s && c;
 
 });
 
-currentPage=1;
-renderPage();
+page=1;
+render();
 
 }
 
