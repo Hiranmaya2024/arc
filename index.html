@@ -36,6 +36,15 @@ border-radius:6px;
 font-size:13px;
 }
 
+.cart-btn{
+background:#25D366;
+font-size:13px;
+border:none;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+}
+
 .login{
 max-width:380px;
 margin:80px auto;
@@ -67,9 +76,6 @@ display:none;
 }
 
 .container{
-display:grid;
-grid-template-columns:1fr 340px;
-gap:20px;
 padding:20px;
 max-width:1400px;
 margin:auto;
@@ -155,14 +161,85 @@ width:26px;
 height:26px;
 }
 
-.cart{
+.pagination{
+display:flex;
+justify-content:center;
+gap:6px;
+margin-top:20px;
+flex-wrap:wrap;
+}
+
+.pagination button{
+padding:6px 10px;
+font-size:13px;
+}
+
+.active-page{
+background:#25D366;
+}
+
+.insight-tabs{
 background:white;
-padding:18px;
-border-radius:10px;
-box-shadow:0 3px 12px rgba(0,0,0,0.15);
-position:sticky;
-top:80px;
-height:fit-content;
+padding:10px;
+border-radius:8px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+margin-bottom:15px;
+}
+
+.tab-buttons{
+display:flex;
+gap:6px;
+margin-bottom:10px;
+}
+
+.tab-btn{
+background:#e9ecef;
+border:none;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+font-size:12px;
+}
+
+.tab-btn.active{
+background:#0b5ed7;
+color:white;
+}
+
+.tab-panel{
+display:none;
+font-size:12px;
+}
+
+.tab-panel.active{
+display:block;
+}
+
+/* CART DRAWER */
+
+.cart-drawer{
+position:fixed;
+right:-400px;
+top:0;
+width:350px;
+height:100%;
+background:white;
+box-shadow:-3px 0 12px rgba(0,0,0,0.2);
+padding:20px;
+transition:0.3s;
+z-index:20;
+overflow:auto;
+}
+
+.cart-drawer.open{
+right:0;
+}
+
+.cart-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
 }
 
 .cart table{
@@ -194,23 +271,6 @@ width:100%;
 margin-top:10px;
 }
 
-.pagination{
-display:flex;
-justify-content:center;
-gap:6px;
-margin-top:20px;
-flex-wrap:wrap;
-}
-
-.pagination button{
-padding:6px 10px;
-font-size:13px;
-}
-
-.active-page{
-background:#25D366;
-}
-
 .modal{
 position:fixed;
 top:0;
@@ -230,58 +290,25 @@ border-radius:10px;
 width:350px;
 }
 
-.insight-tabs{
-background:white;
-padding:10px;
-border-radius:8px;
-box-shadow:0 2px 8px rgba(0,0,0,0.08);
-margin-bottom:15px;
-}
-
-.tab-buttons{
-display:flex;
-gap:6px;
-margin-bottom:10px;
-flex-wrap:wrap;
-}
-
-.tab-btn{
-background:#e9ecef;
-border:none;
-padding:6px 10px;
-border-radius:6px;
-cursor:pointer;
-font-size:12px;
-}
-
-.tab-btn.active{
-background:#0b5ed7;
-color:white;
-}
-
-.tab-panel{
-display:none;
-font-size:12px;
-}
-
-.tab-panel.active{
-display:block;
-}
-
-@media(max-width:900px){
-.container{
-grid-template-columns:1fr;
-}
-}
-
 </style>
 </head>
 
 <body>
 
 <header>
+
 <div>Aaradhya Pharmaceuticals Ordering</div>
-<div class="version">Version 9.1</div>
+
+<div style="display:flex;gap:10px;align-items:center;">
+
+<div class="version">Version 9.2</div>
+
+<button class="cart-btn" onclick="toggleCart()">
+🛒 Cart (<span id="cartCount">0</span>) ₹<span id="cartTotal">0</span>
+</button>
+
+</div>
+
 </header>
 
 <div class="login" id="login">
@@ -299,13 +326,14 @@ grid-template-columns:1fr;
 
 <div class="container">
 
-<div>
-
 <div class="filters">
+
 <input id="search" placeholder="Search medicine">
+
 <select id="companyFilter">
 <option value="">All Companies</option>
 </select>
+
 </div>
 
 <div class="insight-tabs">
@@ -338,9 +366,19 @@ grid-template-columns:1fr;
 
 </div>
 
-<div class="cart">
+</div>
 
-<h3>Order Cart</h3>
+<!-- CART DRAWER -->
+
+<div class="cart-drawer cart" id="cartDrawer">
+
+<div class="cart-header">
+
+<h3>Your Cart</h3>
+
+<button onclick="toggleCart()">Close</button>
+
+</div>
 
 <table>
 
@@ -362,9 +400,7 @@ grid-template-columns:1fr;
 
 </div>
 
-</div>
-
-</div>
+<!-- REVIEW MODAL -->
 
 <div class="modal" id="reviewModal">
 
@@ -410,28 +446,39 @@ updateInsights();
 });
 
 function login(){
+
 let shop=document.getElementById("shop").value;
+
 if(shop=="") return alert("Enter shop name");
+
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
+
 }
 
 function initCompanyFilter(){
+
 let companies=[...new Set(rows.map(r=>r[0]))];
+
 let select=document.getElementById("companyFilter");
+
 companies.forEach(c=>{
 let opt=document.createElement("option");
 opt.value=c;
 opt.textContent=c;
 select.appendChild(opt);
 });
+
 }
 
 function calculateItemsPerPage(){
+
 let gridWidth=document.getElementById("grid").offsetWidth;
 let columns=Math.floor(gridWidth/240);
 let rowsVisible=Math.floor((window.innerHeight-320)/180);
+
 itemsPerPage=Math.max(columns*rowsVisible,6);
+
 }
 
 function render(){
@@ -443,9 +490,7 @@ let company=document.getElementById("companyFilter").value;
 
 let filtered=rows.filter(r=>{
 let item=cleanItemName(r[1]).toLowerCase();
-let matchSearch=item.includes(search);
-let matchCompany=!company || r[0]==company;
-return matchSearch && matchCompany;
+return item.includes(search) && (!company || r[0]==company);
 });
 
 let start=(currentPage-1)*itemsPerPage;
@@ -505,36 +550,6 @@ renderPagination(filtered.length);
 
 }
 
-function renderPagination(total){
-
-let pages=Math.ceil(total/itemsPerPage);
-
-let start=Math.max(1,currentPage-2);
-let end=Math.min(pages,start+4);
-
-let html="";
-
-if(currentPage>1){
-html+=`<button onclick="goPage(${currentPage-1})">◀</button>`;
-}
-
-for(let i=start;i<=end;i++){
-html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`;
-}
-
-if(currentPage<pages){
-html+=`<button onclick="goPage(${currentPage+1})">▶</button>`;
-}
-
-document.getElementById("pagination").innerHTML=html;
-
-}
-
-function goPage(p){
-currentPage=p;
-render();
-}
-
 function add(item,rate,change){
 
 let product=rows.find(r=>cleanItemName(r[1])==item);
@@ -564,6 +579,7 @@ function updateCart(){
 
 let html="";
 let total=0;
+let count=0;
 
 for(let item in cart){
 
@@ -573,7 +589,9 @@ let r=cart[item].rate;
 if(q>0){
 
 let t=q*r;
+
 total+=t;
+count+=q;
 
 html+=`
 <tr>
@@ -589,128 +607,14 @@ html+=`
 
 document.getElementById("cartItems").innerHTML=html;
 document.getElementById("total").innerText="Total ₹"+total.toFixed(2);
+document.getElementById("cartCount").innerText=count;
+document.getElementById("cartTotal").innerText=total.toFixed(2);
 
 }
 
-function updateInsights(){
-
-let sorted=Object.entries(orderStats)
-.sort((a,b)=>b[1]-a[1])
-.slice(0,5);
-
-let topHTML="";
-sorted.forEach(i=>{
-topHTML+=`<div>${i[0]}</div>`;
-});
-
-document.getElementById("topItems").innerHTML=topHTML;
-
-let low=rows.filter(r=>parseInt(r[5])<10).slice(0,5);
-let lowHTML="";
-low.forEach(r=>{
-lowHTML+=`<div>${cleanItemName(r[1])} (${r[5]})</div>`;
-});
-document.getElementById("lowStock").innerHTML=lowHTML;
-
-let now=new Date();
-let expHTML="";
-rows.forEach(r=>{
-let exp=new Date(r[4]);
-let diff=(exp-now)/(1000*60*60*24*30);
-if(diff<3 && diff>0){
-expHTML+=`<div>${cleanItemName(r[1])} (${r[4]})</div>`;
+function toggleCart(){
+document.getElementById("cartDrawer").classList.toggle("open");
 }
-});
-document.getElementById("expiryRisk").innerHTML=expHTML;
-
-}
-
-function openTab(event,tabId){
-
-document.querySelectorAll(".tab-panel").forEach(p=>{
-p.classList.remove("active");
-});
-
-document.querySelectorAll(".tab-btn").forEach(b=>{
-b.classList.remove("active");
-});
-
-document.getElementById(tabId).classList.add("active");
-
-event.target.classList.add("active");
-
-}
-
-function openReview(){
-
-let html="";
-
-for(let item in cart){
-if(cart[item].qty>0){
-html+=`${item} - ${cart[item].qty}<br>`;
-}
-}
-
-document.getElementById("reviewList").innerHTML=html;
-document.getElementById("reviewModal").style.display="flex";
-
-}
-
-function closeReview(){
-document.getElementById("reviewModal").style.display="none";
-}
-
-function confirmOrder(){
-
-let shop=document.getElementById("shop").value;
-let mobile=document.getElementById("mobile").value;
-
-let items=[];
-
-for(let item in cart){
-if(cart[item].qty>0){
-items.push({
-name:item,
-rate:cart[item].rate,
-qty:cart[item].qty,
-total:cart[item].rate*cart[item].qty
-});
-}
-}
-
-fetch(ORDER_API,{
-method:"POST",
-mode:"no-cors",
-body:JSON.stringify({
-shop:shop,
-mobile:mobile,
-items:items
-})
-});
-
-alert("Order submitted successfully");
-
-cart={};
-updateCart();
-render();
-closeReview();
-
-}
-
-document.getElementById("search").addEventListener("keyup",function(){
-currentPage=1;
-render();
-});
-
-document.getElementById("companyFilter").addEventListener("change",function(){
-currentPage=1;
-render();
-});
-
-window.addEventListener("resize",function(){
-currentPage=1;
-render();
-});
 
 </script>
 
