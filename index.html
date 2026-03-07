@@ -338,7 +338,7 @@ document.getElementById("total").innerText="Total ₹"+total.toFixed(2);
 
 }
 
-async function placeOrder(){
+function placeOrder(){
 
 let shop=document.getElementById("shop").value;
 let mobile=document.getElementById("mobile").value;
@@ -365,13 +365,9 @@ alert("Cart empty");
 return;
 }
 
-try{
-
-await fetch(ORDER_API,{
+fetch(ORDER_API,{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
+mode:"no-cors",
 body:JSON.stringify({
 shop:shop,
 mobile:mobile,
@@ -379,18 +375,12 @@ items:items
 })
 });
 
-alert("Order saved successfully");
+alert("Order submitted successfully");
 
 cart={};
 
 updateCart();
 render();
-
-}catch(err){
-
-alert("Order failed");
-
-}
 
 }
 
