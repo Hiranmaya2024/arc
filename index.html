@@ -3,7 +3,6 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Aaradhya Pharmaceuticals Ordering</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -102,6 +101,10 @@ font-size:12px;
 color:#666;
 }
 
+.details{
+font-size:12px;
+}
+
 .badges{
 display:flex;
 gap:6px;
@@ -121,17 +124,12 @@ color:#1e8449;
 
 .stock-mid{
 background:#fff3cd;
-color:#b7950b;
+color:#856404;
 }
 
 .stock-low{
 background:#fdecea;
 color:#c0392b;
-}
-
-.expiry-warning{
-background:#fff3cd;
-color:#856404;
 }
 
 .expired{
@@ -207,6 +205,12 @@ font-size:13px;
 background:#25D366;
 }
 
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
 .modal{
 position:fixed;
 top:0;
@@ -226,6 +230,14 @@ border-radius:10px;
 width:350px;
 }
 
+@media(max-width:900px){
+
+.container{
+grid-template-columns:1fr;
+}
+
+}
+
 </style>
 </head>
 
@@ -233,7 +245,7 @@ width:350px;
 
 <header>
 <div>Aaradhya Pharmaceuticals Ordering</div>
-<div class="version">Version 8</div>
+<div class="version">Version 8.1</div>
 </header>
 
 <div class="login" id="login">
@@ -253,7 +265,15 @@ width:350px;
 
 <div>
 
+<div class="filters">
+
 <input id="search" placeholder="Search medicine">
+
+<select id="companyFilter">
+<option value="">All Companies</option>
+</select>
+
+</div>
 
 <div class="grid" id="grid"></div>
 
@@ -315,10 +335,14 @@ const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH
 let rows=[];
 let cart={};
 
+let currentPage=1;
+let itemsPerPage=12;
+
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(data=>{
 rows=data.split("\n").slice(1).map(r=>r.split(","));
+initCompanyFilter();
 render();
 });
 
@@ -333,18 +357,66 @@ document.getElementById("app").style.display="block";
 
 }
 
+function initCompanyFilter(){
+
+let companies=[...new Set(rows.map(r=>r[0]))];
+
+let select=document.getElementById("companyFilter");
+
+companies.forEach(c=>{
+let opt=document.createElement("option");
+opt.value=c;
+opt.textContent=c;
+select.appendChild(opt);
+});
+
+}
+
+function calculateItemsPerPage(){
+
+let gridWidth=document.getElementById("grid").offsetWidth;
+let cardWidth=240;
+
+let columns=Math.floor(gridWidth/cardWidth);
+
+let viewportHeight=window.innerHeight;
+
+let rowsVisible=Math.floor((viewportHeight-320)/180);
+
+itemsPerPage=Math.max(columns*rowsVisible,6);
+
+}
+
 function render(){
+
+calculateItemsPerPage();
+
+let search=document.getElementById("search").value?.toLowerCase() || "";
+let company=document.getElementById("companyFilter").value;
+
+let filtered=rows.filter(r=>{
+let matchSearch=r[1].toLowerCase().includes(search);
+let matchCompany=!company || r[0]==company;
+return matchSearch && matchCompany;
+});
+
+let start=(currentPage-1)*itemsPerPage;
+let pageItems=filtered.slice(start,start+itemsPerPage);
 
 let html="";
 
-rows.forEach(r=>{
+pageItems.forEach(r=>{
 
 let item=r[1];
 let stock=parseInt(r[5]);
 let rate=parseFloat(r[6]);
+let mrp=r[3];
+let batch=r[2];
+let exp=new Date(r[4]);
+
+let expired=exp < new Date();
 
 let stockClass="stock-good";
-
 if(stock<5) stockClass="stock-low";
 else if(stock<20) stockClass="stock-mid";
 
@@ -356,18 +428,24 @@ html+=`
 
 <div class="company">${r[0]}</div>
 
-<div>Rate ₹${rate}</div>
+<div class="details">MRP: ₹${mrp}</div>
+<div class="details">Rate: ₹${rate}</div>
+<div class="details">Batch: ${batch}</div>
 
 <div class="badges">
-<span class="badge ${stockClass}">Stock: ${stock}</span>
+
+<span class="badge ${stockClass}">
+Stock: ${stock}
+</span>
+
+${expired?'<span class="badge expired">Expired</span>':''}
+
 </div>
 
 <div class="qty">
 
 <button onclick="add('${item}',${rate},-1)">-</button>
-
 <span>${cart[item]?.qty||0}</span>
-
 <button onclick="add('${item}',${rate},1)">+</button>
 
 </div>
@@ -380,13 +458,56 @@ html+=`
 
 document.getElementById("grid").innerHTML=html;
 
+renderPagination(filtered.length);
+
+}
+
+function renderPagination(total){
+
+let pages=Math.ceil(total/itemsPerPage);
+
+let start=Math.max(1,currentPage-2);
+let end=Math.min(pages,start+4);
+
+let html="";
+
+if(currentPage>1){
+html+=`<button onclick="goPage(${currentPage-1})">◀</button>`;
+}
+
+for(let i=start;i<=end;i++){
+html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`;
+}
+
+if(currentPage<pages){
+html+=`<button onclick="goPage(${currentPage+1})">▶</button>`;
+}
+
+document.getElementById("pagination").innerHTML=html;
+
+}
+
+function goPage(p){
+currentPage=p;
+render();
 }
 
 function add(item,rate,change){
 
+let product=rows.find(r=>r[1]==item);
+
+let stock=parseInt(product[5]);
+let exp=new Date(product[4]);
+
+if(exp < new Date()) return alert("Expired medicine");
+
 if(!cart[item]) cart[item]={qty:0,rate:rate};
 
-cart[item].qty=Math.max(cart[item].qty+change,0);
+let newQty=cart[item].qty+change;
+
+if(newQty>stock) return alert("Stock limit reached");
+
+cart[item].qty=Math.max(newQty,0);
 
 updateCart();
 render();
@@ -422,7 +543,6 @@ html+=`
 }
 
 document.getElementById("cartItems").innerHTML=html;
-
 document.getElementById("total").innerText="Total ₹"+total.toFixed(2);
 
 }
@@ -432,25 +552,18 @@ function openReview(){
 let html="";
 
 for(let item in cart){
-
 if(cart[item].qty>0){
-
 html+=`${item} - ${cart[item].qty}<br>`;
-
 }
-
 }
 
 document.getElementById("reviewList").innerHTML=html;
-
 document.getElementById("reviewModal").style.display="flex";
 
 }
 
 function closeReview(){
-
 document.getElementById("reviewModal").style.display="none";
-
 }
 
 function confirmOrder(){
@@ -461,18 +574,14 @@ let mobile=document.getElementById("mobile").value;
 let items=[];
 
 for(let item in cart){
-
 if(cart[item].qty>0){
-
 items.push({
 name:item,
 rate:cart[item].rate,
 qty:cart[item].qty,
 total:cart[item].rate*cart[item].qty
 });
-
 }
-
 }
 
 fetch(ORDER_API,{
@@ -488,15 +597,27 @@ items:items
 alert("Order submitted successfully");
 
 cart={};
-
 updateCart();
 render();
-
 closeReview();
 
 }
 
-</script>
+document.getElementById("search").addEventListener("keyup",function(){
+currentPage=1;
+render();
+});
 
+document.getElementById("companyFilter").addEventListener("change",function(){
+currentPage=1;
+render();
+});
+
+window.addEventListener("resize",function(){
+currentPage=1;
+render();
+});
+
+</script>
 </body>
 </html>
