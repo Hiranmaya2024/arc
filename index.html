@@ -19,10 +19,13 @@ background:#f4f6f9;
 header{
 background:#0b5ed7;
 color:white;
-padding:16px;
+padding:14px 20px;
 display:flex;
 justify-content:space-between;
 align-items:center;
+position:sticky;
+top:0;
+z-index:10;
 }
 
 .version{
@@ -65,7 +68,7 @@ display:none;
 
 .container{
 display:grid;
-grid-template-columns:1fr 320px;
+grid-template-columns:1fr 340px;
 gap:20px;
 padding:20px;
 max-width:1400px;
@@ -85,7 +88,7 @@ border-radius:10px;
 box-shadow:0 3px 10px rgba(0,0,0,0.08);
 display:flex;
 flex-direction:column;
-gap:5px;
+gap:6px;
 }
 
 .medicine{
@@ -116,9 +119,19 @@ background:#e8f8f0;
 color:#1e8449;
 }
 
+.stock-mid{
+background:#fff3cd;
+color:#b7950b;
+}
+
 .stock-low{
 background:#fdecea;
 color:#c0392b;
+}
+
+.expiry-warning{
+background:#fff3cd;
+color:#856404;
 }
 
 .expired{
@@ -144,7 +157,7 @@ padding:18px;
 border-radius:10px;
 box-shadow:0 3px 12px rgba(0,0,0,0.15);
 position:sticky;
-top:20px;
+top:80px;
 height:fit-content;
 }
 
@@ -194,18 +207,23 @@ font-size:13px;
 background:#25D366;
 }
 
-.filters{
-display:flex;
-gap:10px;
-margin-bottom:10px;
+.modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+display:none;
+justify-content:center;
+align-items:center;
 }
 
-@media(max-width:900px){
-
-.container{
-grid-template-columns:1fr;
-}
-
+.modal-content{
+background:white;
+padding:20px;
+border-radius:10px;
+width:350px;
 }
 
 </style>
@@ -214,10 +232,8 @@ grid-template-columns:1fr;
 <body>
 
 <header>
-
 <div>Aaradhya Pharmaceuticals Ordering</div>
-<div class="version">Version 7.1</div>
-
+<div class="version">Version 8</div>
 </header>
 
 <div class="login" id="login">
@@ -237,15 +253,7 @@ grid-template-columns:1fr;
 
 <div>
 
-<div class="filters">
-
 <input id="search" placeholder="Search medicine">
-
-<select id="companyFilter">
-<option value="">All Companies</option>
-</select>
-
-</div>
 
 <div class="grid" id="grid"></div>
 
@@ -273,9 +281,26 @@ grid-template-columns:1fr;
 
 <div class="cart-total" id="total">Total ₹0</div>
 
-<button class="order-btn" onclick="placeOrder()">Place Order</button>
+<button class="order-btn" onclick="openReview()">Place Order</button>
 
 </div>
+
+</div>
+
+</div>
+
+<div class="modal" id="reviewModal">
+
+<div class="modal-content">
+
+<h3>Review Order</h3>
+
+<div id="reviewList"></div>
+
+<br>
+
+<button onclick="confirmOrder()">Confirm</button>
+<button onclick="closeReview()">Cancel</button>
 
 </div>
 
@@ -290,14 +315,10 @@ const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH
 let rows=[];
 let cart={};
 
-let currentPage=1;
-let itemsPerPage=12;
-
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(data=>{
 rows=data.split("\n").slice(1).map(r=>r.split(","));
-initCompanyFilter();
 render();
 });
 
@@ -312,67 +333,20 @@ document.getElementById("app").style.display="block";
 
 }
 
-function initCompanyFilter(){
-
-let companies=[...new Set(rows.map(r=>r[0]))];
-
-let select=document.getElementById("companyFilter");
-
-companies.forEach(c=>{
-
-let opt=document.createElement("option");
-opt.value=c;
-opt.textContent=c;
-select.appendChild(opt);
-
-});
-
-}
-
-function calculateItemsPerPage(){
-
-let gridWidth=document.getElementById("grid").offsetWidth;
-let cardWidth=240;
-
-let columns=Math.floor(gridWidth/cardWidth);
-
-let viewportHeight=window.innerHeight;
-
-let rowsVisible=Math.floor((viewportHeight-320)/180);
-
-itemsPerPage=Math.max(columns*rowsVisible,6);
-
-}
-
 function render(){
-
-calculateItemsPerPage();
-
-let search=document.getElementById("search").value?.toLowerCase() || "";
-let company=document.getElementById("companyFilter").value;
-
-let filtered=rows.filter(r=>{
-
-let matchSearch=r[1].toLowerCase().includes(search);
-let matchCompany=!company || r[0]==company;
-
-return matchSearch && matchCompany;
-
-});
-
-let start=(currentPage-1)*itemsPerPage;
-let pageItems=filtered.slice(start,start+itemsPerPage);
 
 let html="";
 
-pageItems.forEach(r=>{
+rows.forEach(r=>{
 
 let item=r[1];
 let stock=parseInt(r[5]);
 let rate=parseFloat(r[6]);
-let exp=new Date(r[4]);
 
-let expired=exp < new Date();
+let stockClass="stock-good";
+
+if(stock<5) stockClass="stock-low";
+else if(stock<20) stockClass="stock-mid";
 
 html+=`
 
@@ -385,19 +359,15 @@ html+=`
 <div>Rate ₹${rate}</div>
 
 <div class="badges">
-
-<span class="badge ${stock<10?'stock-low':'stock-good'}">
-Stock: ${stock}
-</span>
-
-${expired?'<span class="badge expired">Expired</span>':''}
-
+<span class="badge ${stockClass}">Stock: ${stock}</span>
 </div>
 
 <div class="qty">
 
 <button onclick="add('${item}',${rate},-1)">-</button>
+
 <span>${cart[item]?.qty||0}</span>
+
 <button onclick="add('${item}',${rate},1)">+</button>
 
 </div>
@@ -410,64 +380,13 @@ ${expired?'<span class="badge expired">Expired</span>':''}
 
 document.getElementById("grid").innerHTML=html;
 
-renderPagination(filtered.length);
-
-}
-
-function renderPagination(total){
-
-let pages=Math.ceil(total/itemsPerPage);
-
-let start=Math.max(1,currentPage-2);
-let end=Math.min(pages,start+4);
-
-let html="";
-
-if(currentPage>1){
-
-html+=`<button onclick="goPage(${currentPage-1})">◀</button>`;
-
-}
-
-for(let i=start;i<=end;i++){
-
-html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`;
-
-}
-
-if(currentPage<pages){
-
-html+=`<button onclick="goPage(${currentPage+1})">▶</button>`;
-
-}
-
-document.getElementById("pagination").innerHTML=html;
-
-}
-
-function goPage(p){
-
-currentPage=p;
-render();
-
 }
 
 function add(item,rate,change){
 
-let product=rows.find(r=>r[1]==item);
-
-let stock=parseInt(product[5]);
-let exp=new Date(product[4]);
-
-if(exp < new Date()) return alert("Expired medicine");
-
 if(!cart[item]) cart[item]={qty:0,rate:rate};
 
-let newQty=cart[item].qty+change;
-
-if(newQty>stock) return alert("Stock limit reached");
-
-cart[item].qty=Math.max(newQty,0);
+cart[item].qty=Math.max(cart[item].qty+change,0);
 
 updateCart();
 render();
@@ -503,11 +422,38 @@ html+=`
 }
 
 document.getElementById("cartItems").innerHTML=html;
+
 document.getElementById("total").innerText="Total ₹"+total.toFixed(2);
 
 }
 
-function placeOrder(){
+function openReview(){
+
+let html="";
+
+for(let item in cart){
+
+if(cart[item].qty>0){
+
+html+=`${item} - ${cart[item].qty}<br>`;
+
+}
+
+}
+
+document.getElementById("reviewList").innerHTML=html;
+
+document.getElementById("reviewModal").style.display="flex";
+
+}
+
+function closeReview(){
+
+document.getElementById("reviewModal").style.display="none";
+
+}
+
+function confirmOrder(){
 
 let shop=document.getElementById("shop").value;
 let mobile=document.getElementById("mobile").value;
@@ -529,11 +475,6 @@ total:cart[item].rate*cart[item].qty
 
 }
 
-if(items.length===0){
-alert("Cart empty");
-return;
-}
-
 fetch(ORDER_API,{
 method:"POST",
 mode:"no-cors",
@@ -551,28 +492,9 @@ cart={};
 updateCart();
 render();
 
+closeReview();
+
 }
-
-document.getElementById("search").addEventListener("keyup",function(){
-
-currentPage=1;
-render();
-
-});
-
-document.getElementById("companyFilter").addEventListener("change",function(){
-
-currentPage=1;
-render();
-
-});
-
-window.addEventListener("resize",function(){
-
-currentPage=1;
-render();
-
-});
 
 </script>
 
