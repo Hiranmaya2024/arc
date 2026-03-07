@@ -3,6 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Aaradhya Pharmaceuticals Ordering</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -72,6 +73,32 @@ gap:20px;
 padding:20px;
 max-width:1400px;
 margin:auto;
+}
+
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
+.insight-panels{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:10px;
+margin-bottom:15px;
+}
+
+.panel{
+background:white;
+padding:10px;
+border-radius:8px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+font-size:12px;
+}
+
+.panel h4{
+margin:0 0 6px 0;
+font-size:13px;
 }
 
 .grid{
@@ -205,12 +232,6 @@ font-size:13px;
 background:#25D366;
 }
 
-.filters{
-display:flex;
-gap:10px;
-margin-bottom:10px;
-}
-
 .modal{
 position:fixed;
 top:0;
@@ -245,7 +266,7 @@ grid-template-columns:1fr;
 
 <header>
 <div>Aaradhya Pharmaceuticals Ordering</div>
-<div class="version">Version 8.2</div>
+<div class="version">Version 9</div>
 </header>
 
 <div class="login" id="login">
@@ -268,10 +289,28 @@ grid-template-columns:1fr;
 <div class="filters">
 
 <input id="search" placeholder="Search medicine">
-
 <select id="companyFilter">
 <option value="">All Companies</option>
 </select>
+
+</div>
+
+<div class="insight-panels">
+
+<div class="panel">
+<h4>Top Ordered</h4>
+<div id="topItems"></div>
+</div>
+
+<div class="panel">
+<h4>Low Stock</h4>
+<div id="lowStock"></div>
+</div>
+
+<div class="panel">
+<h4>Expiry Soon</h4>
+<div id="expiryRisk"></div>
+</div>
 
 </div>
 
@@ -334,9 +373,14 @@ const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH
 
 let rows=[];
 let cart={};
+let orderStats={};
 
 let currentPage=1;
 let itemsPerPage=12;
+
+function cleanItemName(name){
+return name.replace(/^[0-9]+\s*[\.\-\)]?\s*/,'').trim();
+}
 
 fetch(SHEET_URL)
 .then(r=>r.text())
@@ -344,47 +388,32 @@ fetch(SHEET_URL)
 rows=data.split("\n").slice(1).map(r=>r.split(","));
 initCompanyFilter();
 render();
+updateInsights();
 });
 
 function login(){
-
 let shop=document.getElementById("shop").value;
-
 if(shop=="") return alert("Enter shop name");
-
 document.getElementById("login").style.display="none";
 document.getElementById("app").style.display="block";
-
 }
 
 function initCompanyFilter(){
-
 let companies=[...new Set(rows.map(r=>r[0]))];
-
 let select=document.getElementById("companyFilter");
-
 companies.forEach(c=>{
 let opt=document.createElement("option");
 opt.value=c;
 opt.textContent=c;
 select.appendChild(opt);
 });
-
 }
 
 function calculateItemsPerPage(){
-
 let gridWidth=document.getElementById("grid").offsetWidth;
-let cardWidth=240;
-
-let columns=Math.floor(gridWidth/cardWidth);
-
-let viewportHeight=window.innerHeight;
-
-let rowsVisible=Math.floor((viewportHeight-320)/180);
-
+let columns=Math.floor(gridWidth/240);
+let rowsVisible=Math.floor((window.innerHeight-320)/180);
 itemsPerPage=Math.max(columns*rowsVisible,6);
-
 }
 
 function render(){
@@ -395,8 +424,8 @@ let search=document.getElementById("search").value?.toLowerCase() || "";
 let company=document.getElementById("companyFilter").value;
 
 let filtered=rows.filter(r=>{
-let itemName=r[1].replace(/^[0-9]+[\.\-\)]\s*/,'').toLowerCase();
-let matchSearch=itemName.includes(search);
+let item=cleanItemName(r[1]).toLowerCase();
+let matchSearch=item.includes(search);
 let matchCompany=!company || r[0]==company;
 return matchSearch && matchCompany;
 });
@@ -408,7 +437,7 @@ let html="";
 
 pageItems.forEach(r=>{
 
-let item=r[1].replace(/^[0-9]+[\.\-\)]\s*/,'');
+let item=cleanItemName(r[1]);
 let stock=parseInt(r[5]);
 let rate=parseFloat(r[6]);
 let mrp=r[3];
@@ -436,21 +465,14 @@ html+=`
 <div class="details">Expiry: ${expiry}</div>
 
 <div class="badges">
-
-<span class="badge ${stockClass}">
-Stock: ${stock}
-</span>
-
+<span class="badge ${stockClass}">Stock: ${stock}</span>
 ${expired?'<span class="badge expired">Expired</span>':''}
-
 </div>
 
 <div class="qty">
-
 <button onclick="add('${item}',${rate},-1)">-</button>
 <span>${cart[item]?.qty||0}</span>
 <button onclick="add('${item}',${rate},1)">+</button>
-
 </div>
 
 </div>
@@ -497,7 +519,7 @@ render();
 
 function add(item,rate,change){
 
-let product=rows.find(r=>r[1].replace(/^[0-9]+[\.\-\)]\s*/,'')==item);
+let product=rows.find(r=>cleanItemName(r[1])==item);
 
 let stock=parseInt(product[5]);
 let exp=new Date(product[4]);
@@ -512,7 +534,10 @@ if(newQty>stock) return alert("Stock limit reached");
 
 cart[item].qty=Math.max(newQty,0);
 
+orderStats[item]=(orderStats[item]||0)+1;
+
 updateCart();
+updateInsights();
 render();
 
 }
@@ -530,7 +555,6 @@ let r=cart[item].rate;
 if(q>0){
 
 let t=q*r;
-
 total+=t;
 
 html+=`
@@ -547,6 +571,53 @@ html+=`
 
 document.getElementById("cartItems").innerHTML=html;
 document.getElementById("total").innerText="Total ₹"+total.toFixed(2);
+
+}
+
+function updateInsights(){
+
+// top ordered
+
+let sorted=Object.entries(orderStats)
+.sort((a,b)=>b[1]-a[1])
+.slice(0,5);
+
+let topHTML="";
+
+sorted.forEach(i=>{
+topHTML+=`<div>${i[0]}</div>`;
+});
+
+document.getElementById("topItems").innerHTML=topHTML;
+
+// low stock
+
+let low=rows.filter(r=>parseInt(r[5])<10).slice(0,5);
+
+let lowHTML="";
+
+low.forEach(r=>{
+lowHTML+=`<div>${cleanItemName(r[1])} (${r[5]})</div>`;
+});
+
+document.getElementById("lowStock").innerHTML=lowHTML;
+
+// expiry risk
+
+let now=new Date();
+let expHTML="";
+
+rows.forEach(r=>{
+let exp=new Date(r[4]);
+let diff=(exp-now)/(1000*60*60*24*30);
+
+if(diff<3 && diff>0){
+expHTML+=`<div>${cleanItemName(r[1])} (${r[4]})</div>`;
+}
+
+});
+
+document.getElementById("expiryRisk").innerHTML=expHTML;
 
 }
 
