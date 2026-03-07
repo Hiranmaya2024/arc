@@ -81,26 +81,6 @@ gap:10px;
 margin-bottom:10px;
 }
 
-.insight-panels{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:10px;
-margin-bottom:15px;
-}
-
-.panel{
-background:white;
-padding:10px;
-border-radius:8px;
-box-shadow:0 2px 8px rgba(0,0,0,0.08);
-font-size:12px;
-}
-
-.panel h4{
-margin:0 0 6px 0;
-font-size:13px;
-}
-
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
@@ -120,7 +100,6 @@ gap:6px;
 .medicine{
 font-weight:600;
 font-size:14px;
-word-break:break-word;
 }
 
 .company{
@@ -251,12 +230,48 @@ border-radius:10px;
 width:350px;
 }
 
-@media(max-width:900px){
+.insight-tabs{
+background:white;
+padding:10px;
+border-radius:8px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+margin-bottom:15px;
+}
 
+.tab-buttons{
+display:flex;
+gap:6px;
+margin-bottom:10px;
+flex-wrap:wrap;
+}
+
+.tab-btn{
+background:#e9ecef;
+border:none;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+font-size:12px;
+}
+
+.tab-btn.active{
+background:#0b5ed7;
+color:white;
+}
+
+.tab-panel{
+display:none;
+font-size:12px;
+}
+
+.tab-panel.active{
+display:block;
+}
+
+@media(max-width:900px){
 .container{
 grid-template-columns:1fr;
 }
-
 }
 
 </style>
@@ -266,7 +281,7 @@ grid-template-columns:1fr;
 
 <header>
 <div>Aaradhya Pharmaceuticals Ordering</div>
-<div class="version">Version 9</div>
+<div class="version">Version 9.1</div>
 </header>
 
 <div class="login" id="login">
@@ -287,28 +302,31 @@ grid-template-columns:1fr;
 <div>
 
 <div class="filters">
-
 <input id="search" placeholder="Search medicine">
 <select id="companyFilter">
 <option value="">All Companies</option>
 </select>
+</div>
+
+<div class="insight-tabs">
+
+<div class="tab-buttons">
+
+<button class="tab-btn active" onclick="openTab(event,'topTab')">Top Ordered</button>
+<button class="tab-btn" onclick="openTab(event,'stockTab')">Low Stock</button>
+<button class="tab-btn" onclick="openTab(event,'expiryTab')">Expiry Risk</button>
 
 </div>
 
-<div class="insight-panels">
-
-<div class="panel">
-<h4>Top Ordered</h4>
+<div class="tab-panel active" id="topTab">
 <div id="topItems"></div>
 </div>
 
-<div class="panel">
-<h4>Low Stock</h4>
+<div class="tab-panel" id="stockTab">
 <div id="lowStock"></div>
 </div>
 
-<div class="panel">
-<h4>Expiry Soon</h4>
+<div class="tab-panel" id="expiryTab">
 <div id="expiryRisk"></div>
 </div>
 
@@ -576,48 +594,50 @@ document.getElementById("total").innerText="Total ₹"+total.toFixed(2);
 
 function updateInsights(){
 
-// top ordered
-
 let sorted=Object.entries(orderStats)
 .sort((a,b)=>b[1]-a[1])
 .slice(0,5);
 
 let topHTML="";
-
 sorted.forEach(i=>{
 topHTML+=`<div>${i[0]}</div>`;
 });
 
 document.getElementById("topItems").innerHTML=topHTML;
 
-// low stock
-
 let low=rows.filter(r=>parseInt(r[5])<10).slice(0,5);
-
 let lowHTML="";
-
 low.forEach(r=>{
 lowHTML+=`<div>${cleanItemName(r[1])} (${r[5]})</div>`;
 });
-
 document.getElementById("lowStock").innerHTML=lowHTML;
-
-// expiry risk
 
 let now=new Date();
 let expHTML="";
-
 rows.forEach(r=>{
 let exp=new Date(r[4]);
 let diff=(exp-now)/(1000*60*60*24*30);
-
 if(diff<3 && diff>0){
 expHTML+=`<div>${cleanItemName(r[1])} (${r[4]})</div>`;
 }
+});
+document.getElementById("expiryRisk").innerHTML=expHTML;
 
+}
+
+function openTab(event,tabId){
+
+document.querySelectorAll(".tab-panel").forEach(p=>{
+p.classList.remove("active");
 });
 
-document.getElementById("expiryRisk").innerHTML=expHTML;
+document.querySelectorAll(".tab-btn").forEach(b=>{
+b.classList.remove("active");
+});
+
+document.getElementById(tabId).classList.add("active");
+
+event.target.classList.add("active");
 
 }
 
