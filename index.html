@@ -3,12 +3,9 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Aaradhya Pharmaceuticals Ordering Portal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 
@@ -42,6 +39,7 @@ padding:10px;
 margin-bottom:12px;
 border-radius:6px;
 border:1px solid #ccc;
+font-size:14px;
 }
 
 button{
@@ -49,7 +47,6 @@ background:#0b5ed7;
 color:white;
 border:none;
 padding:10px;
-width:100%;
 border-radius:6px;
 cursor:pointer;
 }
@@ -69,7 +66,7 @@ margin:auto;
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
 gap:18px;
 }
 
@@ -80,14 +77,24 @@ border-radius:10px;
 box-shadow:0 3px 12px rgba(0,0,0,0.1);
 display:flex;
 flex-direction:column;
-justify-content:space-between;
+gap:4px;
+}
+
+.card b{
+font-size:14px;
+word-break:break-word;
+}
+
+.card div{
+font-size:12px;
 }
 
 .qty{
 display:flex;
 justify-content:center;
+align-items:center;
 gap:8px;
-margin-top:8px;
+margin-top:6px;
 }
 
 .qty button{
@@ -128,6 +135,24 @@ font-size:16px;
 .order-btn{
 background:#25D366;
 margin-top:10px;
+width:100%;
+}
+
+.pagination{
+display:flex;
+justify-content:center;
+gap:6px;
+margin-top:15px;
+flex-wrap:wrap;
+}
+
+.pagination button{
+padding:6px 10px;
+font-size:13px;
+}
+
+.active-page{
+background:#25D366;
 }
 
 .expired{
@@ -171,6 +196,8 @@ grid-template-columns:1fr;
 
 <div class="grid" id="grid"></div>
 
+<div class="pagination" id="pagination"></div>
+
 </div>
 
 <div class="cart">
@@ -195,8 +222,6 @@ grid-template-columns:1fr;
 
 <button class="order-btn" onclick="placeOrder()">Place Order</button>
 
-<button onclick="generatePDF()">Download PDF</button>
-
 </div>
 
 </div>
@@ -211,6 +236,9 @@ const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH
 
 let rows=[];
 let cart={};
+
+let currentPage=1;
+let perPage=30;
 
 fetch(SHEET_URL)
 .then(r=>r.text())
@@ -234,14 +262,16 @@ function render(){
 
 let search=document.getElementById("search").value?.toLowerCase() || "";
 
+let filtered=rows.filter(r=>r[1].toLowerCase().includes(search));
+
+let start=(currentPage-1)*perPage;
+let pageItems=filtered.slice(start,start+perPage);
+
 let html="";
 
-rows.forEach(r=>{
+pageItems.forEach(r=>{
 
 let item=r[1];
-
-if(!item.toLowerCase().includes(search)) return;
-
 let stock=parseInt(r[5]);
 let rate=parseFloat(r[6]);
 let exp=new Date(r[4]);
@@ -279,6 +309,49 @@ ${expired ? "<div class='expired'>Expired</div>" : ""}
 });
 
 document.getElementById("grid").innerHTML=html;
+
+renderPagination(filtered.length);
+
+}
+
+function renderPagination(totalItems){
+
+let totalPages=Math.ceil(totalItems/perPage);
+
+let pagination=document.getElementById("pagination");
+
+let start=Math.max(1,currentPage-2);
+let end=Math.min(totalPages,start+4);
+
+let html="";
+
+if(currentPage>1){
+
+html+=`<button onclick="goPage(${currentPage-1})">◀</button>`;
+
+}
+
+for(let i=start;i<=end;i++){
+
+html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`;
+
+}
+
+if(currentPage<totalPages){
+
+html+=`<button onclick="goPage(${currentPage+1})">▶</button>`;
+
+}
+
+pagination.innerHTML=html;
+
+}
+
+function goPage(p){
+
+currentPage=p;
+
+render();
 
 }
 
@@ -384,33 +457,12 @@ render();
 
 }
 
-function generatePDF(){
+document.getElementById("search").addEventListener("keyup",function(){
 
-const {jsPDF}=window.jspdf;
+currentPage=1;
+render();
 
-let doc=new jsPDF();
-
-doc.text("Aaradhya Pharmaceuticals Order",20,20);
-
-let y=40;
-
-for(let item in cart){
-
-if(cart[item].qty>0){
-
-doc.text(`${item}  ${cart[item].qty}`,20,y);
-
-y+=10;
-
-}
-
-}
-
-doc.save("order.pdf");
-
-}
-
-document.getElementById("search").addEventListener("keyup",render);
+});
 
 </script>
 
