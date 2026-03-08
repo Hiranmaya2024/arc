@@ -115,15 +115,6 @@ justify-content:center;
 margin-top:6px;
 }
 
-/* PAGINATION */
-
-.pagination{
-margin-top:20px;
-display:flex;
-justify-content:center;
-gap:6px;
-}
-
 /* CART */
 
 .cart{
@@ -172,7 +163,7 @@ display:block;
 
 <br><br>
 
-<button onclick="login()">Login</button>
+<button onclick="whatsappLogin()">Login via WhatsApp</button>
 
 </div>
 
@@ -201,8 +192,6 @@ Cart (<span id="cartCount">0</span>)
 </div>
 
 <div class="grid" id="grid"></div>
-
-<div class="pagination" id="pagination"></div>
 
 </div>
 
@@ -242,8 +231,6 @@ const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH
 
 let rows=[]
 let cart={}
-let currentPage=1
-let itemsPerPage=12
 
 /* SPLASH */
 
@@ -265,22 +252,51 @@ document.getElementById("login").style.display="block"
 
 },2000)
 
-/* LOGIN */
+/* WHATSAPP LOGIN */
 
-function login(){
+function whatsappLogin(){
 
 let mobile=document.getElementById("mobileInput").value
 
 if(!mobile){
-alert("Enter mobile")
+
+alert("Enter mobile number")
+
 return
+
 }
+
+let token=btoa(mobile)
+
+let loginURL=window.location.origin+window.location.pathname+"?token="+token
+
+let message="Login to Aaradhya Portal:\n"+loginURL
+
+let waLink="https://wa.me/919533762508?text="+encodeURIComponent(message)
+
+window.open(waLink)
+
+}
+
+/* CHECK MAGIC LINK */
+
+function checkLogin(){
+
+let params=new URLSearchParams(window.location.search)
+
+let token=params.get("token")
+
+if(!token) return
+
+let mobile=atob(token)
 
 localStorage.setItem("retailerMobile",mobile)
 
 startApp()
 
 }
+
+checkLogin()
 
 function startApp(){
 
@@ -340,16 +356,11 @@ return name.includes(search)&&(!company||r[0].trim()==company)
 
 })
 
-let start=(currentPage-1)*itemsPerPage
-
-let page=filtered.slice(start,start+itemsPerPage)
-
 let html=""
 
-page.forEach(r=>{
+filtered.forEach(r=>{
 
 let item=r[1]
-
 let rate=parseFloat(r[6])
 
 html+=`
@@ -435,26 +446,21 @@ document.getElementById("overlay").classList.toggle("active")
 
 }
 
-/* PLACE ORDER */
+/* ORDER */
 
 function placeOrder(){
 
 let mobile=localStorage.getItem("retailerMobile")
 
-let items=[]
+let orderText="Order from "+mobile+"\n\n"
 
-for(let i in cart){
+for(let item in cart){
 
-if(cart[i].qty>0){
+let q=cart[item].qty
 
-items.push({
+if(q>0){
 
-name:i,
-qty:cart[i].qty,
-rate:cart[i].rate,
-total:cart[i].qty*cart[i].rate
-
-})
+orderText+=item+" - "+q+"\n"
 
 }
 
@@ -462,10 +468,12 @@ total:cart[i].qty*cart[i].rate
 
 fetch(ORDER_API,{
 method:"POST",
-mode:"no-cors",
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({
 mobile:mobile,
-items:items
+order:orderText
 })
 })
 
