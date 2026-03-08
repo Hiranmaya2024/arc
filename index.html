@@ -158,13 +158,9 @@ let itemsPerPage=12
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(data=>{
-
 rows=data.split("\n").slice(1).map(r=>r.split(","))
-
 initCompanies()
-
 render()
-
 })
 
 function initCompanies(){
@@ -195,10 +191,8 @@ let search=document.getElementById("search").value.toLowerCase()
 let company=document.getElementById("companyFilter").value
 
 let filtered=rows.filter(r=>{
-
 return r[1].toLowerCase().includes(search)
 &&(!company||r[0].trim()==company)
-
 })
 
 let start=(currentPage-1)*itemsPerPage
@@ -251,24 +245,25 @@ function renderPagination(total){
 
 let pages=Math.ceil(total/itemsPerPage)
 
+let start=Math.max(1,currentPage-2)
+let end=Math.min(pages,start+4)
+
+if(end-start<4){
+start=Math.max(1,end-4)
+}
+
 let html=""
 
 if(currentPage>1){
-
 html+=`<button class="page-btn" onclick="goPage(${currentPage-1})">⬅</button>`
-
 }
 
-for(let i=1;i<=pages;i++){
-
+for(let i=start;i<=end;i++){
 html+=`<button class="page-btn ${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
-
 }
 
 if(currentPage<pages){
-
 html+=`<button class="page-btn" onclick="goPage(${currentPage+1})">➡</button>`
-
 }
 
 document.getElementById("pagination").innerHTML=html
@@ -276,11 +271,8 @@ document.getElementById("pagination").innerHTML=html
 }
 
 function goPage(p){
-
 currentPage=p
-
 render()
-
 }
 
 /* CART */
@@ -307,7 +299,6 @@ let q=cart[item].qty
 if(q>0){
 
 count+=q
-
 html+=item+" x "+q+"<br>"
 
 }
@@ -315,7 +306,6 @@ html+=item+" x "+q+"<br>"
 }
 
 document.getElementById("cartItems").innerHTML=html
-
 document.getElementById("cartCount").innerText=count
 
 }
@@ -323,7 +313,6 @@ document.getElementById("cartCount").innerText=count
 function toggleCart(){
 
 document.getElementById("cartDrawer").classList.toggle("open")
-
 document.getElementById("cartOverlay").classList.toggle("active")
 
 }
@@ -331,15 +320,11 @@ document.getElementById("cartOverlay").classList.toggle("active")
 /* ORDER FORM */
 
 function openOrderForm(){
-
 document.getElementById("orderModal").style.display="flex"
-
 }
 
 function closeOrderForm(){
-
 document.getElementById("orderModal").style.display="none"
-
 }
 
 /* ORDER SUBMIT */
@@ -349,38 +334,40 @@ function confirmOrder(){
 let shop=document.getElementById("shopName").value
 let phone=document.getElementById("phoneNumber").value
 
-let items=[]
+if(!shop || !phone){
+
+alert("Enter shop name and phone number")
+
+return
+
+}
+
+let orderText="Shop:"+shop+"\nPhone:"+phone+"\n"
 
 for(let item in cart){
 
 if(cart[item].qty>0){
-
-items.push({
-name:item,
-qty:cart[item].qty,
-rate:cart[item].rate
-})
-
+orderText+=item+" x "+cart[item].qty+"\n"
 }
 
 }
+
+let formData=new URLSearchParams()
+
+formData.append("order",orderText)
+formData.append("shop",shop)
+formData.append("phone",phone)
 
 fetch(ORDER_API,{
 method:"POST",
 mode:"no-cors",
-body:JSON.stringify({
-shop:shop,
-phone:phone,
-items:items
-})
+body:formData
 })
 
 alert("Order submitted successfully")
 
 cart={}
-
 updateCart()
-
 closeOrderForm()
 
 }
