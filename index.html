@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aaradhya Retailer Portal</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
 
@@ -54,24 +54,25 @@ align-items:center;
 .cart-btn{
 background:#25D366;
 border:none;
-padding:6px 10px;
+padding:8px 14px;
 border-radius:6px;
 color:white;
+cursor:pointer;
 }
 
 /* LAYOUT */
 
 .container{
 padding:20px;
-max-width:1300px;
+max-width:1200px;
 margin:auto;
 }
 
 .filters{
 display:flex;
 gap:10px;
-margin-bottom:10px;
 flex-wrap:wrap;
+margin-bottom:10px;
 }
 
 input,select{
@@ -85,14 +86,14 @@ border:1px solid #ccc;
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-gap:16px;
+gap:14px;
 }
 
 .card{
 background:white;
 padding:12px;
 border-radius:10px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08);
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
 .medicine{
@@ -110,8 +111,8 @@ font-size:12px;
 
 .qty{
 display:flex;
-gap:6px;
 justify-content:center;
+gap:6px;
 margin-top:6px;
 }
 
@@ -124,14 +125,15 @@ justify-content:center;
 gap:6px;
 }
 
-.page-btn{
+.page{
 padding:6px 10px;
 border:none;
 background:#ddd;
 border-radius:4px;
+cursor:pointer;
 }
 
-.page-active{
+.active{
 background:#25D366;
 color:white;
 }
@@ -146,8 +148,9 @@ width:350px;
 height:100%;
 background:white;
 padding:20px;
-transition:.3s;
+transition:0.3s;
 overflow:auto;
+z-index:20;
 }
 
 .cart.open{
@@ -160,8 +163,9 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,.25);
+background:rgba(0,0,0,0.3);
 display:none;
+z-index:10;
 }
 
 .overlay.active{
@@ -203,7 +207,7 @@ Cart (<span id="cartCount">0</span>)
 
 <div class="filters">
 
-<input id="search" placeholder="Search Medicine">
+<input id="search" placeholder="Search medicine">
 
 <select id="companyFilter">
 <option value="">All Companies</option>
@@ -211,22 +215,21 @@ Cart (<span id="cartCount">0</span>)
 
 </div>
 
-<div class="grid" id="grid"></div>
+<div id="grid" class="grid"></div>
 
-<div class="pagination" id="pagination"></div>
-
-</div>
+<div id="pagination" class="pagination"></div>
 
 </div>
 
-<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+</div>
 
-<div class="cart" id="cart">
+<div id="overlay" class="overlay" onclick="toggleCart()"></div>
+
+<div id="cart" class="cart">
 
 <h3>Cart</h3>
 
 <table width="100%">
-
 <thead>
 <tr>
 <th>Item</th>
@@ -236,7 +239,6 @@ Cart (<span id="cartCount">0</span>)
 </thead>
 
 <tbody id="cartItems"></tbody>
-
 </table>
 
 <h3 id="cartTotal">₹0</h3>
@@ -262,9 +264,7 @@ setTimeout(()=>{
 
 document.getElementById("splash").style.display="none"
 
-let mobile=localStorage.getItem("retailerMobile")
-
-if(mobile){
+if(localStorage.getItem("retailerMobile")){
 
 startApp()
 
@@ -274,7 +274,7 @@ document.getElementById("login").style.display="block"
 
 }
 
-},2000)
+},1500)
 
 /* LOGIN */
 
@@ -283,7 +283,7 @@ function login(){
 let mobile=document.getElementById("mobileInput").value
 
 if(!mobile){
-alert("Enter mobile")
+alert("Enter mobile number")
 return
 }
 
@@ -296,12 +296,15 @@ startApp()
 function startApp(){
 
 document.getElementById("login").style.display="none"
-
 document.getElementById("app").style.display="block"
+
+loadInventory()
 
 }
 
 /* LOAD INVENTORY */
+
+function loadInventory(){
 
 fetch(SHEET_URL)
 .then(r=>r.text())
@@ -315,6 +318,10 @@ render()
 
 })
 
+}
+
+/* COMPANIES */
+
 function initCompanies(){
 
 let companies=[...new Set(rows.map(r=>r[0].trim()))]
@@ -322,10 +329,13 @@ let companies=[...new Set(rows.map(r=>r[0].trim()))]
 let select=document.getElementById("companyFilter")
 
 companies.forEach(c=>{
+
 let o=document.createElement("option")
 o.value=c
 o.textContent=c
+
 select.appendChild(o)
+
 })
 
 }
@@ -340,18 +350,17 @@ let company=document.getElementById("companyFilter").value
 
 let filtered=rows.filter(r=>{
 
-let name=r[1].toLowerCase()
-
-return name.includes(search)&&(!company||r[0].trim()==company)
+return r[1].toLowerCase().includes(search)
+&&(!company||r[0].trim()==company)
 
 })
 
 let start=(currentPage-1)*itemsPerPage
-let pageItems=filtered.slice(start,start+itemsPerPage)
+let page=filtered.slice(start,start+itemsPerPage)
 
 let html=""
 
-pageItems.forEach(r=>{
+page.forEach(r=>{
 
 let item=r[1]
 let rate=parseFloat(r[6])
@@ -387,13 +396,13 @@ html+=`
 
 document.getElementById("grid").innerHTML=html
 
-renderPagination(filtered.length)
+pagination(filtered.length)
 
 }
 
 /* PAGINATION */
 
-function renderPagination(total){
+function pagination(total){
 
 let pages=Math.ceil(total/itemsPerPage)
 
@@ -401,7 +410,7 @@ let html=""
 
 for(let i=1;i<=pages;i++){
 
-html+=`<button class="page-btn ${i==currentPage?'page-active':''}" onclick="goPage(${i})">${i}</button>`
+html+=`<button class="page ${i==currentPage?'active':''}" onclick="go(${i})">${i}</button>`
 
 }
 
@@ -409,12 +418,9 @@ document.getElementById("pagination").innerHTML=html
 
 }
 
-function goPage(p){
-
+function go(p){
 currentPage=p
-
 render()
-
 }
 
 /* CART */
@@ -438,9 +444,10 @@ let count=0
 for(let item in cart){
 
 let q=cart[item].qty
-let t=q*cart[item].rate
 
 if(q>0){
+
+let t=q*cart[item].rate
 
 total+=t
 count+=q
@@ -456,6 +463,8 @@ document.getElementById("cartTotal").innerText="₹"+total
 document.getElementById("cartCount").innerText=count
 
 }
+
+/* CART UI */
 
 function toggleCart(){
 
@@ -485,9 +494,7 @@ order+=item+" x "+cart[item].qty+"\n"
 fetch(ORDER_API,{
 method:"POST",
 mode:"no-cors",
-body:JSON.stringify({
-order:order
-})
+body:JSON.stringify({order:order})
 })
 
 alert("Order placed successfully")
