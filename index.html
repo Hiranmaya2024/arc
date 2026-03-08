@@ -9,16 +9,12 @@
 
 <style>
 
-body{
-font-family:Inter, system-ui, Arial;
-margin:0;
-background:#f4f6f9
-}
+body{font-family:Inter,system-ui,Arial;margin:0;background:#f4f6f9}
 
 header{
 background:#0b5ed7;color:white;padding:14px 20px;
 display:flex;justify-content:space-between;align-items:center;
-position:sticky;top:0
+position:sticky;top:0;z-index:10
 }
 
 .version{
@@ -55,21 +51,15 @@ display:flex;flex-direction:column;gap:6px
 
 .qty button{width:26px;height:26px}
 
-.badge{font-size:11px;padding:3px 6px;border-radius:4px}
-
 .pagination{
 display:flex;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap
-}
-
-.page-btn{
-padding:6px 10px;border:none;background:#ddd;border-radius:4px;cursor:pointer
 }
 
 .active-page{background:#25D366;color:white}
 
 .cart-overlay{
 position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.25);display:none
+background:rgba(0,0,0,0.25);display:none;z-index:40
 }
 
 .cart-overlay.active{display:block}
@@ -77,10 +67,18 @@ background:rgba(0,0,0,0.25);display:none
 .cart-drawer{
 position:fixed;right:-400px;top:0;width:350px;height:100%;
 background:white;box-shadow:-3px 0 12px rgba(0,0,0,0.25);
-padding:20px;transition:0.3s;overflow:auto
+padding:20px;transition:0.3s;z-index:50;overflow:auto
 }
 
 .cart-drawer.open{right:0}
+
+.cart table{width:100%;border-collapse:collapse;font-size:13px}
+
+.cart td,.cart th{padding:6px;border-bottom:1px solid #eee}
+
+.cart-total{margin-top:10px;font-weight:600}
+
+.order-btn{background:#25D366;width:100%;margin-top:10px}
 
 .modal{
 position:fixed;top:0;left:0;width:100%;height:100%;
@@ -103,7 +101,7 @@ background:white;padding:20px;border-radius:10px;width:350px
 
 <div style="display:flex;gap:10px;align-items:center">
 
-<div class="version">Version 9.7</div>
+<div class="version">Version 9.8</div>
 
 <button class="cart-btn" onclick="toggleCart()">
 🛒 Cart (<span id="cartCount">0</span>)
@@ -133,19 +131,29 @@ background:white;padding:20px;border-radius:10px;width:350px
 
 <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
 
-<div class="cart-drawer" id="cartDrawer">
+<div class="cart-drawer cart" id="cartDrawer">
 
 <h3>Your Cart</h3>
 
-<div id="cartItems"></div>
+<table>
 
-<br>
+<thead>
+<tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Total</th>
+</tr>
+</thead>
 
-<button onclick="openReview()">Place Order</button>
+<tbody id="cartItems"></tbody>
+
+</table>
+
+<div class="cart-total" id="total">Total ₹0</div>
+
+<button class="order-btn" onclick="openReview()">Place Order</button>
 
 </div>
-
-<!-- ORDER MODAL -->
 
 <div class="modal" id="reviewModal">
 
@@ -206,12 +214,12 @@ document.getElementById("companyFilter").onchange=()=>{currentPage=1;render()}
 
 function render(){
 
-let search=document.getElementById("search").value.toLowerCase()
+let search=document.getElementById("search").value?.toLowerCase()||""
 let company=document.getElementById("companyFilter").value
 
 let filtered=rows.filter(r=>{
-return r[1].toLowerCase().includes(search)
-&&(!company||r[0].trim()==company)
+let item=r[1].toLowerCase()
+return item.includes(search)&&(!company||r[0].trim()===company)
 })
 
 let start=(currentPage-1)*itemsPerPage
@@ -259,25 +267,10 @@ function renderPagination(total){
 
 let pages=Math.ceil(total/itemsPerPage)
 
-let start=Math.max(1,currentPage-2)
-let end=Math.min(pages,start+4)
-
-if(end-start<4){
-start=Math.max(1,end-4)
-}
-
 let html=""
 
-if(currentPage>1){
-html+=`<button class="page-btn" onclick="goPage(${currentPage-1})">⬅</button>`
-}
-
-for(let i=start;i<=end;i++){
-html+=`<button class="page-btn ${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
-}
-
-if(currentPage<pages){
-html+=`<button class="page-btn" onclick="goPage(${currentPage+1})">➡</button>`
+for(let i=1;i<=pages;i++){
+html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
 }
 
 document.getElementById("pagination").innerHTML=html
@@ -302,22 +295,29 @@ updateCart()
 function updateCart(){
 
 let html=""
+let total=0
 let count=0
 
 for(let item in cart){
 
 let q=cart[item].qty
+let r=cart[item].rate
 
 if(q>0){
 
+let t=q*r
+
+total+=t
 count+=q
-html+=item+" x "+q+"<br>"
+
+html+=`<tr><td>${item}</td><td>${q}</td><td>₹${t.toFixed(2)}</td></tr>`
 
 }
 
 }
 
 document.getElementById("cartItems").innerHTML=html
+document.getElementById("total").innerText="Total ₹"+total.toFixed(2)
 document.getElementById("cartCount").innerText=count
 
 }
@@ -354,25 +354,31 @@ let shop=document.getElementById("shopName").value
 let phone=document.getElementById("phoneNumber").value
 
 if(!shop || !phone){
-
 alert("Enter shop name and phone number")
-
 return
-
 }
 
-let orderText="Shop: "+shop+"\nPhone: "+phone+"\n\n"
+let items=[]
 
 for(let item in cart){
 if(cart[item].qty>0){
-orderText+=item+" x "+cart[item].qty+"\n"
+items.push({
+name:item,
+rate:cart[item].rate,
+qty:cart[item].qty,
+total:cart[item].rate*cart[item].qty
+})
 }
 }
 
 fetch(ORDER_API,{
 method:"POST",
 mode:"no-cors",
-body:JSON.stringify({order:orderText})
+body:JSON.stringify({
+shop:shop,
+mobile:phone,
+items:items
+})
 })
 
 alert("Order submitted successfully")
