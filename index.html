@@ -29,11 +29,20 @@ background:white;padding:12px;border-radius:10px;
 margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.08)
 }
 
-.top-items{display:flex;flex-wrap:wrap;gap:8px}
+.top-items{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-top:8px
+}
 
 .top-item{
-background:#eef1f5;padding:6px 10px;border-radius:6px;
-cursor:pointer;font-size:13px
+background:#eef1f5;
+padding:8px 10px;
+border-radius:6px;
+cursor:pointer;
+font-size:13px;
+text-align:center
 }
 
 /* FILTERS */
@@ -72,6 +81,12 @@ box-shadow:0 2px 8px rgba(0,0,0,0.08)
 .stock-good{color:#27ae60;font-weight:600}
 .stock-mid{color:#f39c12;font-weight:600}
 .stock-low{color:#e74c3c;font-weight:600}
+
+/* PROFIT */
+
+.margin-high{color:#27ae60;font-weight:600}
+.margin-mid{color:#f1c40f;font-weight:600}
+.margin-low{color:#e74c3c;font-weight:600}
 
 .qty{display:flex;justify-content:center;gap:6px;margin-top:6px}
 
@@ -128,10 +143,8 @@ Cart (<span id="cartCount">0</span>)
 
 <div class="container">
 
-<!-- TOP ORDERED -->
-
 <div class="top-panel">
-<b>Top Ordered</b>
+<b>Top Ordered Medicines</b>
 <div class="top-items" id="topItems"></div>
 </div>
 
@@ -236,8 +249,12 @@ function initTopItems(){
 
 let html=""
 
-rows.slice(0,8).forEach(r=>{
-html+=`<div class="top-item" onclick="add('${r[1]}',${r[6]},1)">${r[1]}</div>`
+rows.slice(0,10).forEach(r=>{
+
+html+=`<div class="top-item" onclick="add('${r[1]}',${r[6]},1)">
+${r[1]}
+</div>`
+
 })
 
 document.getElementById("topItems").innerHTML=html
@@ -297,6 +314,14 @@ pageItems.forEach(r=>{
 let name=r[1]
 let stock=parseInt(r[5])
 let rate=parseFloat(r[6])
+let mrp=parseFloat(r[3])
+
+let margin=((mrp-rate)/mrp)*100
+
+let marginClass="margin-low"
+
+if(margin>35) marginClass="margin-high"
+else if(margin>20) marginClass="margin-mid"
 
 let stockClass="stock-good"
 
@@ -311,11 +336,13 @@ html+=`
 
 <div class="company">${r[0]}</div>
 
-<div class="details">MRP ₹${r[3]}</div>
+<div class="details">MRP ₹${mrp}</div>
 <div class="details">Batch ${r[2]}</div>
 <div class="details">Expiry ${r[4]}</div>
 
 <div class="${stockClass}">Stock ${stock}</div>
+
+<div class="${marginClass}">💰 Margin ${margin.toFixed(1)}%</div>
 
 <div class="qty">
 <button onclick="add('${name}',${rate},-1)">−</button>
