@@ -56,36 +56,30 @@ border:1px solid #ccc;
 font-size:14px
 }
 
-/* ALERT DASHBOARD */
+/* INVENTORY BUTTONS */
 
-.alerts{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-gap:14px;
-margin-bottom:18px
+.inventory-filters{
+display:flex;
+gap:10px;
+margin-bottom:16px;
+flex-wrap:wrap
 }
 
-.alert-box{
-background:white;
-border-radius:10px;
-padding:14px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
+.inv-btn{
+padding:8px 12px;
+border:none;
+background:#e9ecef;
+border-radius:6px;
+cursor:pointer;
 font-size:13px
 }
 
-.low-stock{
-border-left:5px solid #e74c3c
+.inv-btn.active{
+background:#0b5ed7;
+color:white
 }
 
-.expiry-risk{
-border-left:5px solid #f39c12
-}
-
-.alert-box h4{
-margin:0 0 6px 0
-}
-
-/* PRODUCT GRID */
+/* GRID */
 
 .grid{
 display:grid;
@@ -216,8 +210,6 @@ width:350px;
 max-width:90%
 }
 
-/* MOBILE */
-
 @media(max-width:600px){
 
 .container{padding:12px}
@@ -253,19 +245,19 @@ input,select{width:100%}
 
 </div>
 
-<!-- ALERT DASHBOARD -->
+<div class="inventory-filters">
 
-<div class="alerts">
+<button onclick="setView('all')" class="inv-btn active" id="btn-all">
+All Items
+</button>
 
-<div class="alert-box low-stock">
-<h4>⚠ Low Stock</h4>
-<div id="lowStockList"></div>
-</div>
+<button onclick="setView('low')" class="inv-btn" id="btn-low">
+⚠ Low Stock
+</button>
 
-<div class="alert-box expiry-risk">
-<h4>⏳ Expiry Risk</h4>
-<div id="expiryList"></div>
-</div>
+<button onclick="setView('expiry')" class="inv-btn" id="btn-expiry">
+⏳ Expiry Risk
+</button>
 
 </div>
 
@@ -322,13 +314,13 @@ let rows=[]
 let cart={}
 let currentPage=1
 let itemsPerPage=12
+let currentView="all"
 
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(data=>{
 rows=data.split("\n").slice(1).map(r=>r.split(","))
 initCompanyFilter()
-generateAlerts()
 render()
 })
 
@@ -347,45 +339,22 @@ select.appendChild(opt)
 
 }
 
-/* ALERT SYSTEM */
+function setView(view){
 
-function generateAlerts(){
+currentView=view
 
-let low=""
-let exp=""
+document.querySelectorAll(".inv-btn").forEach(b=>b.classList.remove("active"))
 
-let today=new Date()
+document.getElementById("btn-"+view).classList.add("active")
 
-rows.forEach(r=>{
+currentPage=1
 
-let name=r[1]
-let stock=parseInt(r[5])
-let expiry=r[4]
-
-if(stock>0 && stock<10){
-low+=name+" ("+stock+")<br>"
-}
-
-let expDate=new Date(expiry)
-let diff=(expDate-today)/(1000*60*60*24)
-
-if(diff<90 && diff>0){
-exp+=name+" (Exp "+expiry+")<br>"
-}
-
-})
-
-document.getElementById("lowStockList").innerHTML=low || "No alerts"
-document.getElementById("expiryList").innerHTML=exp || "No alerts"
+render()
 
 }
-
-/* FILTER EVENTS */
 
 document.getElementById("search").onkeyup=()=>{currentPage=1;render()}
 document.getElementById("companyFilter").onchange=()=>{currentPage=1;render()}
-
-/* RENDER PRODUCTS */
 
 function render(){
 
@@ -393,8 +362,32 @@ let search=document.getElementById("search").value.toLowerCase()
 let company=document.getElementById("companyFilter").value
 
 let filtered=rows.filter(r=>{
-return r[1].toLowerCase().includes(search)
-&&(!company||r[0].trim()==company)
+
+let name=r[1].toLowerCase()
+let stock=parseInt(r[5])
+let expiry=r[4]
+
+let match=name.includes(search)&&(!company||r[0].trim()==company)
+
+if(!match) return false
+
+if(currentView==="low"){
+return stock>0 && stock<10
+}
+
+if(currentView==="expiry"){
+
+let today=new Date()
+let expDate=new Date(expiry)
+
+let diff=(expDate-today)/(1000*60*60*24)
+
+return diff<90 && diff>0
+
+}
+
+return true
+
 })
 
 let start=(currentPage-1)*itemsPerPage
@@ -439,8 +432,6 @@ renderPagination(filtered.length)
 
 }
 
-/* PAGINATION */
-
 function renderPagination(total){
 
 let pages=Math.ceil(total/itemsPerPage)
@@ -475,8 +466,6 @@ function goPage(p){
 currentPage=p
 render()
 }
-
-/* CART */
 
 function add(item,rate,change){
 
@@ -518,8 +507,6 @@ document.getElementById("cartDrawer").classList.toggle("open")
 document.getElementById("cartOverlay").classList.toggle("active")
 
 }
-
-/* ORDER FLOW */
 
 function openReview(){
 
