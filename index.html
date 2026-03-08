@@ -82,8 +82,6 @@ box-shadow:0 2px 8px rgba(0,0,0,0.08)
 .stock-mid{color:#f39c12;font-weight:600}
 .stock-low{color:#e74c3c;font-weight:600}
 
-/* PROFIT */
-
 .margin-high{color:#27ae60;font-weight:600}
 .margin-mid{color:#f1c40f;font-weight:600}
 .margin-low{color:#e74c3c;font-weight:600}
@@ -250,11 +248,7 @@ function initTopItems(){
 let html=""
 
 rows.slice(0,10).forEach(r=>{
-
-html+=`<div class="top-item" onclick="add('${r[1]}',${r[6]},1)">
-${r[1]}
-</div>`
-
+html+=`<div class="top-item" onclick="add('${r[1]}',${r[6]},1,${r[5]})">${r[1]}</div>`
 })
 
 document.getElementById("topItems").innerHTML=html
@@ -325,7 +319,7 @@ else if(margin>20) marginClass="margin-mid"
 
 let stockClass="stock-good"
 
-if(stock<10) stockClass="stock-low"
+if(stock<=0) stockClass="stock-low"
 else if(stock<25) stockClass="stock-mid"
 
 html+=`
@@ -345,9 +339,9 @@ html+=`
 <div class="${marginClass}">💰 Margin ${margin.toFixed(1)}%</div>
 
 <div class="qty">
-<button onclick="add('${name}',${rate},-1)">−</button>
+<button onclick="add('${name}',${rate},-1,${stock})">−</button>
 <span id="qty-${name}">${cart[name]?.qty||0}</span>
-<button onclick="add('${name}',${rate},1)">+</button>
+<button onclick="add('${name}',${rate},1,${stock})">+</button>
 </div>
 
 </div>
@@ -387,11 +381,23 @@ document.getElementById("pagination").innerHTML=html
 
 function goPage(p){currentPage=p;render()}
 
-function add(item,rate,change){
+function add(item,rate,change,stock){
 
-if(!cart[item]) cart[item]={qty:0,rate:rate}
+if(stock<=0){
+alert("Item out of stock")
+return
+}
 
-cart[item].qty=Math.max(cart[item].qty+change,0)
+if(!cart[item]) cart[item]={qty:0,rate:rate,stock:stock}
+
+let newQty=cart[item].qty+change
+
+if(newQty>stock){
+alert("Cannot exceed available stock")
+return
+}
+
+cart[item].qty=Math.max(newQty,0)
 
 updateCart()
 
@@ -405,6 +411,7 @@ function updateCart(){
 
 let html=""
 let count=0
+let total=0
 
 for(let i in cart){
 
@@ -412,11 +419,17 @@ if(cart[i].qty>0){
 
 count+=cart[i].qty
 
-html+=i+" x "+cart[i].qty+"<br>"
+let lineTotal=cart[i].qty*cart[i].rate
+
+total+=lineTotal
+
+html+=i+" x "+cart[i].qty+" = ₹"+lineTotal.toFixed(2)+"<br>"
 
 }
 
 }
+
+html+="<hr><b>Total ₹"+total.toFixed(2)+"</b>"
 
 document.getElementById("cartItems").innerHTML=html
 document.getElementById("cartCount").innerText=count
@@ -464,15 +477,21 @@ let shop=document.getElementById("shopName").value
 let phone=document.getElementById("phoneNumber").value
 
 let items=[]
+let totalAmount=0
 
 for(let i in cart){
 
 if(cart[i].qty>0){
 
+let lineTotal=cart[i].qty*cart[i].rate
+
+totalAmount+=lineTotal
+
 items.push({
 name:i,
 qty:cart[i].qty,
-rate:cart[i].rate
+rate:cart[i].rate,
+total:lineTotal
 })
 
 }
@@ -485,6 +504,7 @@ mode:"no-cors",
 body:JSON.stringify({
 shop:shop,
 mobile:phone,
+total:totalAmount,
 items:items
 })
 })
