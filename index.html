@@ -3,110 +3,69 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharmaceuticals</title>
+<title>Aaradhya Pharmaceuticals Ordering</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 
-body{
-font-family:Inter,system-ui,Arial;
-margin:0;
-background:#f4f6f9
-}
+body{font-family:Inter;margin:0;background:#f4f6f9}
 
 header{
-background:#0b5ed7;
-color:white;
-padding:14px 20px;
-display:flex;
-justify-content:space-between;
-align-items:center
+background:#0b5ed7;color:white;padding:14px 20px;
+display:flex;justify-content:space-between;align-items:center
 }
 
 .cart-btn{
-background:#25D366;
-border:none;
-color:white;
-padding:8px 12px;
-border-radius:6px;
-cursor:pointer
+background:#25D366;border:none;color:white;padding:8px 12px;border-radius:6px
 }
 
-.container{
-padding:20px;
-max-width:1600px;
-margin:auto
-}
+.container{padding:20px;max-width:1500px;margin:auto}
+
+/* TOP ORDERED */
 
 .top-panel{
-background:white;
-padding:12px;
-border-radius:10px;
-margin-bottom:16px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08)
+background:white;padding:12px;border-radius:10px;
+margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.08)
 }
 
-.top-items{
-display:flex;
-flex-wrap:wrap;
-gap:8px
-}
+.top-items{display:flex;flex-wrap:wrap;gap:8px}
 
 .top-item{
-background:#eef1f5;
-padding:6px 10px;
-border-radius:6px;
-cursor:pointer;
-font-size:13px
+background:#eef1f5;padding:6px 10px;border-radius:6px;
+cursor:pointer;font-size:13px
 }
 
-.filters{
-display:flex;
-gap:10px;
-margin-bottom:10px;
-flex-wrap:wrap
-}
+/* FILTERS */
+
+.filters{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 
 input,select{
-padding:10px;
-border-radius:6px;
-border:1px solid #ccc
+padding:10px;border-radius:6px;border:1px solid #ccc
 }
 
-.inventory-filters{
-display:flex;
-gap:8px;
-margin-bottom:14px
-}
+.inventory-filters{display:flex;gap:8px;margin-bottom:12px}
 
 .inv-btn{
-padding:8px 10px;
-border:none;
-background:#e9ecef;
-border-radius:6px;
-cursor:pointer
+padding:7px 10px;border:none;background:#e9ecef;border-radius:6px;cursor:pointer
 }
 
-.inv-btn.active{
-background:#0b5ed7;
-color:white
-}
+.inv-btn.active{background:#0b5ed7;color:white}
+
+/* GRID */
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
 gap:16px
 }
 
 .card{
-background:white;
-padding:12px;
-border-radius:10px;
+background:white;padding:12px;border-radius:10px;
 box-shadow:0 2px 8px rgba(0,0,0,0.08)
 }
 
-.medicine{font-weight:600}
+.medicine{font-weight:600;font-size:14px}
 .company{font-size:12px;color:#666}
 .details{font-size:12px}
 
@@ -114,61 +73,42 @@ box-shadow:0 2px 8px rgba(0,0,0,0.08)
 .stock-mid{color:#f39c12;font-weight:600}
 .stock-low{color:#e74c3c;font-weight:600}
 
-.qty{
-display:flex;
-justify-content:center;
-gap:6px;
-margin-top:8px
+.qty{display:flex;justify-content:center;gap:6px;margin-top:6px}
+
+.qty button{width:26px;height:26px}
+
+/* PAGINATION */
+
+.pagination{
+display:flex;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap
 }
 
-.qty button{
-width:26px;
-height:26px
-}
+.active-page{background:#25D366;color:white}
+
+/* CART */
 
 .cart-overlay{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.25);
-display:none
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.25);display:none
 }
 
 .cart-overlay.active{display:block}
 
 .cart-drawer{
-position:fixed;
-right:-360px;
-top:0;
-width:340px;
-height:100%;
-background:white;
-padding:20px;
-transition:0.3s;
-overflow:auto
+position:fixed;right:-360px;top:0;width:340px;height:100%;
+background:white;padding:20px;transition:0.3s;overflow:auto
 }
 
 .cart-drawer.open{right:0}
 
 .modal{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.5);
-display:none;
-justify-content:center;
-align-items:center
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.5);display:none;
+justify-content:center;align-items:center
 }
 
 .modal-content{
-background:white;
-padding:20px;
-border-radius:10px;
-width:320px
+background:white;padding:20px;border-radius:10px;width:320px
 }
 
 </style>
@@ -187,6 +127,8 @@ Cart (<span id="cartCount">0</span>)
 </header>
 
 <div class="container">
+
+<!-- TOP ORDERED -->
 
 <div class="top-panel">
 <b>Top Ordered</b>
@@ -212,6 +154,8 @@ Cart (<span id="cartCount">0</span>)
 </div>
 
 <div class="grid" id="grid"></div>
+
+<div class="pagination" id="pagination"></div>
 
 </div>
 
@@ -257,6 +201,8 @@ const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH
 
 let rows=[]
 let cart={}
+let currentPage=1
+let itemsPerPage=20
 let currentView="all"
 
 fetch(SHEET_URL)
@@ -270,27 +216,28 @@ render()
 
 function initCompanies(){
 
-let companies=[...new Set(rows.map(r=>r[0]))]
+let companies=[...new Set(rows.map(r=>r[0].trim()))]
 
 let select=document.getElementById("companyFilter")
 
 companies.forEach(c=>{
-let o=document.createElement("option")
-o.value=c
-o.textContent=c
-select.appendChild(o)
+let opt=document.createElement("option")
+opt.value=c
+opt.textContent=c
+select.appendChild(opt)
 })
 
 }
+
+document.getElementById("search").onkeyup=()=>{currentPage=1;render()}
+document.getElementById("companyFilter").onchange=()=>{currentPage=1;render()}
 
 function initTopItems(){
 
 let html=""
 
 rows.slice(0,8).forEach(r=>{
-
 html+=`<div class="top-item" onclick="add('${r[1]}',${r[6]},1)">${r[1]}</div>`
-
 })
 
 document.getElementById("topItems").innerHTML=html
@@ -305,30 +252,51 @@ document.querySelectorAll(".inv-btn").forEach(b=>b.classList.remove("active"))
 
 document.getElementById("btn-"+v).classList.add("active")
 
+currentPage=1
+
 render()
 
 }
 
 function render(){
 
-let html=""
+let search=document.getElementById("search").value.toLowerCase()
+let company=document.getElementById("companyFilter").value
 
-rows.forEach(r=>{
+let filtered=rows.filter(r=>{
 
-let name=r[1]
+let name=r[1].toLowerCase()
 let stock=parseInt(r[5])
-let rate=parseFloat(r[6])
 let expiry=new Date(r[4])
 
-if(currentView==="low" && stock>=10) return
+let match=name.includes(search)&&(!company||r[0].trim()==company)
+
+if(!match) return false
+
+if(currentView==="low") return stock<10
 
 if(currentView==="expiry"){
 
 let diff=(expiry-new Date())/(1000*60*60*24)
 
-if(diff>90 || diff<0) return
+return diff<90 && diff>0
 
 }
+
+return true
+
+})
+
+let start=(currentPage-1)*itemsPerPage
+let pageItems=filtered.slice(start,start+itemsPerPage)
+
+let html=""
+
+pageItems.forEach(r=>{
+
+let name=r[1]
+let stock=parseInt(r[5])
+let rate=parseFloat(r[6])
 
 let stockClass="stock-good"
 
@@ -363,7 +331,34 @@ html+=`
 
 document.getElementById("grid").innerHTML=html
 
+renderPagination(filtered.length)
+
 }
+
+function renderPagination(total){
+
+let pages=Math.ceil(total/itemsPerPage)
+
+let html=""
+
+let start=Math.max(1,currentPage-2)
+let end=Math.min(pages,start+4)
+
+if(currentPage>1) html+=`<button onclick="goPage(${currentPage-1})">⬅</button>`
+
+for(let i=start;i<=end;i++){
+
+html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
+
+}
+
+if(currentPage<pages) html+=`<button onclick="goPage(${currentPage+1})">➡</button>`
+
+document.getElementById("pagination").innerHTML=html
+
+}
+
+function goPage(p){currentPage=p;render()}
 
 function add(item,rate,change){
 
