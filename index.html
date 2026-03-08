@@ -3,95 +3,170 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharmaceuticals Ordering</title>
+
+<title>Aaradhya Pharmaceuticals Portal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
 
-body{font-family:Poppins;margin:0;background:#f4f6f9}
-
-header{
-background:#0b5ed7;color:white;padding:14px 20px;
-display:flex;justify-content:space-between;align-items:center;
-position:sticky;top:0
+body{
+font-family:Poppins;
+margin:0;
+background:#f5f6fa
 }
 
-.version{
-background:white;color:#0b5ed7;padding:4px 10px;border-radius:6px;font-size:13px
+/* SPLASH */
+
+#splash{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0b5ed7;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:28px;
+z-index:100
+}
+
+/* HEADER */
+
+header{
+background:#0b5ed7;
+color:white;
+padding:12px 20px;
+display:flex;
+justify-content:space-between;
+align-items:center
 }
 
 .cart-btn{
-background:#25D366;border:none;color:white;padding:6px 10px;border-radius:6px
+background:#25D366;
+border:none;
+padding:6px 12px;
+border-radius:6px;
+color:white
 }
 
-.container{padding:20px;max-width:1400px;margin:auto}
+/* LAYOUT */
 
-.filters{display:flex;gap:10px;margin-bottom:15px}
+.container{
+padding:20px;
+max-width:1300px;
+margin:auto
+}
+
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:15px
+}
 
 input,select{
-padding:10px;border-radius:6px;border:1px solid #ccc
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc
 }
+
+/* GRID */
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-gap:18px
+grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+gap:16px
 }
 
 .card{
-background:white;padding:14px;border-radius:10px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08);
-display:flex;flex-direction:column;gap:6px
+background:white;
+padding:12px;
+border-radius:10px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08)
 }
 
-.medicine{font-weight:600;font-size:14px}
-.company{font-size:12px;color:#666}
-.details{font-size:12px}
+.medicine{
+font-weight:600
+}
 
-.qty{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.company{
+font-size:12px;
+color:#666
+}
 
-.qty button{width:26px;height:26px}
+.details{
+font-size:12px
+}
+
+.qty{
+display:flex;
+gap:6px;
+justify-content:center;
+margin-top:6px
+}
+
+.qty button{
+width:26px
+}
+
+/* PAGINATION */
 
 .pagination{
-display:flex;justify-content:center;gap:6px;margin-top:20px
+margin-top:20px;
+display:flex;
+justify-content:center;
+gap:6px
 }
 
-.active-page{background:#25D366}
-
-.cart-overlay{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.25);display:none;z-index:40
+.active-page{
+background:#25D366
 }
 
-.cart-overlay.active{display:block}
+/* CART */
 
-.cart-drawer{
-position:fixed;right:-400px;top:0;width:350px;height:100%;
-background:white;box-shadow:-3px 0 12px rgba(0,0,0,0.25);
-padding:20px;transition:0.3s;z-index:50;overflow:auto
+.cart{
+position:fixed;
+right:-380px;
+top:0;
+width:350px;
+height:100%;
+background:white;
+padding:20px;
+transition:.3s;
+overflow:auto
 }
 
-.cart-drawer.open{right:0}
-
-.cart table{width:100%;border-collapse:collapse}
-
-.cart td,.cart th{padding:6px;border-bottom:1px solid #eee}
-
-.order-btn{background:#25D366;width:100%;margin-top:10px}
-
-.modal{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.5);display:none;
-justify-content:center;align-items:center
+.cart.open{
+right:0
 }
 
-.modal-content{
-background:white;padding:20px;border-radius:10px;width:350px
+.overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.25);
+display:none
 }
 
-#loginScreen{
-text-align:center;margin-top:120px
+.overlay.active{
+display:block
+}
+
+/* HISTORY */
+
+.history{
+margin-top:30px
+}
+
+.order-card{
+background:white;
+padding:12px;
+margin-bottom:10px;
+border-radius:8px
 }
 
 </style>
@@ -99,37 +174,17 @@ text-align:center;margin-top:120px
 
 <body>
 
-<!-- LOGIN -->
-
-<div id="loginScreen">
-
-<h2>Aaradhya Retailer Login</h2>
-
-<input id="mobileInput" placeholder="Enter Mobile Number">
-
-<br><br>
-
-<button onclick="generateLoginLink()">Login via WhatsApp</button>
-
+<div id="splash">
+Aaradhya Pharmaceuticals
 </div>
-
-<!-- APP -->
-
-<div id="app" style="display:none">
 
 <header>
 
-<div>Aaradhya Pharmaceuticals Ordering</div>
-
-<div style="display:flex;gap:10px">
-
-<div class="version">Version 9.7</div>
+<div>Aaradhya Portal</div>
 
 <button class="cart-btn" onclick="toggleCart()">
-🛒 Cart (<span id="cartCount">0</span>) ₹<span id="cartTotal">0</span>
+Cart (<span id="cartCount">0</span>)
 </button>
-
-</div>
 
 </header>
 
@@ -137,7 +192,7 @@ text-align:center;margin-top:120px
 
 <div class="filters">
 
-<input id="search" placeholder="Search medicine">
+<input id="search" placeholder="Search Medicine">
 
 <select id="companyFilter">
 <option value="">All Companies</option>
@@ -149,19 +204,23 @@ text-align:center;margin-top:120px
 
 <div class="pagination" id="pagination"></div>
 
-</div>
+<div class="history">
+
+<h3>Your Order History</h3>
+
+<div id="orderHistory"></div>
 
 </div>
 
-<!-- CART -->
+</div>
 
-<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
-<div class="cart-drawer cart" id="cartDrawer">
+<div class="cart" id="cart">
 
-<h3>Your Cart</h3>
+<h3>Cart</h3>
 
-<table>
+<table width="100%">
 
 <thead>
 <tr>
@@ -175,122 +234,71 @@ text-align:center;margin-top:120px
 
 </table>
 
-<div id="total">Total ₹0</div>
+<h3 id="cartTotal">₹0</h3>
 
-<button class="order-btn" onclick="openReview()">Place Order</button>
-
-</div>
-
-<!-- REVIEW -->
-
-<div class="modal" id="reviewModal">
-
-<div class="modal-content">
-
-<h3>Review Order</h3>
-
-<div id="reviewList"></div>
-
-<br>
-
-<button onclick="confirmOrder()">Confirm</button>
-<button onclick="closeReview()">Cancel</button>
-
-</div>
+<button onclick="placeOrder()">Place Order</button>
 
 </div>
 
 <script>
 
+/* CONFIG */
+
 const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv"
 
-const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec"
+const ORDER_API="YOUR_APPS_SCRIPT"
+
+/* VARIABLES */
 
 let rows=[]
 let cart={}
 let currentPage=1
 let itemsPerPage=12
 
-function cleanItemName(name){
-return name.replace(/^[0-9]+\s*[\.\-\)]?\s*/,'').trim()
-}
+/* SPLASH */
 
-/* LOGIN */
+setTimeout(()=>{
+document.getElementById("splash").style.display="none"
+},2000)
 
-function generateLoginLink(){
-
-let mobile=document.getElementById("mobileInput").value
-
-if(!mobile){alert("Enter mobile");return}
-
-let token=btoa(mobile)
-
-let loginURL=window.location.origin+
-window.location.pathname+
-"?token="+token
-
-let message="Login to Aaradhya Portal:\n"+loginURL
-
-let waLink="https://wa.me/919533762508?text="+encodeURIComponent(message)
-
-window.open(waLink,"_blank")
-
-}
-
-function checkMagicLogin(){
-
-let params=new URLSearchParams(window.location.search)
-
-let token=params.get("token")
-
-if(!token) return
-
-let mobile=atob(token)
-
-localStorage.setItem("retailerMobile",mobile)
-
-document.getElementById("loginScreen").style.display="none"
-document.getElementById("app").style.display="block"
-
-}
-
-window.onload=function(){
-
-checkMagicLogin()
-
-let mobile=localStorage.getItem("retailerMobile")
-
-if(mobile){
-
-document.getElementById("loginScreen").style.display="none"
-document.getElementById("app").style.display="block"
-
-}
-
-}
-
-/* DATA LOAD */
+/* LOAD DATA */
 
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(data=>{
 rows=data.split("\n").slice(1).map(r=>r.split(","))
-initCompanyFilter()
+initCompanies()
 render()
 })
 
-function initCompanyFilter(){
+/* COMPANY LIST */
 
-let companies=[...new Set(rows.map(r=>r[0].trim()))].sort()
+function initCompanies(){
+
+let companies=[...new Set(rows.map(r=>r[0].trim()))]
 
 let select=document.getElementById("companyFilter")
 
 companies.forEach(c=>{
-let opt=document.createElement("option")
-opt.value=c
-opt.textContent=c
-select.appendChild(opt)
+let o=document.createElement("option")
+o.value=c
+o.textContent=c
+select.appendChild(o)
 })
+
+}
+
+/* RESPONSIVE PAGINATION */
+
+function calcItems(){
+
+let width=document.getElementById("grid").offsetWidth
+
+let cols=Math.max(Math.floor(width/230),1)
+
+let rowsCount=Math.floor((window.innerHeight-300)/180)
+
+itemsPerPage=cols*rowsCount
 
 }
 
@@ -298,82 +306,95 @@ select.appendChild(opt)
 
 function render(){
 
-let search=document.getElementById("search").value?.toLowerCase()||""
+calcItems()
+
+let search=document.getElementById("search").value.toLowerCase()
+
 let company=document.getElementById("companyFilter").value
 
 let filtered=rows.filter(r=>{
 
-let item=cleanItemName(r[1]).toLowerCase()
+let name=r[1].toLowerCase()
 
-return item.includes(search) &&
-(!company || r[0].trim().toLowerCase()==company.toLowerCase())
+return name.includes(search)&&(!company||r[0].trim()==company)
 
 })
 
 let start=(currentPage-1)*itemsPerPage
-let pageItems=filtered.slice(start,start+itemsPerPage)
+
+let page=filtered.slice(start,start+itemsPerPage)
 
 let html=""
 
-pageItems.forEach(r=>{
+page.forEach(r=>{
 
-let item=cleanItemName(r[1])
+let item=r[1]
 let rate=parseFloat(r[6])
-let mrp=r[3]
-let batch=r[2]
-let expiry=r[4]
 
 html+=`
+
 <div class="card">
 
 <div class="medicine">${item}</div>
+
 <div class="company">${r[0]}</div>
 
-<div class="details">MRP: ₹${mrp}</div>
-<div class="details">Rate: ₹${rate}</div>
-<div class="details">Batch: ${batch}</div>
-<div class="details">Expiry: ${expiry}</div>
+<div class="details">MRP ₹${r[3]}</div>
+<div class="details">Rate ₹${rate}</div>
+<div class="details">Batch ${r[2]}</div>
+<div class="details">Expiry ${r[4]}</div>
 
 <div class="qty">
+
 <button onclick="add('${item}',${rate},-1)">-</button>
+
 <span>${cart[item]?.qty||0}</span>
+
 <button onclick="add('${item}',${rate},1)">+</button>
+
 </div>
 
 </div>
+
 `
 
 })
 
 document.getElementById("grid").innerHTML=html
 
-renderPagination(filtered.length)
+pagination(filtered.length)
 
 }
 
-function renderPagination(total){
+/* PAGINATION */
+
+function pagination(total){
 
 let pages=Math.ceil(total/itemsPerPage)
-
-let start=Math.max(1,currentPage-2)
-let end=Math.min(pages,start+4)
 
 let html=""
 
 if(currentPage>1)
-html+=`<button onclick="goPage(${currentPage-1})">⬅</button>`
+html+=`<button onclick="go(${currentPage-1})">⬅</button>`
 
-for(let i=start;i<=end;i++)
-html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
+for(let i=1;i<=pages;i++){
+
+if(Math.abs(i-currentPage)<=2)
+html+=`<button onclick="go(${i})">${i}</button>`
+
+}
 
 if(currentPage<pages)
-html+=`<button onclick="goPage(${currentPage+1})">➡</button>`
+html+=`<button onclick="go(${currentPage+1})">➡</button>`
 
 document.getElementById("pagination").innerHTML=html
 
 }
 
-function goPage(p){currentPage=p;render()}
+function go(p){
+currentPage=p
+render()
+}
 
 /* CART */
 
@@ -384,6 +405,8 @@ if(!cart[item]) cart[item]={qty:0,rate:rate}
 cart[item].qty=Math.max(cart[item].qty+change,0)
 
 updateCart()
+
+render()
 
 }
 
@@ -396,88 +419,121 @@ let count=0
 for(let item in cart){
 
 let q=cart[item].qty
-let r=cart[item].rate
+let t=q*cart[item].rate
 
 if(q>0){
 
-let t=q*r
 total+=t
 count+=q
 
-html+=`<tr><td>${item}</td><td>${q}</td><td>₹${t}</td></tr>`
+html+=`<tr><td>${item}</td><td>${q}</td><td>${t}</td></tr>`
 
 }
 
 }
 
 document.getElementById("cartItems").innerHTML=html
-document.getElementById("total").innerText="Total ₹"+total
+document.getElementById("cartTotal").innerText="₹"+total
 document.getElementById("cartCount").innerText=count
-document.getElementById("cartTotal").innerText=total
 
 }
 
+/* CART UI */
+
 function toggleCart(){
 
-document.getElementById("cartDrawer").classList.toggle("open")
-document.getElementById("cartOverlay").classList.toggle("active")
+document.getElementById("cart").classList.toggle("open")
+document.getElementById("overlay").classList.toggle("active")
 
 }
 
 /* ORDER */
 
-function openReview(){
-
-let html=""
-
-for(let item in cart)
-if(cart[item].qty>0)
-html+=`${item} - ${cart[item].qty}<br>`
-
-document.getElementById("reviewList").innerHTML=html
-document.getElementById("reviewModal").style.display="flex"
-
-}
-
-function closeReview(){
-document.getElementById("reviewModal").style.display="none"
-}
-
-function confirmOrder(){
-
-let mobile=localStorage.getItem("retailerMobile")||"Unknown"
+function placeOrder(){
 
 let items=[]
 
-for(let item in cart)
-if(cart[item].qty>0)
-items.push(cart[item])
+for(let i in cart){
 
-fetch(ORDER_API,{
-method:"POST",
-mode:"no-cors",
-body:JSON.stringify({shop:mobile,mobile:mobile,items:items})
-})
-
-alert("Order submitted successfully")
-
-cart={}
-updateCart()
-closeReview()
+if(cart[i].qty>0)
+items.push(cart[i])
 
 }
 
+fetch(ORDER_API,{
+method:"POST",
+body:JSON.stringify(items)
+})
+
+saveHistory(items)
+
+alert("Order Placed")
+
+cart={}
+
+updateCart()
+
+toggleCart()
+
+}
+
+/* ORDER HISTORY */
+
+function saveHistory(order){
+
+let history=JSON.parse(localStorage.getItem("history")||"[]")
+
+history.unshift({
+date:new Date().toLocaleString(),
+items:order
+})
+
+localStorage.setItem("history",JSON.stringify(history))
+
+showHistory()
+
+}
+
+function showHistory(){
+
+let history=JSON.parse(localStorage.getItem("history")||"[]")
+
+let html=""
+
+history.forEach(o=>{
+
+html+=`
+<div class="order-card">
+
+<div>${o.date}</div>
+
+</div>
+`
+
+})
+
+document.getElementById("orderHistory").innerHTML=html
+
+}
+
+showHistory()
+
 /* FILTER EVENTS */
 
-document.getElementById("companyFilter").addEventListener("change",function(){
+document.getElementById("search").onkeyup=()=>{
 currentPage=1
 render()
-})
+}
 
-document.getElementById("search").addEventListener("keyup",function(){
+document.getElementById("companyFilter").onchange=()=>{
 currentPage=1
 render()
-})
+}
+
+window.onresize=()=>{
+currentPage=1
+render()
+}
 
 </script>
 
