@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Aaradhya Pharmaceuticals Portal</title>
+<title>Aaradhya Retailer Portal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -13,7 +13,7 @@
 body{
 font-family:Poppins;
 margin:0;
-background:#f5f6fa
+background:#f4f6f9;
 }
 
 /* SPLASH */
@@ -30,7 +30,15 @@ display:flex;
 justify-content:center;
 align-items:center;
 font-size:28px;
-z-index:100
+z-index:100;
+}
+
+/* LOGIN */
+
+#login{
+display:none;
+text-align:center;
+margin-top:120px;
 }
 
 /* HEADER */
@@ -41,15 +49,15 @@ color:white;
 padding:12px 20px;
 display:flex;
 justify-content:space-between;
-align-items:center
+align-items:center;
 }
 
 .cart-btn{
 background:#25D366;
 border:none;
-padding:6px 12px;
+padding:6px 10px;
 border-radius:6px;
-color:white
+color:white;
 }
 
 /* LAYOUT */
@@ -57,19 +65,19 @@ color:white
 .container{
 padding:20px;
 max-width:1300px;
-margin:auto
+margin:auto;
 }
 
 .filters{
 display:flex;
 gap:10px;
-margin-bottom:15px
+margin-bottom:10px;
 }
 
 input,select{
 padding:10px;
 border-radius:6px;
-border:1px solid #ccc
+border:1px solid #ccc;
 }
 
 /* GRID */
@@ -77,38 +85,34 @@ border:1px solid #ccc
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-gap:16px
+gap:16px;
 }
 
 .card{
 background:white;
 padding:12px;
 border-radius:10px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08)
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
 
 .medicine{
-font-weight:600
+font-weight:600;
 }
 
 .company{
 font-size:12px;
-color:#666
+color:#666;
 }
 
 .details{
-font-size:12px
+font-size:12px;
 }
 
 .qty{
 display:flex;
 gap:6px;
 justify-content:center;
-margin-top:6px
-}
-
-.qty button{
-width:26px
+margin-top:6px;
 }
 
 /* PAGINATION */
@@ -117,11 +121,7 @@ width:26px
 margin-top:20px;
 display:flex;
 justify-content:center;
-gap:6px
-}
-
-.active-page{
-background:#25D366
+gap:6px;
 }
 
 /* CART */
@@ -135,11 +135,11 @@ height:100%;
 background:white;
 padding:20px;
 transition:.3s;
-overflow:auto
+overflow:auto;
 }
 
 .cart.open{
-right:0
+right:0;
 }
 
 .overlay{
@@ -149,38 +149,38 @@ left:0;
 width:100%;
 height:100%;
 background:rgba(0,0,0,.25);
-display:none
+display:none;
 }
 
 .overlay.active{
-display:block
-}
-
-/* HISTORY */
-
-.history{
-margin-top:30px
-}
-
-.order-card{
-background:white;
-padding:12px;
-margin-bottom:10px;
-border-radius:8px
+display:block;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div id="splash">
-Aaradhya Pharmaceuticals
+<div id="splash">Aaradhya Pharmaceuticals</div>
+
+<div id="login">
+
+<h2>Retailer Login</h2>
+
+<input id="mobileInput" placeholder="Enter Mobile Number">
+
+<br><br>
+
+<button onclick="login()">Login</button>
+
 </div>
+
+<div id="app" style="display:none">
 
 <header>
 
-<div>Aaradhya Portal</div>
+<div>Aaradhya Ordering</div>
 
 <button class="cart-btn" onclick="toggleCart()">
 Cart (<span id="cartCount">0</span>)
@@ -203,12 +203,6 @@ Cart (<span id="cartCount">0</span>)
 <div class="grid" id="grid"></div>
 
 <div class="pagination" id="pagination"></div>
-
-<div class="history">
-
-<h3>Your Order History</h3>
-
-<div id="orderHistory"></div>
 
 </div>
 
@@ -242,13 +236,9 @@ Cart (<span id="cartCount">0</span>)
 
 <script>
 
-/* CONFIG */
-
 const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv"
 
-const ORDER_API="YOUR_APPS_SCRIPT"
-
-/* VARIABLES */
+const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec"
 
 let rows=[]
 let cart={}
@@ -258,20 +248,61 @@ let itemsPerPage=12
 /* SPLASH */
 
 setTimeout(()=>{
+
 document.getElementById("splash").style.display="none"
+
+let mobile=localStorage.getItem("retailerMobile")
+
+if(mobile){
+
+startApp()
+
+}else{
+
+document.getElementById("login").style.display="block"
+
+}
+
 },2000)
 
-/* LOAD DATA */
+/* LOGIN */
+
+function login(){
+
+let mobile=document.getElementById("mobileInput").value
+
+if(!mobile){
+alert("Enter mobile")
+return
+}
+
+localStorage.setItem("retailerMobile",mobile)
+
+startApp()
+
+}
+
+function startApp(){
+
+document.getElementById("login").style.display="none"
+
+document.getElementById("app").style.display="block"
+
+}
+
+/* LOAD INVENTORY */
 
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(data=>{
-rows=data.split("\n").slice(1).map(r=>r.split(","))
-initCompanies()
-render()
-})
 
-/* COMPANY LIST */
+rows=data.split("\n").slice(1).map(r=>r.split(","))
+
+initCompanies()
+
+render()
+
+})
 
 function initCompanies(){
 
@@ -280,33 +311,22 @@ let companies=[...new Set(rows.map(r=>r[0].trim()))]
 let select=document.getElementById("companyFilter")
 
 companies.forEach(c=>{
+
 let o=document.createElement("option")
+
 o.value=c
+
 o.textContent=c
+
 select.appendChild(o)
+
 })
-
-}
-
-/* RESPONSIVE PAGINATION */
-
-function calcItems(){
-
-let width=document.getElementById("grid").offsetWidth
-
-let cols=Math.max(Math.floor(width/230),1)
-
-let rowsCount=Math.floor((window.innerHeight-300)/180)
-
-itemsPerPage=cols*rowsCount
 
 }
 
 /* RENDER */
 
 function render(){
-
-calcItems()
 
 let search=document.getElementById("search").value.toLowerCase()
 
@@ -329,6 +349,7 @@ let html=""
 page.forEach(r=>{
 
 let item=r[1]
+
 let rate=parseFloat(r[6])
 
 html+=`
@@ -362,38 +383,6 @@ html+=`
 
 document.getElementById("grid").innerHTML=html
 
-pagination(filtered.length)
-
-}
-
-/* PAGINATION */
-
-function pagination(total){
-
-let pages=Math.ceil(total/itemsPerPage)
-
-let html=""
-
-if(currentPage>1)
-html+=`<button onclick="go(${currentPage-1})">⬅</button>`
-
-for(let i=1;i<=pages;i++){
-
-if(Math.abs(i-currentPage)<=2)
-html+=`<button onclick="go(${i})">${i}</button>`
-
-}
-
-if(currentPage<pages)
-html+=`<button onclick="go(${currentPage+1})">➡</button>`
-
-document.getElementById("pagination").innerHTML=html
-
-}
-
-function go(p){
-currentPage=p
-render()
 }
 
 /* CART */
@@ -405,8 +394,6 @@ if(!cart[item]) cart[item]={qty:0,rate:rate}
 cart[item].qty=Math.max(cart[item].qty+change,0)
 
 updateCart()
-
-render()
 
 }
 
@@ -433,106 +420,61 @@ html+=`<tr><td>${item}</td><td>${q}</td><td>${t}</td></tr>`
 }
 
 document.getElementById("cartItems").innerHTML=html
+
 document.getElementById("cartTotal").innerText="₹"+total
+
 document.getElementById("cartCount").innerText=count
 
 }
 
-/* CART UI */
-
 function toggleCart(){
 
 document.getElementById("cart").classList.toggle("open")
+
 document.getElementById("overlay").classList.toggle("active")
 
 }
 
-/* ORDER */
+/* PLACE ORDER */
 
 function placeOrder(){
+
+let mobile=localStorage.getItem("retailerMobile")
 
 let items=[]
 
 for(let i in cart){
 
-if(cart[i].qty>0)
-items.push(cart[i])
+if(cart[i].qty>0){
+
+items.push({
+
+name:i,
+qty:cart[i].qty,
+rate:cart[i].rate,
+total:cart[i].qty*cart[i].rate
+
+})
+
+}
 
 }
 
 fetch(ORDER_API,{
 method:"POST",
-body:JSON.stringify(items)
+mode:"no-cors",
+body:JSON.stringify({
+mobile:mobile,
+items:items
+})
 })
 
-saveHistory(items)
-
-alert("Order Placed")
+alert("Order placed successfully")
 
 cart={}
-
 updateCart()
-
 toggleCart()
 
-}
-
-/* ORDER HISTORY */
-
-function saveHistory(order){
-
-let history=JSON.parse(localStorage.getItem("history")||"[]")
-
-history.unshift({
-date:new Date().toLocaleString(),
-items:order
-})
-
-localStorage.setItem("history",JSON.stringify(history))
-
-showHistory()
-
-}
-
-function showHistory(){
-
-let history=JSON.parse(localStorage.getItem("history")||"[]")
-
-let html=""
-
-history.forEach(o=>{
-
-html+=`
-<div class="order-card">
-
-<div>${o.date}</div>
-
-</div>
-`
-
-})
-
-document.getElementById("orderHistory").innerHTML=html
-
-}
-
-showHistory()
-
-/* FILTER EVENTS */
-
-document.getElementById("search").onkeyup=()=>{
-currentPage=1
-render()
-}
-
-document.getElementById("companyFilter").onchange=()=>{
-currentPage=1
-render()
-}
-
-window.onresize=()=>{
-currentPage=1
-render()
 }
 
 </script>
