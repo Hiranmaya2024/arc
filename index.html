@@ -27,14 +27,6 @@ top:0;
 z-index:10
 }
 
-.version{
-background:white;
-color:#0b5ed7;
-padding:4px 10px;
-border-radius:6px;
-font-size:13px
-}
-
 .cart-btn{
 background:#25D366;
 border:none;
@@ -88,12 +80,14 @@ gap:6px
 display:flex;
 justify-content:center;
 gap:6px;
-margin-top:6px
+margin-top:6px;
+align-items:center
 }
 
 .qty button{
 width:28px;
-height:28px
+height:28px;
+cursor:pointer
 }
 
 .pagination{
@@ -147,27 +141,16 @@ overflow:auto
 
 .cart-drawer.open{right:0}
 
-.cart table{
-width:100%;
-border-collapse:collapse;
-font-size:13px
+.cart-header{
+display:flex;
+justify-content:space-between;
+align-items:center
 }
 
-.cart td,.cart th{
-padding:6px;
-border-bottom:1px solid #eee
-}
-
-.cart-total{
-margin-top:10px;
-font-weight:600
-}
-
-.order-btn{
-background:#25D366;
-width:100%;
-margin-top:10px;
-padding:10px
+.close-cart{
+cursor:pointer;
+font-size:18px;
+font-weight:bold
 }
 
 .modal{
@@ -190,35 +173,13 @@ width:350px;
 max-width:90%
 }
 
-/* MOBILE */
-
-@media (max-width:600px){
+@media(max-width:600px){
 
 .container{padding:12px}
 
-.filters{
-flex-direction:column
-}
+.filters{flex-direction:column}
 
-input,select{
-width:100%
-}
-
-header{
-flex-direction:column;
-gap:8px;
-align-items:flex-start
-}
-
-}
-
-/* LARGE SCREENS */
-
-@media (min-width:1400px){
-
-.grid{
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr))
-}
+input,select{width:100%}
 
 }
 
@@ -231,15 +192,9 @@ grid-template-columns:repeat(auto-fit,minmax(260px,1fr))
 
 <div>Aaradhya Pharmaceuticals Ordering</div>
 
-<div style="display:flex;gap:10px;align-items:center">
-
-<div class="version">Version 9.9</div>
-
 <button class="cart-btn" onclick="toggleCart()">
 🛒 Cart (<span id="cartCount">0</span>)
 </button>
-
-</div>
 
 </header>
 
@@ -265,25 +220,16 @@ grid-template-columns:repeat(auto-fit,minmax(260px,1fr))
 
 <div class="cart-drawer cart" id="cartDrawer">
 
+<div class="cart-header">
 <h3>Your Cart</h3>
+<div class="close-cart" onclick="toggleCart()">✕</div>
+</div>
 
-<table>
+<div id="cartItems"></div>
 
-<thead>
-<tr>
-<th>Item</th>
-<th>Qty</th>
-<th>Total</th>
-</tr>
-</thead>
+<br>
 
-<tbody id="cartItems"></tbody>
-
-</table>
-
-<div class="cart-total" id="total">Total ₹0</div>
-
-<button class="order-btn" onclick="openReview()">Place Order</button>
+<button onclick="openReview()">Place Order</button>
 
 </div>
 
@@ -291,7 +237,7 @@ grid-template-columns:repeat(auto-fit,minmax(260px,1fr))
 
 <div class="modal-content">
 
-<h3>Review Order</h3>
+<h3>Order Details</h3>
 
 <div id="reviewList"></div>
 
@@ -346,12 +292,12 @@ document.getElementById("companyFilter").onchange=()=>{currentPage=1;render()}
 
 function render(){
 
-let search=document.getElementById("search").value?.toLowerCase()||""
+let search=document.getElementById("search").value.toLowerCase()
 let company=document.getElementById("companyFilter").value
 
 let filtered=rows.filter(r=>{
-let item=r[1].toLowerCase()
-return item.includes(search)&&(!company||r[0].trim()===company)
+return r[1].toLowerCase().includes(search)
+&&(!company||r[0].trim()==company)
 })
 
 let start=(currentPage-1)*itemsPerPage
@@ -363,7 +309,6 @@ pageItems.forEach(r=>{
 
 let item=r[1]
 let rate=parseFloat(r[6])
-let stock=r[5]
 
 html+=`
 
@@ -376,11 +321,11 @@ html+=`
 <div class="details">MRP: ₹${r[3]}</div>
 <div class="details">Batch: ${r[2]}</div>
 <div class="details">Expiry: ${r[4]}</div>
-<div class="details">Stock: ${stock}</div>
+<div class="details">Stock: ${r[5]}</div>
 
 <div class="qty">
-<button onclick="add('${item}',${rate},-1)">-</button>
-<span>${cart[item]?.qty||0}</span>
+<button onclick="add('${item}',${rate},-1)">−</button>
+<span id="qty-${item}">${cart[item]?.qty||0}</span>
 <button onclick="add('${item}',${rate},1)">+</button>
 </div>
 
@@ -402,8 +347,30 @@ let pages=Math.ceil(total/itemsPerPage)
 
 let html=""
 
+if(pages<=4){
+
 for(let i=1;i<=pages;i++){
+
 html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
+
+}
+
+}else{
+
+if(currentPage>1){
+
+html+=`<button onclick="goPage(${currentPage-1})">⬅</button>`
+
+}
+
+html+=` Page ${currentPage} of ${pages} `
+
+if(currentPage<pages){
+
+html+=`<button onclick="goPage(${currentPage+1})">➡</button>`
+
+}
+
 }
 
 document.getElementById("pagination").innerHTML=html
@@ -411,8 +378,11 @@ document.getElementById("pagination").innerHTML=html
 }
 
 function goPage(p){
+
 currentPage=p
+
 render()
+
 }
 
 function add(item,rate,change){
@@ -423,34 +393,32 @@ cart[item].qty=Math.max(cart[item].qty+change,0)
 
 updateCart()
 
+let el=document.getElementById("qty-"+item)
+
+if(el) el.innerText=cart[item].qty
+
 }
 
 function updateCart(){
 
 let html=""
-let total=0
 let count=0
 
 for(let item in cart){
 
 let q=cart[item].qty
-let r=cart[item].rate
 
 if(q>0){
 
-let t=q*r
-
-total+=t
 count+=q
 
-html+=`<tr><td>${item}</td><td>${q}</td><td>₹${t.toFixed(2)}</td></tr>`
+html+=item+" x "+q+"<br>"
 
 }
 
 }
 
 document.getElementById("cartItems").innerHTML=html
-document.getElementById("total").innerText="Total ₹"+total.toFixed(2)
 document.getElementById("cartCount").innerText=count
 
 }
@@ -464,21 +432,26 @@ document.getElementById("cartOverlay").classList.toggle("active")
 
 function openReview(){
 
+toggleCart()
+
 let html=""
 
 for(let item in cart){
 if(cart[item].qty>0){
-html+=`${item} - ${cart[item].qty}<br>`
+html+=item+" x "+cart[item].qty+"<br>"
 }
 }
 
 document.getElementById("reviewList").innerHTML=html
+
 document.getElementById("reviewModal").style.display="flex"
 
 }
 
 function closeReview(){
+
 document.getElementById("reviewModal").style.display="none"
+
 }
 
 function confirmOrder(){
@@ -487,21 +460,28 @@ let shop=document.getElementById("shopName").value
 let phone=document.getElementById("phoneNumber").value
 
 if(!shop || !phone){
+
 alert("Enter shop name and phone number")
+
 return
+
 }
 
 let items=[]
 
 for(let item in cart){
+
 if(cart[item].qty>0){
+
 items.push({
 name:item,
 rate:cart[item].rate,
 qty:cart[item].qty,
 total:cart[item].rate*cart[item].qty
 })
+
 }
+
 }
 
 fetch(ORDER_API,{
@@ -517,7 +497,9 @@ items:items
 alert("Order submitted successfully")
 
 cart={}
+
 updateCart()
+
 closeReview()
 
 }
