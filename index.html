@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Aaradhya Retailer Portal</title>
+<title>Aaradhya Pharmaceuticals Portal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -259,26 +259,23 @@ function whatsappLogin(){
 let mobile=document.getElementById("mobileInput").value
 
 if(!mobile){
-
-alert("Enter mobile number")
-
+alert("Enter mobile")
 return
-
 }
 
 let token=btoa(mobile)
 
-let loginURL=window.location.origin+window.location.pathname+"?token="+token
+let loginURL=window.location.href+"?token="+token
 
 let message="Login to Aaradhya Portal:\n"+loginURL
 
 let waLink="https://wa.me/919533762508?text="+encodeURIComponent(message)
 
-window.open(waLink)
+window.open(waLink,"_blank")
 
 }
 
-/* CHECK MAGIC LINK */
+/* CHECK TOKEN */
 
 function checkLogin(){
 
@@ -431,9 +428,7 @@ html+=`<tr><td>${item}</td><td>${q}</td><td>${t}</td></tr>`
 }
 
 document.getElementById("cartItems").innerHTML=html
-
 document.getElementById("cartTotal").innerText="₹"+total
-
 document.getElementById("cartCount").innerText=count
 
 }
@@ -441,26 +436,23 @@ document.getElementById("cartCount").innerText=count
 function toggleCart(){
 
 document.getElementById("cart").classList.toggle("open")
-
 document.getElementById("overlay").classList.toggle("active")
 
 }
 
-/* ORDER */
+/* PLACE ORDER */
 
 function placeOrder(){
 
 let mobile=localStorage.getItem("retailerMobile")
 
-let orderText="Order from "+mobile+"\n\n"
+let order="Retailer:"+mobile+"\n"
 
 for(let item in cart){
 
-let q=cart[item].qty
+if(cart[item].qty>0){
 
-if(q>0){
-
-orderText+=item+" - "+q+"\n"
+order+=item+" x "+cart[item].qty+"\n"
 
 }
 
@@ -468,12 +460,9 @@ orderText+=item+" - "+q+"\n"
 
 fetch(ORDER_API,{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
+mode:"no-cors",
 body:JSON.stringify({
-mobile:mobile,
-order:orderText
+order:order
 })
 })
 
