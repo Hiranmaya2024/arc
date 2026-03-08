@@ -11,6 +11,42 @@
 
 body{font-family:Poppins;margin:0;background:#f4f6f9}
 
+/* SPLASH */
+
+#splashScreen{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0b5ed7;
+color:white;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+font-size:28px;
+z-index:200;
+}
+
+/* LOGIN */
+
+#loginScreen{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#f4f6f9;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+z-index:150;
+}
+
+/* HEADER */
+
 header{
 background:#0b5ed7;color:white;padding:14px 20px;
 display:flex;justify-content:space-between;align-items:center;
@@ -27,7 +63,7 @@ background:#25D366;border:none;color:white;padding:6px 10px;border-radius:6px;cu
 
 .container{padding:20px;max-width:1400px;margin:auto}
 
-.filters{display:flex;gap:10px;margin-bottom:10px}
+.filters{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 
 input,select{padding:10px;border-radius:6px;border:1px solid #ccc}
 
@@ -101,13 +137,36 @@ background:white;padding:20px;border-radius:10px;width:350px
 
 <body>
 
+<!-- SPLASH -->
+
+<div id="splashScreen">
+<div>Aaradhya Pharmaceuticals</div>
+<div style="font-size:16px;margin-top:10px">Retailer Ordering Portal</div>
+</div>
+
+<!-- LOGIN -->
+
+<div id="loginScreen">
+
+<h2>Retailer Login</h2>
+
+<input id="retailerMobileInput" placeholder="Enter Mobile Number">
+
+<br><br>
+
+<button onclick="retailerLogin()" style="padding:10px 20px;background:#0b5ed7;color:white;border:none;border-radius:6px">
+Enter Portal
+</button>
+
+</div>
+
 <header>
 
 <div>Aaradhya Pharmaceuticals Ordering</div>
 
 <div style="display:flex;gap:10px;align-items:center">
 
-<div class="version">Version 9.5</div>
+<div class="version">Version 10</div>
 
 <button class="cart-btn" onclick="toggleCart()">
 🛒 Cart (<span id="cartCount">0</span>) ₹<span id="cartTotal">0</span>
@@ -189,9 +248,49 @@ let cart={}
 let currentPage=1
 let itemsPerPage=12
 
-function cleanItemName(name){
-return name.replace(/^[0-9]+\s*[\.\-\)]?\s*/,'').trim()
+let retailerMobile=localStorage.getItem("retailerMobile")||""
+
+/* LOGIN */
+
+function retailerLogin(){
+
+let mobile=document.getElementById("retailerMobileInput").value
+
+if(!mobile){
+
+alert("Enter mobile number")
+
+return
+
 }
+
+localStorage.setItem("retailerMobile",mobile)
+
+retailerMobile=mobile
+
+document.getElementById("loginScreen").style.display="none"
+
+}
+
+/* SPLASH FLOW */
+
+window.onload=function(){
+
+setTimeout(()=>{
+
+document.getElementById("splashScreen").style.display="none"
+
+if(!retailerMobile){
+
+document.getElementById("loginScreen").style.display="flex"
+
+}
+
+},1500)
+
+}
+
+/* INVENTORY LOAD */
 
 fetch(SHEET_URL)
 .then(r=>r.text())
@@ -216,14 +315,32 @@ select.appendChild(opt)
 
 }
 
+/* EVENTS */
+
+document.getElementById("companyFilter").addEventListener("change",function(){
+
+currentPage=1
+render()
+
+})
+
+document.getElementById("search").addEventListener("keyup",function(){
+
+currentPage=1
+render()
+
+})
+
+function cleanItemName(name){
+return name.replace(/^[0-9]+\s*[\.\-\)]?\s*/,'').trim()
+}
+
 function calculateItemsPerPage(){
 
 let gridWidth=document.getElementById("grid").offsetWidth
-
 let columns=Math.max(Math.floor(gridWidth/240),1)
 
 let viewportHeight=window.innerHeight
-
 let rowsVisible=Math.max(Math.floor((viewportHeight-320)/180),2)
 
 itemsPerPage=columns*rowsVisible
@@ -252,28 +369,20 @@ pageItems.forEach(r=>{
 let item=cleanItemName(r[1])
 let stock=parseInt(r[5])
 let rate=parseFloat(r[6])
-let mrp=r[3]
-let batch=r[2]
-let expiry=r[4]
-
-let stockClass="stock-good"
-if(stock<5) stockClass="stock-low"
-else if(stock<20) stockClass="stock-mid"
 
 html+=`
 
 <div class="card">
 
 <div class="medicine">${item}</div>
-
 <div class="company">${r[0]}</div>
 
-<div class="details">MRP: ₹${mrp}</div>
+<div class="details">MRP: ₹${r[3]}</div>
 <div class="details">Rate: ₹${rate}</div>
-<div class="details">Batch: ${batch}</div>
-<div class="details">Expiry: ${expiry}</div>
+<div class="details">Batch: ${r[2]}</div>
+<div class="details">Expiry: ${r[4]}</div>
 
-<div class="badge ${stockClass}">Stock ${stock}</div>
+<div class="badge stock-good">Stock ${stock}</div>
 
 <div class="qty">
 <button onclick="add('${item}',${rate},-1)">-</button>
@@ -282,48 +391,15 @@ html+=`
 </div>
 
 </div>
-
 `
 
 })
 
 document.getElementById("grid").innerHTML=html
 
-renderPagination(filtered.length)
-
 }
 
-function renderPagination(total){
-
-let pages=Math.ceil(total/itemsPerPage)
-
-let start=Math.max(1,currentPage-2)
-let end=Math.min(pages,start+4)
-
-let html=""
-
-if(currentPage>1){
-html+=`<button onclick="goPage(${currentPage-1})">⬅</button>`
-}
-
-for(let i=start;i<=end;i++){
-
-html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
-
-}
-
-if(currentPage<pages){
-html+=`<button onclick="goPage(${currentPage+1})">➡</button>`
-}
-
-document.getElementById("pagination").innerHTML=html
-
-}
-
-function goPage(p){
-currentPage=p
-render()
-}
+/* CART */
 
 function add(item,rate,change){
 
@@ -360,11 +436,8 @@ html+=`<tr><td>${item}</td><td>${q}</td><td>₹${t.toFixed(2)}</td></tr>`
 }
 
 document.getElementById("cartItems").innerHTML=html
-
 document.getElementById("total").innerText="Total ₹"+total.toFixed(2)
-
 document.getElementById("cartCount").innerText=count
-
 document.getElementById("cartTotal").innerText=total.toFixed(2)
 
 }
@@ -372,7 +445,6 @@ document.getElementById("cartTotal").innerText=total.toFixed(2)
 function toggleCart(){
 
 document.getElementById("cartDrawer").classList.toggle("open")
-
 document.getElementById("cartOverlay").classList.toggle("active")
 
 }
@@ -388,7 +460,6 @@ html+=`${item} - ${cart[item].qty}<br>`
 }
 
 document.getElementById("reviewList").innerHTML=html
-
 document.getElementById("reviewModal").style.display="flex"
 
 }
@@ -398,9 +469,6 @@ document.getElementById("reviewModal").style.display="none"
 }
 
 function confirmOrder(){
-
-let shop="Retailer"
-let mobile=""
 
 let items=[]
 
@@ -418,7 +486,7 @@ total:cart[item].rate*cart[item].qty
 fetch(ORDER_API,{
 method:"POST",
 mode:"no-cors",
-body:JSON.stringify({shop:shop,mobile:mobile,items:items})
+body:JSON.stringify({mobile:retailerMobile,items:items})
 })
 
 alert("Order submitted successfully")
@@ -430,14 +498,6 @@ updateCart()
 closeReview()
 
 }
-
-window.addEventListener("resize",function(){
-
-currentPage=1
-
-render()
-
-})
 
 </script>
 
