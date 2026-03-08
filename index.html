@@ -477,31 +477,33 @@ document.getElementById("overlay").classList.toggle("active")
 
 function placeOrder(){
 
-let mobile=localStorage.getItem("retailerMobile")
+let mobile = localStorage.getItem("retailerMobile") || "Unknown";
 
-let order="Retailer:"+mobile+"\n"
+let orderText = "Retailer: " + mobile + "\n";
 
 for(let item in cart){
 
-if(cart[item].qty>0){
+if(cart[item].qty > 0){
 
-order+=item+" x "+cart[item].qty+"\n"
-
-}
+orderText += item + " x " + cart[item].qty + "\n";
 
 }
 
-fetch(ORDER_API,{
+}
+
+let formData = new URLSearchParams();
+formData.append("order", orderText);
+
+fetch("https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec",{
 method:"POST",
-mode:"no-cors",
-body:JSON.stringify({order:order})
-})
+body:formData
+});
 
-alert("Order placed successfully")
+alert("Order placed successfully");
 
-cart={}
-updateCart()
-toggleCart()
+cart = {};
+updateCart();
+toggleCart();
 
 }
 
