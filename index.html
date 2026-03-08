@@ -286,17 +286,16 @@ header::after {
 .corner.br { bottom: 7px; right: 9px; }
 
 .top-items {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
-  justify-content: center;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .top-item {
   background: var(--light-orange);
   border: 1px solid var(--border-color);
-  padding: 6px 14px;
+  padding: 9px 14px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
@@ -305,6 +304,12 @@ header::after {
   border-radius: 3px;
   font-family: var(--body);
   letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .top-item:hover {
@@ -1020,16 +1025,78 @@ input::placeholder { color: var(--light-muted); font-weight: 400; }
 ::-webkit-scrollbar-thumb:hover { background: var(--saffron); }
 
 /* ───── RESPONSIVE ───── */
-@media (max-width: 600px) {
+
+/* Tablet landscape & small desktops */
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .header-inner { padding: 0 16px; }
+  .container { padding: 18px 16px; }
+}
+
+/* Tablet portrait */
+@media (max-width: 768px) {
   .header-center { display: none; }
-  .logo-hindi { display: none; }
-  .cart-count-pill { display: none; }
-  .container { padding: 16px; }
-  .cart-drawer { width: 100%; right: -100%; }
   .header-bottom { display: none; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-  .card { padding: 12px 10px; }
+  .logo-hindi { display: none; }
   .logo-main { font-size: 18px; }
+  .logo-medallion { width: 36px; height: 36px; font-size: 16px; }
+  .cart-count-pill { display: none; }
+  .cart-btn { padding: 7px 12px; font-size: 15px; }
+  .container { padding: 14px 12px; }
+  .top-panel { padding: 12px 14px 14px; }
+  .top-items { gap: 7px; }
+  .top-item { font-size: 11px; padding: 8px 10px; }
+  .filter-wrap { padding: 12px 14px; gap: 10px; }
+  .inv-btn { padding: 7px 14px; font-size: 14px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .card { padding: 12px 10px; }
+  .med-name { font-size: 13px; }
+  .cart-drawer { width: 360px; right: -370px; }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .header-logo-side { gap: 8px; }
+  .logo-medallion { display: none; }
+  .logo-main { font-size: 15px; }
+  .cart-btn { padding: 6px 10px; font-size: 14px; gap: 4px; }
+  .cart-badge-num { min-width: 18px; font-size: 12px; padding: 0 5px; }
+  .container { padding: 12px 10px; }
+  .top-panel { padding: 10px 12px 12px; margin-bottom: 12px; }
+  .section-title span { font-size: 14px; }
+  .top-items { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .top-item { font-size: 11px; padding: 7px 8px; }
+  .filter-wrap { flex-direction: column; gap: 8px; padding: 10px 12px; }
+  .filter-field { min-width: 100%; }
+  .inv-filters { gap: 6px; }
+  .inv-btn { padding: 7px 10px; font-size: 13px; flex: 1; text-align: center; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .card { padding: 10px 8px; }
+  .card-body { padding-top: 4px; }
+  .med-name { font-size: 12px; }
+  .med-company { font-size: 9px; margin-bottom: 6px; padding-bottom: 6px; }
+  .detail-row { font-size: 10px; padding: 3px 0; }
+  .detail-value { font-size: 10px; }
+  .status-tag { font-size: 9px; padding: 2px 6px; }
+  .status-row { gap: 4px; margin-bottom: 8px; }
+  .qty-ctrl button { width: 30px; height: 30px; font-size: 17px; }
+  .qty-num { font-size: 16px; }
+  .divider-ornament { margin: 5px 0; }
+  .pagination button { width: 30px; height: 30px; font-size: 13px; }
+  .pagination-info { font-size: 10px; padding: 0 6px; }
+  .cart-drawer { width: 100%; right: -100%; }
+  .cart-title { font-size: 22px; }
+  .modal-content { max-width: 100%; margin: 0 4px; }
+  .toast { font-size: 14px; padding: 12px 18px; max-width: 90vw; white-space: normal; text-align: center; }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { padding: 12px; }
+  .med-name { font-size: 14px; }
+  .top-items { grid-template-columns: 1fr 1fr; }
+  .inv-btn { font-size: 12px; padding: 6px 8px; }
 }
 </style>
 </head>
@@ -1194,7 +1261,7 @@ input::placeholder { color: var(--light-muted); font-weight: 400; }
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv"
 const ORDER_API = "https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec"
 
-let rows = [], cart = {}, currentPage = 1, itemsPerPage = 20, currentView = "all"
+let rows = [], cart = {}, currentPage = 1, itemsPerPage = 10, currentView = "all"
 
 fetch(SHEET_URL)
   .then(r => r.text())
@@ -1226,9 +1293,11 @@ document.getElementById("search").addEventListener("input", () => { currentPage 
 document.getElementById("companyFilter").addEventListener("change", () => { currentPage = 1; render() })
 
 function initTopItems() {
-  const html = rows.slice(0, 10).map(r =>
+  const topRows = rows.slice(0, 10)
+  // Pad to exactly 10 if fewer rows exist
+  const html = topRows.map(r =>
     `<div class="top-item" onclick="add('${esc(r[1])}',${r[6]},1,${r[5]})">
-      <span class="fire">🔥</span>${r[1]}
+      <span class="fire">🔥</span><span style="overflow:hidden;text-overflow:ellipsis">${r[1]}</span>
     </div>`
   ).join("")
   document.getElementById("topItems").innerHTML = html
