@@ -42,6 +42,32 @@ max-width:1600px;
 margin:auto
 }
 
+/* TOP ORDERED */
+
+.top-panel{
+background:white;
+padding:14px;
+border-radius:10px;
+margin-bottom:18px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08)
+}
+
+.top-items{
+display:flex;
+flex-wrap:wrap;
+gap:10px
+}
+
+.top-item{
+background:#f1f3f5;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+font-size:13px
+}
+
+/* SEARCH */
+
 .filters{
 display:flex;
 gap:10px;
@@ -99,15 +125,14 @@ gap:6px
 
 .medicine{font-weight:600;font-size:14px}
 .company{font-size:12px;color:#666}
+
 .details{font-size:12px}
 
-.stock-badge{
-background:#ecf7ff;
-padding:3px 6px;
-border-radius:4px;
-font-size:11px;
-width:max-content
-}
+/* STOCK COLORS */
+
+.stock-good{color:#2ecc71;font-weight:600}
+.stock-mid{color:#f39c12;font-weight:600}
+.stock-low{color:#e74c3c;font-weight:600}
 
 .qty{
 display:flex;
@@ -130,19 +155,6 @@ display:flex;
 justify-content:center;
 gap:6px;
 margin-top:20px
-}
-
-.page-btn{
-padding:6px 10px;
-border:none;
-background:#ddd;
-border-radius:4px;
-cursor:pointer
-}
-
-.active-page{
-background:#25D366;
-color:white
 }
 
 /* CART */
@@ -210,14 +222,6 @@ width:350px;
 max-width:90%
 }
 
-@media(max-width:600px){
-
-.container{padding:12px}
-.filters{flex-direction:column}
-input,select{width:100%}
-
-}
-
 </style>
 </head>
 
@@ -225,7 +229,7 @@ input,select{width:100%}
 
 <header>
 
-<div>Aaradhya Pharmaceuticals Ordering</div>
+<div>Aaradhya Pharmaceuticals</div>
 
 <button class="cart-btn" onclick="toggleCart()">
 🛒 Cart (<span id="cartCount">0</span>)
@@ -234,6 +238,16 @@ input,select{width:100%}
 </header>
 
 <div class="container">
+
+<!-- TOP ORDERED PANEL -->
+
+<div class="top-panel">
+
+<h4>🔥 Top Ordered Medicines</h4>
+
+<div class="top-items" id="topItems"></div>
+
+</div>
 
 <div class="filters">
 
@@ -247,17 +261,9 @@ input,select{width:100%}
 
 <div class="inventory-filters">
 
-<button onclick="setView('all')" class="inv-btn active" id="btn-all">
-All Items
-</button>
-
-<button onclick="setView('low')" class="inv-btn" id="btn-low">
-⚠ Low Stock
-</button>
-
-<button onclick="setView('expiry')" class="inv-btn" id="btn-expiry">
-⏳ Expiry Risk
-</button>
+<button onclick="setView('all')" class="inv-btn active" id="btn-all">All</button>
+<button onclick="setView('low')" class="inv-btn" id="btn-low">Low Stock</button>
+<button onclick="setView('expiry')" class="inv-btn" id="btn-expiry">Expiry Risk</button>
 
 </div>
 
@@ -306,9 +312,8 @@ All Items
 
 <script>
 
-const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv"
-
-const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec"
+const SHEET_URL="YOUR_CSV_LINK"
+const ORDER_API="YOUR_APPSCRIPT_URL"
 
 let rows=[]
 let cart={}
@@ -320,85 +325,74 @@ fetch(SHEET_URL)
 .then(r=>r.text())
 .then(data=>{
 rows=data.split("\n").slice(1).map(r=>r.split(","))
-initCompanyFilter()
+initCompanies()
+initTopItems()
 render()
 })
 
-function initCompanyFilter(){
+function initCompanies(){
 
 let companies=[...new Set(rows.map(r=>r[0].trim()))]
 
 let select=document.getElementById("companyFilter")
 
 companies.forEach(c=>{
-let opt=document.createElement("option")
-opt.value=c
-opt.textContent=c
-select.appendChild(opt)
+let o=document.createElement("option")
+o.value=c
+o.textContent=c
+select.appendChild(o)
 })
 
 }
 
-function setView(view){
+function initTopItems(){
 
-currentView=view
+let html=""
+
+rows.slice(0,10).forEach(r=>{
+
+let name=r[1]
+
+html+=`<div class="top-item" onclick="quickAdd('${name}',${r[6]})">${name}</div>`
+
+})
+
+document.getElementById("topItems").innerHTML=html
+
+}
+
+function quickAdd(name,rate){
+
+add(name,parseFloat(rate),1)
+
+}
+
+function setView(v){
+
+currentView=v
 
 document.querySelectorAll(".inv-btn").forEach(b=>b.classList.remove("active"))
 
-document.getElementById("btn-"+view).classList.add("active")
-
-currentPage=1
+document.getElementById("btn-"+v).classList.add("active")
 
 render()
 
 }
 
-document.getElementById("search").onkeyup=()=>{currentPage=1;render()}
-document.getElementById("companyFilter").onchange=()=>{currentPage=1;render()}
-
 function render(){
-
-let search=document.getElementById("search").value.toLowerCase()
-let company=document.getElementById("companyFilter").value
-
-let filtered=rows.filter(r=>{
-
-let name=r[1].toLowerCase()
-let stock=parseInt(r[5])
-let expiry=r[4]
-
-let match=name.includes(search)&&(!company||r[0].trim()==company)
-
-if(!match) return false
-
-if(currentView==="low"){
-return stock>0 && stock<10
-}
-
-if(currentView==="expiry"){
-
-let today=new Date()
-let expDate=new Date(expiry)
-
-let diff=(expDate-today)/(1000*60*60*24)
-
-return diff<90 && diff>0
-
-}
-
-return true
-
-})
-
-let start=(currentPage-1)*itemsPerPage
-let pageItems=filtered.slice(start,start+itemsPerPage)
 
 let html=""
 
-pageItems.forEach(r=>{
+rows.forEach(r=>{
 
 let item=r[1]
+let stock=parseInt(r[5])
 let rate=parseFloat(r[6])
+
+let stockClass="stock-good"
+
+if(stock<10) stockClass="stock-low"
+else if(stock<25) stockClass="stock-mid"
 
 html+=`
 
@@ -408,11 +402,11 @@ html+=`
 
 <div class="company">${r[0]}</div>
 
-<div class="details">MRP: ₹${r[3]}</div>
-<div class="details">Batch: ${r[2]}</div>
-<div class="details">Expiry: ${r[4]}</div>
+<div class="details">MRP ₹${r[3]}</div>
+<div class="details">Batch ${r[2]}</div>
+<div class="details">Expiry ${r[4]}</div>
 
-<div class="stock-badge">Stock: ${r[5]}</div>
+<div class="${stockClass}">Stock ${stock}</div>
 
 <div class="qty">
 <button onclick="add('${item}',${rate},-1)">−</button>
@@ -428,43 +422,6 @@ html+=`
 
 document.getElementById("grid").innerHTML=html
 
-renderPagination(filtered.length)
-
-}
-
-function renderPagination(total){
-
-let pages=Math.ceil(total/itemsPerPage)
-
-let html=""
-
-if(pages<=4){
-
-for(let i=1;i<=pages;i++){
-html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
-}
-
-}else{
-
-if(currentPage>1){
-html+=`<button onclick="goPage(${currentPage-1})">⬅</button>`
-}
-
-html+=` Page ${currentPage} of ${pages} `
-
-if(currentPage<pages){
-html+=`<button onclick="goPage(${currentPage+1})">➡</button>`
-}
-
-}
-
-document.getElementById("pagination").innerHTML=html
-
-}
-
-function goPage(p){
-currentPage=p
-render()
 }
 
 function add(item,rate,change){
@@ -476,6 +433,7 @@ cart[item].qty=Math.max(cart[item].qty+change,0)
 updateCart()
 
 let el=document.getElementById("qty-"+item)
+
 if(el) el.innerText=cart[item].qty
 
 }
@@ -485,13 +443,16 @@ function updateCart(){
 let html=""
 let count=0
 
-for(let item in cart){
+for(let i in cart){
 
-let q=cart[item].qty
+let q=cart[i].qty
 
 if(q>0){
+
 count+=q
-html+=item+" x "+q+"<br>"
+
+html+=i+" x "+q+"<br>"
+
 }
 
 }
@@ -514,10 +475,14 @@ toggleCart()
 
 let html=""
 
-for(let item in cart){
-if(cart[item].qty>0){
-html+=item+" x "+cart[item].qty+"<br>"
+for(let i in cart){
+
+if(cart[i].qty>0){
+
+html+=i+" x "+cart[i].qty+"<br>"
+
 }
+
 }
 
 document.getElementById("reviewList").innerHTML=html
@@ -527,7 +492,9 @@ document.getElementById("reviewModal").style.display="flex"
 }
 
 function closeReview(){
+
 document.getElementById("reviewModal").style.display="none"
+
 }
 
 function confirmOrder(){
@@ -535,22 +502,16 @@ function confirmOrder(){
 let shop=document.getElementById("shopName").value
 let phone=document.getElementById("phoneNumber").value
 
-if(!shop || !phone){
-alert("Enter shop name and phone number")
-return
-}
-
 let items=[]
 
-for(let item in cart){
+for(let i in cart){
 
-if(cart[item].qty>0){
+if(cart[i].qty>0){
 
 items.push({
-name:item,
-rate:cart[item].rate,
-qty:cart[item].qty,
-total:cart[item].rate*cart[item].qty
+name:i,
+qty:cart[i].qty,
+rate:cart[i].rate
 })
 
 }
@@ -567,7 +528,7 @@ items:items
 })
 })
 
-alert("Order submitted successfully")
+alert("Order placed")
 
 cart={}
 updateCart()
