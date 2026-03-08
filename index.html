@@ -37,12 +37,36 @@ margin-top:8px
 }
 
 .top-item{
-background:#eef1f5;
+background:#fff3cd;
+border:1px solid #ffe69c;
 padding:8px 10px;
 border-radius:6px;
 cursor:pointer;
 font-size:13px;
-text-align:center
+text-align:center;
+transition:0.2s;
+}
+
+.top-item:hover{
+transform:scale(1.05)
+}
+
+/* FIRE ANIMATION */
+
+.fire{
+display:inline-block;
+animation:flame 0.9s infinite alternate;
+margin-right:4px;
+}
+
+@keyframes flame{
+
+0%{transform:scale(1) rotate(-3deg)}
+
+50%{transform:scale(1.15) rotate(3deg)}
+
+100%{transform:scale(1.05) rotate(-2deg)}
+
 }
 
 /* FILTERS */
@@ -142,7 +166,7 @@ Cart (<span id="cartCount">0</span>)
 <div class="container">
 
 <div class="top-panel">
-<b>Top Ordered Medicines</b>
+<b>🔥 Top Ordered Medicines</b>
 <div class="top-items" id="topItems"></div>
 </div>
 
@@ -248,7 +272,13 @@ function initTopItems(){
 let html=""
 
 rows.slice(0,10).forEach(r=>{
-html+=`<div class="top-item" onclick="add('${r[1]}',${r[6]},1,${r[5]})">${r[1]}</div>`
+
+html+=`
+<div class="top-item" onclick="add('${r[1]}',${r[6]},1,${r[5]})">
+<span class="fire">🔥</span>${r[1]}
+</div>
+`
+
 })
 
 document.getElementById("topItems").innerHTML=html
