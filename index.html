@@ -3,7 +3,7 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharmaceuticals Ordering</title>
+<title>Aaradhya Pharmaceuticals</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -21,10 +21,7 @@ color:white;
 padding:14px 20px;
 display:flex;
 justify-content:space-between;
-align-items:center;
-position:sticky;
-top:0;
-z-index:10
+align-items:center
 }
 
 .cart-btn{
@@ -42,62 +39,53 @@ max-width:1600px;
 margin:auto
 }
 
-/* TOP ORDERED */
-
 .top-panel{
 background:white;
-padding:14px;
+padding:12px;
 border-radius:10px;
-margin-bottom:18px;
+margin-bottom:16px;
 box-shadow:0 3px 8px rgba(0,0,0,0.08)
 }
 
 .top-items{
 display:flex;
 flex-wrap:wrap;
-gap:10px
+gap:8px
 }
 
 .top-item{
-background:#f1f3f5;
+background:#eef1f5;
 padding:6px 10px;
 border-radius:6px;
 cursor:pointer;
 font-size:13px
 }
 
-/* SEARCH */
-
 .filters{
 display:flex;
 gap:10px;
-margin-bottom:12px;
+margin-bottom:10px;
 flex-wrap:wrap
 }
 
 input,select{
-padding:12px;
+padding:10px;
 border-radius:6px;
-border:1px solid #ccc;
-font-size:14px
+border:1px solid #ccc
 }
-
-/* INVENTORY BUTTONS */
 
 .inventory-filters{
 display:flex;
-gap:10px;
-margin-bottom:16px;
-flex-wrap:wrap
+gap:8px;
+margin-bottom:14px
 }
 
 .inv-btn{
-padding:8px 12px;
+padding:8px 10px;
 border:none;
 background:#e9ecef;
 border-radius:6px;
-cursor:pointer;
-font-size:13px
+cursor:pointer
 }
 
 .inv-btn.active{
@@ -105,32 +93,24 @@ background:#0b5ed7;
 color:white
 }
 
-/* GRID */
-
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:18px
+gap:16px
 }
 
 .card{
 background:white;
-padding:14px;
+padding:12px;
 border-radius:10px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08);
-display:flex;
-flex-direction:column;
-gap:6px
+box-shadow:0 2px 8px rgba(0,0,0,0.08)
 }
 
-.medicine{font-weight:600;font-size:14px}
+.medicine{font-weight:600}
 .company{font-size:12px;color:#666}
-
 .details{font-size:12px}
 
-/* STOCK COLORS */
-
-.stock-good{color:#2ecc71;font-weight:600}
+.stock-good{color:#27ae60;font-weight:600}
 .stock-mid{color:#f39c12;font-weight:600}
 .stock-low{color:#e74c3c;font-weight:600}
 
@@ -138,26 +118,13 @@ gap:6px
 display:flex;
 justify-content:center;
 gap:6px;
-margin-top:6px;
-align-items:center
+margin-top:8px
 }
 
 .qty button{
-width:28px;
-height:28px;
-cursor:pointer
+width:26px;
+height:26px
 }
-
-/* PAGINATION */
-
-.pagination{
-display:flex;
-justify-content:center;
-gap:6px;
-margin-top:20px
-}
-
-/* CART */
 
 .cart-overlay{
 position:fixed;
@@ -166,41 +133,24 @@ left:0;
 width:100%;
 height:100%;
 background:rgba(0,0,0,0.25);
-display:none;
-z-index:40
+display:none
 }
 
 .cart-overlay.active{display:block}
 
 .cart-drawer{
 position:fixed;
-right:-400px;
+right:-360px;
 top:0;
-width:360px;
-max-width:90%;
+width:340px;
 height:100%;
 background:white;
-box-shadow:-3px 0 12px rgba(0,0,0,0.25);
 padding:20px;
 transition:0.3s;
-z-index:50;
 overflow:auto
 }
 
 .cart-drawer.open{right:0}
-
-.cart-header{
-display:flex;
-justify-content:space-between;
-align-items:center
-}
-
-.close-cart{
-cursor:pointer;
-font-size:18px
-}
-
-/* MODAL */
 
 .modal{
 position:fixed;
@@ -218,8 +168,7 @@ align-items:center
 background:white;
 padding:20px;
 border-radius:10px;
-width:350px;
-max-width:90%
+width:320px
 }
 
 </style>
@@ -232,21 +181,16 @@ max-width:90%
 <div>Aaradhya Pharmaceuticals</div>
 
 <button class="cart-btn" onclick="toggleCart()">
-🛒 Cart (<span id="cartCount">0</span>)
+Cart (<span id="cartCount">0</span>)
 </button>
 
 </header>
 
 <div class="container">
 
-<!-- TOP ORDERED PANEL -->
-
 <div class="top-panel">
-
-<h4>🔥 Top Ordered Medicines</h4>
-
+<b>Top Ordered</b>
 <div class="top-items" id="topItems"></div>
-
 </div>
 
 <div class="filters">
@@ -261,15 +205,13 @@ max-width:90%
 
 <div class="inventory-filters">
 
-<button onclick="setView('all')" class="inv-btn active" id="btn-all">All</button>
-<button onclick="setView('low')" class="inv-btn" id="btn-low">Low Stock</button>
-<button onclick="setView('expiry')" class="inv-btn" id="btn-expiry">Expiry Risk</button>
+<button class="inv-btn active" onclick="setView('all')" id="btn-all">All</button>
+<button class="inv-btn" onclick="setView('low')" id="btn-low">Low Stock</button>
+<button class="inv-btn" onclick="setView('expiry')" id="btn-expiry">Expiry Risk</button>
 
 </div>
 
 <div class="grid" id="grid"></div>
-
-<div class="pagination" id="pagination"></div>
 
 </div>
 
@@ -277,10 +219,7 @@ max-width:90%
 
 <div class="cart-drawer" id="cartDrawer">
 
-<div class="cart-header">
 <h3>Your Cart</h3>
-<div class="close-cart" onclick="toggleCart()">✕</div>
-</div>
 
 <div id="cartItems"></div>
 
@@ -294,7 +233,7 @@ max-width:90%
 
 <div class="modal-content">
 
-<h3>Order Details</h3>
+<h3>Confirm Order</h3>
 
 <div id="reviewList"></div>
 
@@ -312,13 +251,12 @@ max-width:90%
 
 <script>
 
-const SHEET_URL="YOUR_CSV_LINK"
-const ORDER_API="YOUR_APPSCRIPT_URL"
+const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv"
+
+const ORDER_API="https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec"
 
 let rows=[]
 let cart={}
-let currentPage=1
-let itemsPerPage=12
 let currentView="all"
 
 fetch(SHEET_URL)
@@ -332,7 +270,7 @@ render()
 
 function initCompanies(){
 
-let companies=[...new Set(rows.map(r=>r[0].trim()))]
+let companies=[...new Set(rows.map(r=>r[0]))]
 
 let select=document.getElementById("companyFilter")
 
@@ -349,21 +287,13 @@ function initTopItems(){
 
 let html=""
 
-rows.slice(0,10).forEach(r=>{
+rows.slice(0,8).forEach(r=>{
 
-let name=r[1]
-
-html+=`<div class="top-item" onclick="quickAdd('${name}',${r[6]})">${name}</div>`
+html+=`<div class="top-item" onclick="add('${r[1]}',${r[6]},1)">${r[1]}</div>`
 
 })
 
 document.getElementById("topItems").innerHTML=html
-
-}
-
-function quickAdd(name,rate){
-
-add(name,parseFloat(rate),1)
 
 }
 
@@ -385,9 +315,20 @@ let html=""
 
 rows.forEach(r=>{
 
-let item=r[1]
+let name=r[1]
 let stock=parseInt(r[5])
 let rate=parseFloat(r[6])
+let expiry=new Date(r[4])
+
+if(currentView==="low" && stock>=10) return
+
+if(currentView==="expiry"){
+
+let diff=(expiry-new Date())/(1000*60*60*24)
+
+if(diff>90 || diff<0) return
+
+}
 
 let stockClass="stock-good"
 
@@ -398,7 +339,7 @@ html+=`
 
 <div class="card">
 
-<div class="medicine">${item}</div>
+<div class="medicine">${name}</div>
 
 <div class="company">${r[0]}</div>
 
@@ -409,9 +350,9 @@ html+=`
 <div class="${stockClass}">Stock ${stock}</div>
 
 <div class="qty">
-<button onclick="add('${item}',${rate},-1)">−</button>
-<span id="qty-${item}">${cart[item]?.qty||0}</span>
-<button onclick="add('${item}',${rate},1)">+</button>
+<button onclick="add('${name}',${rate},-1)">−</button>
+<span id="qty-${name}">${cart[name]?.qty||0}</span>
+<button onclick="add('${name}',${rate},1)">+</button>
 </div>
 
 </div>
@@ -445,13 +386,11 @@ let count=0
 
 for(let i in cart){
 
-let q=cart[i].qty
+if(cart[i].qty>0){
 
-if(q>0){
+count+=cart[i].qty
 
-count+=q
-
-html+=i+" x "+q+"<br>"
+html+=i+" x "+cart[i].qty+"<br>"
 
 }
 
