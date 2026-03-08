@@ -56,6 +56,37 @@ border:1px solid #ccc;
 font-size:14px
 }
 
+/* ALERT DASHBOARD */
+
+.alerts{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:14px;
+margin-bottom:18px
+}
+
+.alert-box{
+background:white;
+border-radius:10px;
+padding:14px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
+font-size:13px
+}
+
+.low-stock{
+border-left:5px solid #e74c3c
+}
+
+.expiry-risk{
+border-left:5px solid #f39c12
+}
+
+.alert-box h4{
+margin:0 0 6px 0
+}
+
+/* PRODUCT GRID */
+
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -76,6 +107,14 @@ gap:6px
 .company{font-size:12px;color:#666}
 .details{font-size:12px}
 
+.stock-badge{
+background:#ecf7ff;
+padding:3px 6px;
+border-radius:4px;
+font-size:11px;
+width:max-content
+}
+
 .qty{
 display:flex;
 justify-content:center;
@@ -90,12 +129,13 @@ height:28px;
 cursor:pointer
 }
 
+/* PAGINATION */
+
 .pagination{
 display:flex;
 justify-content:center;
 gap:6px;
-margin-top:20px;
-flex-wrap:wrap
+margin-top:20px
 }
 
 .page-btn{
@@ -110,6 +150,8 @@ cursor:pointer
 background:#25D366;
 color:white
 }
+
+/* CART */
 
 .cart-overlay{
 position:fixed;
@@ -149,9 +191,10 @@ align-items:center
 
 .close-cart{
 cursor:pointer;
-font-size:18px;
-font-weight:bold
+font-size:18px
 }
+
+/* MODAL */
 
 .modal{
 position:fixed;
@@ -173,12 +216,12 @@ width:350px;
 max-width:90%
 }
 
+/* MOBILE */
+
 @media(max-width:600px){
 
 .container{padding:12px}
-
 .filters{flex-direction:column}
-
 input,select{width:100%}
 
 }
@@ -210,6 +253,22 @@ input,select{width:100%}
 
 </div>
 
+<!-- ALERT DASHBOARD -->
+
+<div class="alerts">
+
+<div class="alert-box low-stock">
+<h4>⚠ Low Stock</h4>
+<div id="lowStockList"></div>
+</div>
+
+<div class="alert-box expiry-risk">
+<h4>⏳ Expiry Risk</h4>
+<div id="expiryList"></div>
+</div>
+
+</div>
+
 <div class="grid" id="grid"></div>
 
 <div class="pagination" id="pagination"></div>
@@ -218,7 +277,7 @@ input,select{width:100%}
 
 <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
 
-<div class="cart-drawer cart" id="cartDrawer">
+<div class="cart-drawer" id="cartDrawer">
 
 <div class="cart-header">
 <h3>Your Cart</h3>
@@ -269,6 +328,7 @@ fetch(SHEET_URL)
 .then(data=>{
 rows=data.split("\n").slice(1).map(r=>r.split(","))
 initCompanyFilter()
+generateAlerts()
 render()
 })
 
@@ -287,8 +347,45 @@ select.appendChild(opt)
 
 }
 
+/* ALERT SYSTEM */
+
+function generateAlerts(){
+
+let low=""
+let exp=""
+
+let today=new Date()
+
+rows.forEach(r=>{
+
+let name=r[1]
+let stock=parseInt(r[5])
+let expiry=r[4]
+
+if(stock>0 && stock<10){
+low+=name+" ("+stock+")<br>"
+}
+
+let expDate=new Date(expiry)
+let diff=(expDate-today)/(1000*60*60*24)
+
+if(diff<90 && diff>0){
+exp+=name+" (Exp "+expiry+")<br>"
+}
+
+})
+
+document.getElementById("lowStockList").innerHTML=low || "No alerts"
+document.getElementById("expiryList").innerHTML=exp || "No alerts"
+
+}
+
+/* FILTER EVENTS */
+
 document.getElementById("search").onkeyup=()=>{currentPage=1;render()}
 document.getElementById("companyFilter").onchange=()=>{currentPage=1;render()}
+
+/* RENDER PRODUCTS */
 
 function render(){
 
@@ -321,7 +418,8 @@ html+=`
 <div class="details">MRP: ₹${r[3]}</div>
 <div class="details">Batch: ${r[2]}</div>
 <div class="details">Expiry: ${r[4]}</div>
-<div class="details">Stock: ${r[5]}</div>
+
+<div class="stock-badge">Stock: ${r[5]}</div>
 
 <div class="qty">
 <button onclick="add('${item}',${rate},-1)">−</button>
@@ -341,6 +439,8 @@ renderPagination(filtered.length)
 
 }
 
+/* PAGINATION */
+
 function renderPagination(total){
 
 let pages=Math.ceil(total/itemsPerPage)
@@ -350,25 +450,19 @@ let html=""
 if(pages<=4){
 
 for(let i=1;i<=pages;i++){
-
 html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
-
 }
 
 }else{
 
 if(currentPage>1){
-
 html+=`<button onclick="goPage(${currentPage-1})">⬅</button>`
-
 }
 
 html+=` Page ${currentPage} of ${pages} `
 
 if(currentPage<pages){
-
 html+=`<button onclick="goPage(${currentPage+1})">➡</button>`
-
 }
 
 }
@@ -378,12 +472,11 @@ document.getElementById("pagination").innerHTML=html
 }
 
 function goPage(p){
-
 currentPage=p
-
 render()
-
 }
+
+/* CART */
 
 function add(item,rate,change){
 
@@ -394,7 +487,6 @@ cart[item].qty=Math.max(cart[item].qty+change,0)
 updateCart()
 
 let el=document.getElementById("qty-"+item)
-
 if(el) el.innerText=cart[item].qty
 
 }
@@ -409,11 +501,8 @@ for(let item in cart){
 let q=cart[item].qty
 
 if(q>0){
-
 count+=q
-
 html+=item+" x "+q+"<br>"
-
 }
 
 }
@@ -429,6 +518,8 @@ document.getElementById("cartDrawer").classList.toggle("open")
 document.getElementById("cartOverlay").classList.toggle("active")
 
 }
+
+/* ORDER FLOW */
 
 function openReview(){
 
@@ -449,9 +540,7 @@ document.getElementById("reviewModal").style.display="flex"
 }
 
 function closeReview(){
-
 document.getElementById("reviewModal").style.display="none"
-
 }
 
 function confirmOrder(){
@@ -460,11 +549,8 @@ let shop=document.getElementById("shopName").value
 let phone=document.getElementById("phoneNumber").value
 
 if(!shop || !phone){
-
 alert("Enter shop name and phone number")
-
 return
-
 }
 
 let items=[]
@@ -497,9 +583,7 @@ items:items
 alert("Order submitted successfully")
 
 cart={}
-
 updateCart()
-
 closeReview()
 
 }
