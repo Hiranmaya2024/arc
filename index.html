@@ -11,50 +11,10 @@
 
 body{font-family:Poppins;margin:0;background:#f4f6f9}
 
-/* SPLASH */
-
-#splashScreen{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:#0b5ed7;
-color:white;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-font-size:28px;
-z-index:200;
-}
-
-/* LOGIN */
-
-#loginScreen{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:#f4f6f9;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-z-index:150;
-}
-
-/* HEADER */
-
 header{
 background:#0b5ed7;color:white;padding:14px 20px;
 display:flex;justify-content:space-between;align-items:center;
-position:sticky;top:0;z-index:10
-}
-
-.version{
-background:white;color:#0b5ed7;padding:4px 10px;border-radius:6px;font-size:13px
+position:sticky;top:0
 }
 
 .cart-btn{
@@ -76,7 +36,7 @@ gap:18px
 .card{
 background:white;padding:14px;border-radius:10px;
 box-shadow:0 3px 10px rgba(0,0,0,0.08);
-display:flex;flex-direction:column;gap:6px
+display:flex;flex-direction:column;gap:4px
 }
 
 .medicine{font-weight:600;font-size:14px}
@@ -85,68 +45,52 @@ display:flex;flex-direction:column;gap:6px
 
 .qty{display:flex;justify-content:center;gap:6px;margin-top:6px}
 
-.qty button{width:26px;height:26px}
-
 .pagination{
 display:flex;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap
+}
+
+.page-btn{
+padding:6px 10px;border:none;background:#ddd;border-radius:4px;cursor:pointer
 }
 
 .active-page{background:#25D366;color:white}
 
 .cart-overlay{
 position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.25);display:none;z-index:40
+background:rgba(0,0,0,0.25);display:none
 }
 
 .cart-overlay.active{display:block}
 
 .cart-drawer{
 position:fixed;right:-400px;top:0;width:350px;height:100%;
-background:white;box-shadow:-3px 0 12px rgba(0,0,0,0.25);
-padding:20px;transition:0.3s;z-index:50;overflow:auto
+background:white;padding:20px;transition:0.3s;overflow:auto
 }
 
 .cart-drawer.open{right:0}
+
+.modal{
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.5);display:none;
+justify-content:center;align-items:center
+}
+
+.modal-content{
+background:white;padding:20px;border-radius:10px;width:320px
+}
 
 </style>
 </head>
 
 <body>
 
-<!-- SPLASH -->
-
-<div id="splashScreen">
-<div>Aaradhya Pharmaceuticals</div>
-<div style="font-size:16px;margin-top:10px">Retailer Ordering Portal</div>
-</div>
-
-<!-- LOGIN -->
-
-<div id="loginScreen">
-
-<h2>Retailer Login</h2>
-
-<input id="mobileInput" placeholder="Enter Mobile Number">
-
-<br><br>
-
-<button onclick="loginRetailer()">Enter Portal</button>
-
-</div>
-
 <header>
 
 <div>Aaradhya Pharmaceuticals Ordering</div>
 
-<div style="display:flex;gap:10px;align-items:center">
-
-<div class="version">Version 10.1</div>
-
 <button class="cart-btn" onclick="toggleCart()">
-🛒 Cart (<span id="cartCount">0</span>)
+Cart (<span id="cartCount">0</span>)
 </button>
-
-</div>
 
 </header>
 
@@ -174,11 +118,29 @@ padding:20px;transition:0.3s;z-index:50;overflow:auto
 
 <h3>Your Cart</h3>
 
-<table width="100%">
-<tbody id="cartItems"></tbody>
-</table>
+<div id="cartItems"></div>
 
-<button onclick="confirmOrder()">Place Order</button>
+<br>
+
+<button onclick="openOrderForm()">Place Order</button>
+
+</div>
+
+<!-- ORDER FORM -->
+
+<div class="modal" id="orderModal">
+
+<div class="modal-content">
+
+<h3>Order Details</h3>
+
+<input id="shopName" placeholder="Shop Name"><br><br>
+<input id="phoneNumber" placeholder="Phone Number"><br><br>
+
+<button onclick="confirmOrder()">Submit Order</button>
+<button onclick="closeOrderForm()">Cancel</button>
+
+</div>
 
 </div>
 
@@ -192,46 +154,6 @@ let rows=[]
 let cart={}
 let currentPage=1
 let itemsPerPage=12
-
-let retailerMobile=localStorage.getItem("retailerMobile")||""
-
-/* SPLASH */
-
-setTimeout(()=>{
-
-document.getElementById("splashScreen").style.display="none"
-
-if(!retailerMobile){
-
-document.getElementById("loginScreen").style.display="flex"
-
-}
-
-},1500)
-
-/* LOGIN */
-
-function loginRetailer(){
-
-let mobile=document.getElementById("mobileInput").value
-
-if(!mobile){
-
-alert("Enter mobile number")
-
-return
-
-}
-
-localStorage.setItem("retailerMobile",mobile)
-
-retailerMobile=mobile
-
-document.getElementById("loginScreen").style.display="none"
-
-}
-
-/* LOAD DATA */
 
 fetch(SHEET_URL)
 .then(r=>r.text())
@@ -252,10 +174,10 @@ let companies=[...new Set(rows.map(r=>r[0].trim()))]
 let select=document.getElementById("companyFilter")
 
 companies.forEach(c=>{
-let o=document.createElement("option")
-o.value=c
-o.textContent=c
-select.appendChild(o)
+let opt=document.createElement("option")
+opt.value=c
+opt.textContent=c
+select.appendChild(opt)
 })
 
 }
@@ -263,7 +185,6 @@ select.appendChild(o)
 /* FILTER EVENTS */
 
 document.getElementById("search").onkeyup=()=>{currentPage=1;render()}
-
 document.getElementById("companyFilter").onchange=()=>{currentPage=1;render()}
 
 /* RENDER */
@@ -295,10 +216,12 @@ html+=`
 <div class="card">
 
 <div class="medicine">${item}</div>
-
 <div class="company">${r[0]}</div>
 
-<div class="details">MRP ₹${r[3]}</div>
+<div class="details">MRP: ₹${r[3]}</div>
+<div class="details">Batch: ${r[2]}</div>
+<div class="details">Expiry: ${r[4]}</div>
+<div class="details">Stock: ${r[5]}</div>
 
 <div class="qty">
 
@@ -330,9 +253,21 @@ let pages=Math.ceil(total/itemsPerPage)
 
 let html=""
 
+if(currentPage>1){
+
+html+=`<button class="page-btn" onclick="goPage(${currentPage-1})">⬅</button>`
+
+}
+
 for(let i=1;i<=pages;i++){
 
-html+=`<button class="${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
+html+=`<button class="page-btn ${i==currentPage?'active-page':''}" onclick="goPage(${i})">${i}</button>`
+
+}
+
+if(currentPage<pages){
+
+html+=`<button class="page-btn" onclick="goPage(${currentPage+1})">➡</button>`
 
 }
 
@@ -373,7 +308,7 @@ if(q>0){
 
 count+=q
 
-html+=`<tr><td>${item}</td><td>${q}</td></tr>`
+html+=item+" x "+q+"<br>"
 
 }
 
@@ -388,13 +323,31 @@ document.getElementById("cartCount").innerText=count
 function toggleCart(){
 
 document.getElementById("cartDrawer").classList.toggle("open")
+
 document.getElementById("cartOverlay").classList.toggle("active")
 
 }
 
-/* ORDER */
+/* ORDER FORM */
+
+function openOrderForm(){
+
+document.getElementById("orderModal").style.display="flex"
+
+}
+
+function closeOrderForm(){
+
+document.getElementById("orderModal").style.display="none"
+
+}
+
+/* ORDER SUBMIT */
 
 function confirmOrder(){
+
+let shop=document.getElementById("shopName").value
+let phone=document.getElementById("phoneNumber").value
 
 let items=[]
 
@@ -403,11 +356,9 @@ for(let item in cart){
 if(cart[item].qty>0){
 
 items.push({
-
 name:item,
 qty:cart[item].qty,
 rate:cart[item].rate
-
 })
 
 }
@@ -417,7 +368,11 @@ rate:cart[item].rate
 fetch(ORDER_API,{
 method:"POST",
 mode:"no-cors",
-body:JSON.stringify({mobile:retailerMobile,items:items})
+body:JSON.stringify({
+shop:shop,
+phone:phone,
+items:items
+})
 })
 
 alert("Order submitted successfully")
@@ -425,6 +380,8 @@ alert("Order submitted successfully")
 cart={}
 
 updateCart()
+
+closeOrderForm()
 
 }
 
