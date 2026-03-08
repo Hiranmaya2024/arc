@@ -9,85 +9,217 @@
 
 <style>
 
-body{font-family:Inter,system-ui,Arial;margin:0;background:#f4f6f9}
+body{
+font-family:Inter,system-ui,Arial;
+margin:0;
+background:#f4f6f9
+}
 
 header{
-background:#0b5ed7;color:white;padding:14px 20px;
-display:flex;justify-content:space-between;align-items:center;
-position:sticky;top:0;z-index:10
+background:#0b5ed7;
+color:white;
+padding:14px 20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+position:sticky;
+top:0;
+z-index:10
 }
 
 .version{
-background:white;color:#0b5ed7;padding:4px 10px;border-radius:6px;font-size:13px
+background:white;
+color:#0b5ed7;
+padding:4px 10px;
+border-radius:6px;
+font-size:13px
 }
 
 .cart-btn{
-background:#25D366;border:none;color:white;padding:6px 10px;border-radius:6px;cursor:pointer
+background:#25D366;
+border:none;
+color:white;
+padding:8px 12px;
+border-radius:6px;
+cursor:pointer
 }
 
-.container{padding:20px;max-width:1400px;margin:auto}
+.container{
+padding:20px;
+max-width:1600px;
+margin:auto
+}
 
-.filters{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:12px;
+flex-wrap:wrap
+}
 
-input,select{padding:10px;border-radius:6px;border:1px solid #ccc}
+input,select{
+padding:12px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px
+}
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:18px
 }
 
 .card{
-background:white;padding:14px;border-radius:10px;
+background:white;
+padding:14px;
+border-radius:10px;
 box-shadow:0 3px 10px rgba(0,0,0,0.08);
-display:flex;flex-direction:column;gap:6px
+display:flex;
+flex-direction:column;
+gap:6px
 }
 
 .medicine{font-weight:600;font-size:14px}
 .company{font-size:12px;color:#666}
 .details{font-size:12px}
 
-.qty{display:flex;justify-content:center;gap:6px;margin-top:6px}
-
-.qty button{width:26px;height:26px}
-
-.pagination{
-display:flex;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap
+.qty{
+display:flex;
+justify-content:center;
+gap:6px;
+margin-top:6px
 }
 
-.active-page{background:#25D366;color:white}
+.qty button{
+width:28px;
+height:28px
+}
+
+.pagination{
+display:flex;
+justify-content:center;
+gap:6px;
+margin-top:20px;
+flex-wrap:wrap
+}
+
+.page-btn{
+padding:6px 10px;
+border:none;
+background:#ddd;
+border-radius:4px;
+cursor:pointer
+}
+
+.active-page{
+background:#25D366;
+color:white
+}
 
 .cart-overlay{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.25);display:none;z-index:40
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.25);
+display:none;
+z-index:40
 }
 
 .cart-overlay.active{display:block}
 
 .cart-drawer{
-position:fixed;right:-400px;top:0;width:350px;height:100%;
-background:white;box-shadow:-3px 0 12px rgba(0,0,0,0.25);
-padding:20px;transition:0.3s;z-index:50;overflow:auto
+position:fixed;
+right:-400px;
+top:0;
+width:360px;
+max-width:90%;
+height:100%;
+background:white;
+box-shadow:-3px 0 12px rgba(0,0,0,0.25);
+padding:20px;
+transition:0.3s;
+z-index:50;
+overflow:auto
 }
 
 .cart-drawer.open{right:0}
 
-.cart table{width:100%;border-collapse:collapse;font-size:13px}
+.cart table{
+width:100%;
+border-collapse:collapse;
+font-size:13px
+}
 
-.cart td,.cart th{padding:6px;border-bottom:1px solid #eee}
+.cart td,.cart th{
+padding:6px;
+border-bottom:1px solid #eee
+}
 
-.cart-total{margin-top:10px;font-weight:600}
+.cart-total{
+margin-top:10px;
+font-weight:600
+}
 
-.order-btn{background:#25D366;width:100%;margin-top:10px}
+.order-btn{
+background:#25D366;
+width:100%;
+margin-top:10px;
+padding:10px
+}
 
 .modal{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.5);display:none;
-justify-content:center;align-items:center
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+display:none;
+justify-content:center;
+align-items:center
 }
 
 .modal-content{
-background:white;padding:20px;border-radius:10px;width:350px
+background:white;
+padding:20px;
+border-radius:10px;
+width:350px;
+max-width:90%
+}
+
+/* MOBILE */
+
+@media (max-width:600px){
+
+.container{padding:12px}
+
+.filters{
+flex-direction:column
+}
+
+input,select{
+width:100%
+}
+
+header{
+flex-direction:column;
+gap:8px;
+align-items:flex-start
+}
+
+}
+
+/* LARGE SCREENS */
+
+@media (min-width:1400px){
+
+.grid{
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr))
+}
+
 }
 
 </style>
@@ -101,7 +233,7 @@ background:white;padding:20px;border-radius:10px;width:350px
 
 <div style="display:flex;gap:10px;align-items:center">
 
-<div class="version">Version 9.8</div>
+<div class="version">Version 9.9</div>
 
 <button class="cart-btn" onclick="toggleCart()">
 🛒 Cart (<span id="cartCount">0</span>)
@@ -231,6 +363,7 @@ pageItems.forEach(r=>{
 
 let item=r[1]
 let rate=parseFloat(r[6])
+let stock=r[5]
 
 html+=`
 
@@ -243,7 +376,7 @@ html+=`
 <div class="details">MRP: ₹${r[3]}</div>
 <div class="details">Batch: ${r[2]}</div>
 <div class="details">Expiry: ${r[4]}</div>
-<div class="details">Stock: ${r[5]}</div>
+<div class="details">Stock: ${stock}</div>
 
 <div class="qty">
 <button onclick="add('${item}',${rate},-1)">-</button>
