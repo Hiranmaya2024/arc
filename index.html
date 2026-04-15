@@ -1,1525 +1,1255 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
+<meta charset="UTF-8">
+<title>Aaradhya Pharma Ordering</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aaradhya Pharmaceuticals</title>
-<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Hind:wght@400;500;600;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-:root {
-  --saffron: #e8681a;
-  --marigold: #f5a623;
-  --turmeric: #f0c040;
-  --gold: #d4a017;
-  --cream: #fdf6e8;
-  --warm-white: #fefae8;
-  --light-orange: #fef0d8;
-  --deep-red: #8b1a1a;
-  --maroon: #6b1919;
-  --crimson: #a52020;
-  --forest: #1a5c2a;
-  --forest-light: #e6f4ea;
-  --amber-warn: #a06000;
-  --amber-light: #fff8e7;
-  --danger-light: #fdecea;
-  --text: #2d1a06;
-  --muted: #7a5c3a;
-  --light-muted: #b8966a;
-  --border-color: #c8882a;
-  --border-light: rgba(200,136,42,0.3);
-  --serif: 'Yatra One', cursive;
-  --body: 'Hind', sans-serif;
-  --shadow-warm: rgba(200,136,42,0.18);
-  --shadow-red: rgba(107,25,25,0.2);
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: var(--body);
-  background: var(--cream);
-  color: var(--text);
-  min-height: 100vh;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent, transparent 28px,
-      rgba(200,136,42,0.025) 28px,
-      rgba(200,136,42,0.025) 29px
-    );
-}
-
-/* ───── TOP STRIPE ───── */
-.top-stripe {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 5px;
-  z-index: 300;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--saffron) 0, var(--saffron) 20px,
-    var(--marigold) 20px, var(--marigold) 40px,
-    var(--turmeric) 40px, var(--turmeric) 60px,
-    var(--marigold) 60px, var(--marigold) 80px,
-    var(--saffron) 80px, var(--saffron) 100px
-  );
-}
-
-/* ───── HEADER ───── */
-header {
-  position: sticky;
-  top: 5px;
-  z-index: 100;
-  background: linear-gradient(180deg, #5e1616 0%, #8b1a1a 35%, #7a1818 70%, #5e1616 100%);
-  border-bottom: 3px solid var(--marigold);
-  box-shadow: 0 6px 24px var(--shadow-red);
-}
-
-/* decorative inner border */
-header::after {
-  content: '';
-  position: absolute;
-  bottom: -7px; left: 0; right: 0;
-  height: 3px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--turmeric) 0, var(--turmeric) 10px,
-    transparent 10px, transparent 20px
-  );
-}
-
-.header-inner {
-  max-width: 1500px;
-  margin: auto;
-  padding: 0 24px;
-}
-
-.header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0 10px;
-  border-bottom: 1px solid rgba(245,166,35,0.25);
-  gap: 12px;
-}
-
-.header-logo-side {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.logo-medallion {
-  width: 44px; height: 44px;
-  border: 2px solid var(--marigold);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-  background: rgba(245,166,35,0.1);
-  box-shadow: 0 0 12px rgba(245,166,35,0.2), inset 0 0 8px rgba(245,166,35,0.1);
-  flex-shrink: 0;
-}
-
-.logo-text-block { }
-
-.logo-main {
-  font-family: var(--serif);
-  font-size: 22px;
-  color: var(--turmeric);
-  letter-spacing: 0.03em;
-  line-height: 1;
-  text-shadow: 1px 2px 4px rgba(0,0,0,0.4);
-}
-
-.logo-hindi {
-  font-size: 11px;
-  color: rgba(240,192,64,0.65);
-  letter-spacing: 0.06em;
-  margin-top: 2px;
-  font-weight: 400;
-}
-
-.header-center {
-  text-align: center;
-  flex: 1;
-}
-
-.header-tagline-main {
-  font-family: var(--serif);
-  font-size: 13px;
-  color: rgba(240,192,64,0.55);
-  letter-spacing: 0.08em;
-}
-
-.cart-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-.cart-count-pill {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(245,166,35,0.4);
-  border-radius: 4px;
-  padding: 4px 10px;
-  font-size: 11px;
-  color: rgba(240,192,64,0.7);
-  font-family: var(--body);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-
-.cart-btn {
-  background: var(--marigold);
-  background: linear-gradient(135deg, #f5a623, #e8681a);
-  border: 2px solid rgba(240,192,64,0.5);
-  color: white;
-  padding: 8px 18px;
-  font-family: var(--serif);
-  font-size: 17px;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.04em;
-  box-shadow: 0 3px 10px rgba(232,104,26,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.cart-btn:hover {
-  background: linear-gradient(135deg, #f0c040, #f5a623);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(232,104,26,0.4);
-  color: var(--deep-red);
-}
-
-.cart-badge-num {
-  background: var(--deep-red);
-  color: var(--turmeric);
-  border-radius: 10px;
-  padding: 0px 7px;
-  font-size: 13px;
-  font-family: var(--body);
-  font-weight: 700;
-  min-width: 22px;
-  text-align: center;
-  display: inline-block;
-}
-
-.header-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  font-size: 11px;
-  color: rgba(245,166,35,0.5);
-  font-style: italic;
-  letter-spacing: 0.04em;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-/* ───── CONTAINER ───── */
-.container {
-  padding: 22px 24px;
-  max-width: 1500px;
-  margin: auto;
-}
-
-/* ───── SECTION ORNAMENT ───── */
-.section-title {
-  text-align: center;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-title::before,
-.section-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--border-color), transparent);
-}
-
-.section-title span {
-  font-family: var(--serif);
-  font-size: 17px;
-  color: var(--deep-red);
-  white-space: nowrap;
-  letter-spacing: 0.03em;
-}
-
-/* ───── TOP PANEL ───── */
-.top-panel {
-  background: var(--warm-white);
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  padding: 16px 20px 18px;
-  margin-bottom: 18px;
-  position: relative;
-  box-shadow: 4px 4px 0 var(--shadow-warm), 0 2px 12px rgba(0,0,0,0.04);
-}
-
-/* double-border inset */
-.top-panel::before {
-  content: '';
-  position: absolute;
-  inset: 5px;
-  border: 1px solid var(--border-light);
-  border-radius: 3px;
-  pointer-events: none;
-}
-
-.corner {
-  position: absolute;
-  font-size: 15px;
-  color: var(--border-color);
-  opacity: 0.45;
-  line-height: 1;
-}
-.corner.tl { top: 7px; left: 9px; }
-.corner.tr { top: 7px; right: 9px; }
-.corner.bl { bottom: 7px; left: 9px; }
-.corner.br { bottom: 7px; right: 9px; }
-
-.top-items {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.top-item {
-  background: var(--light-orange);
-  border: 1px solid var(--border-color);
-  padding: 9px 14px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--deep-red);
-  transition: all 0.2s;
-  border-radius: 3px;
-  font-family: var(--body);
-  letter-spacing: 0.01em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.top-item:hover {
-  background: var(--saffron);
-  color: white;
-  border-color: var(--deep-red);
-  transform: translateY(-2px);
-  box-shadow: 2px 2px 0 var(--deep-red);
-}
-
-.fire {
-  display: inline-block;
-  animation: flame 0.9s infinite alternate;
-  margin-right: 3px;
-}
-
-@keyframes flame {
-  0% { transform: scale(1) rotate(-3deg); }
-  100% { transform: scale(1.18) rotate(3deg); }
-}
-
-/* ───── FILTER ROW ───── */
-.filter-wrap {
-  background: var(--warm-white);
-  border: 2px solid var(--border-color);
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  border-radius: 6px;
-  box-shadow: 3px 3px 0 var(--shadow-warm);
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.filter-field { flex: 1; min-width: 180px; }
-
-.filter-lbl {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  margin-bottom: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-input, select {
-  background: var(--cream);
-  border: 1px solid var(--border-color);
-  color: var(--text);
-  padding: 9px 12px;
-  font-family: var(--body);
-  font-size: 13px;
-  font-weight: 500;
-  width: 100%;
-  outline: none;
-  border-radius: 3px;
-  transition: all 0.2s;
-  -webkit-appearance: none;
-}
-
-input:focus, select:focus {
-  border-color: var(--saffron);
-  background: var(--warm-white);
-  box-shadow: 0 0 0 3px rgba(232,104,26,0.1);
-}
-
-input::placeholder { color: var(--light-muted); font-weight: 400; }
-
-/* ───── VIEW TABS ───── */
-.inv-filters {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.inv-btn {
-  padding: 8px 20px;
-  border: 2px solid var(--border-color);
-  background: var(--warm-white);
-  cursor: pointer;
-  font-family: var(--serif);
-  font-size: 16px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  transition: all 0.2s;
-  border-radius: 4px;
-  box-shadow: 2px 2px 0 var(--shadow-warm);
-}
-
-.inv-btn:hover:not(.active) {
-  border-color: var(--saffron);
-  color: var(--saffron);
-  transform: translateY(-1px);
-}
-
-.inv-btn.active {
-  background: linear-gradient(135deg, var(--deep-red), var(--crimson));
-  border-color: var(--maroon);
-  color: var(--turmeric);
-  box-shadow: 2px 2px 0 var(--shadow-red);
-}
-
-/* ───── PRODUCT GRID ───── */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 14px;
-}
-
-.card {
-  background: var(--warm-white);
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  padding: 14px 14px 14px;
-  transition: all 0.25s;
-  position: relative;
-  box-shadow: 3px 3px 0 var(--shadow-warm);
-  overflow: hidden;
-}
-
-/* Rainbow top stripe */
-.card-stripe {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 4px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--saffron) 0, var(--saffron) 8px,
-    var(--marigold) 8px, var(--marigold) 16px,
-    var(--turmeric) 16px, var(--turmeric) 24px,
-    var(--marigold) 24px, var(--marigold) 32px
-  );
-}
-
-.card:hover {
-  box-shadow: 5px 5px 0 rgba(200,136,42,0.28);
-  transform: translate(-2px, -2px);
-  border-color: var(--saffron);
-}
-
-.card-body { padding-top: 6px; }
-
-.med-name {
-  font-family: var(--serif);
-  font-size: 15px;
-  color: var(--deep-red);
-  line-height: 1.3;
-  margin-bottom: 2px;
-}
-
-.med-company {
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 600;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border-light);
-}
-
-.detail-list { margin-bottom: 8px; }
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  padding: 4px 0;
-  border-bottom: 1px dashed rgba(200,136,42,0.2);
-}
-
-.detail-row:last-child { border-bottom: none; }
-
-.detail-label {
-  color: var(--muted);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.detail-value { font-weight: 700; color: var(--text); font-size: 12px; }
-
-.divider-ornament {
-  text-align: center;
-  font-size: 11px;
-  color: var(--border-color);
-  margin: 8px 0;
-  letter-spacing: 0.2em;
-  opacity: 0.7;
-}
-
-.status-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.status-tag {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border: 1px solid currentColor;
-  border-radius: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stock-good { background: var(--forest-light); color: var(--forest); }
-.stock-mid  { background: var(--amber-light); color: var(--amber-warn); }
-.stock-low  { background: var(--danger-light); color: var(--deep-red); }
-
-.margin-high { background: var(--forest-light); color: var(--forest); }
-.margin-mid  { background: var(--amber-light); color: var(--amber-warn); }
-.margin-low  { background: var(--danger-light); color: var(--deep-red); }
-
-.qty-ctrl {
-  display: flex;
-  border: 2px solid var(--border-color);
-  overflow: hidden;
-  border-radius: 4px;
-}
-
-.qty-ctrl button {
-  width: 38px;
-  height: 34px;
-  border: none;
-  background: var(--light-orange);
-  color: var(--deep-red);
-  cursor: pointer;
-  font-size: 20px;
-  font-family: var(--serif);
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.qty-ctrl button:first-child { border-right: 1px solid var(--border-color); }
-.qty-ctrl button:last-child  { border-left: 1px solid var(--border-color); }
-.qty-ctrl button:hover       { background: var(--saffron); color: white; }
-
-.qty-num {
-  flex: 1;
-  text-align: center;
-  font-family: var(--serif);
-  font-size: 19px;
-  color: var(--deep-red);
-  background: var(--cream);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  transition: all 0.2s;
-}
-
-.qty-num.bumped {
-  transform: scale(1.3);
-  color: var(--saffron);
-}
-
-/* ───── EMPTY STATE ───── */
-.empty-state {
-  grid-column: 1/-1;
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--muted);
-}
-
-.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
-.empty-state .empty-text { font-family: var(--serif); font-size: 18px; }
-
-/* ───── PAGINATION ───── */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  margin-top: 28px;
-  flex-wrap: wrap;
-}
-
-.pagination button {
-  width: 36px; height: 36px;
-  border: 2px solid var(--border-color);
-  background: var(--warm-white);
-  color: var(--muted);
-  cursor: pointer;
-  font-family: var(--serif);
-  font-size: 16px;
-  transition: all 0.15s;
-  border-radius: 4px;
-  box-shadow: 2px 2px 0 var(--shadow-warm);
-}
-
-.pagination button:hover { border-color: var(--saffron); color: var(--saffron); transform: translateY(-1px); }
-.pagination button.active-page { background: linear-gradient(135deg, var(--deep-red), var(--crimson)); color: var(--turmeric); border-color: var(--maroon); }
-
-.pagination-info {
-  font-size: 11px;
-  color: var(--muted);
-  font-weight: 600;
-  padding: 0 10px;
-  letter-spacing: 0.04em;
-}
-
-/* ───── CART OVERLAY & DRAWER ───── */
-.cart-overlay {
-  position: fixed; inset: 0;
-  background: rgba(45,26,6,0.5);
-  display: none; z-index: 200;
-  backdrop-filter: blur(2px);
-  transition: opacity 0.3s;
-}
-.cart-overlay.active { display: block; }
-
-.cart-drawer {
-  position: fixed; right: -420px; top: 0;
-  width: 400px; height: 100%;
-  background: var(--cream);
-  border-left: 3px solid var(--border-color);
-  transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
-  overflow: hidden; z-index: 201;
-  display: flex; flex-direction: column;
-  box-shadow: -8px 0 32px var(--shadow-red);
-}
-.cart-drawer.open { right: 0; }
-
-.cart-stripe {
-  flex-shrink: 0;
-  height: 6px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--saffron) 0, var(--saffron) 16px,
-    var(--marigold) 16px, var(--marigold) 32px,
-    var(--turmeric) 32px, var(--turmeric) 48px,
-    var(--marigold) 48px, var(--marigold) 64px
-  );
-}
-
-.cart-head {
-  background: linear-gradient(180deg, #5e1616, #8b1a1a);
-  padding: 18px 22px 16px;
-  flex-shrink: 0;
-  border-bottom: 2px solid var(--marigold);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.cart-head-left { }
-.cart-title { font-family: var(--serif); font-size: 26px; color: var(--turmeric); text-shadow: 1px 1px 3px rgba(0,0,0,0.3); line-height: 1; }
-.cart-subtitle { font-size: 11px; color: rgba(245,166,35,0.6); margin-top: 3px; font-style: italic; }
-
-.cart-close-btn {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(240,192,64,0.3);
-  color: rgba(240,192,64,0.7);
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex; align-items: center; justify-content: center;
-  transition: 0.2s;
-  flex-shrink: 0;
-}
-.cart-close-btn:hover { background: rgba(255,255,255,0.2); color: var(--turmeric); }
-
-.cart-body { flex: 1; overflow-y: auto; padding: 16px 18px; }
-
-.cart-empty {
-  text-align: center;
-  padding: 50px 20px;
-  color: var(--muted);
-}
-.cart-empty-icon { font-size: 40px; opacity: 0.3; display: block; margin-bottom: 10px; }
-.cart-empty-text { font-family: var(--serif); font-size: 16px; color: var(--light-muted); }
-
-.cart-item-row {
-  background: var(--warm-white);
-  border: 1px solid var(--border-color);
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: 0.2s;
-  box-shadow: 2px 2px 0 var(--shadow-warm);
-}
-
-.cart-item-row:hover { border-color: var(--saffron); }
-
-.cart-item-dot {
-  width: 6px; height: 6px;
-  background: var(--saffron);
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.cart-item-name {
-  flex: 1;
-  font-family: var(--serif);
-  font-size: 14px;
-  color: var(--deep-red);
-  line-height: 1.2;
-}
-
-.cart-item-meta {
-  text-align: right;
-}
-
-.cart-item-qty {
-  display: block;
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.cart-item-price {
-  display: block;
-  font-family: var(--serif);
-  font-size: 16px;
-  color: var(--forest);
-  line-height: 1;
-}
-
-.cart-footer {
-  padding: 16px 18px 18px;
-  border-top: 2px solid var(--border-color);
-  background: var(--warm-white);
-  flex-shrink: 0;
-}
-
-.total-box {
-  background: var(--light-orange);
-  border: 2px solid var(--border-color);
-  padding: 12px 16px;
-  border-radius: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  box-shadow: 2px 2px 0 var(--shadow-warm);
-}
-
-.total-lbl {
-  font-family: var(--serif);
-  font-size: 16px;
-  color: var(--text);
-}
-
-.total-lbl-sub {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  display: block;
-  margin-top: 1px;
-}
-
-.total-amt {
-  font-family: var(--serif);
-  font-size: 24px;
-  color: var(--deep-red);
-  text-shadow: 1px 1px 0 rgba(139,26,26,0.15);
-}
-
-.place-order-btn {
-  width: 100%;
-  background: linear-gradient(135deg, #8b1a1a, #6b1919);
-  border: 2px solid var(--maroon);
-  color: var(--turmeric);
-  padding: 13px;
-  font-family: var(--serif);
-  font-size: 21px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 3px 3px 0 var(--shadow-red);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.place-order-btn:hover {
-  background: linear-gradient(135deg, var(--crimson), #8b1a1a);
-  box-shadow: 1px 1px 0 var(--shadow-red);
-  transform: translate(2px, 2px);
-}
-
-/* ───── MODAL ───── */
-.modal {
-  position: fixed; inset: 0;
-  background: rgba(45,26,6,0.65);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 300;
-  padding: 20px;
-}
-
-.modal-content {
-  background: var(--cream);
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  width: 100%;
-  max-width: 440px;
-  overflow: hidden;
-  box-shadow: 8px 8px 0 var(--shadow-red), 0 20px 60px rgba(0,0,0,0.3);
-  animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(24px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-stripe {
-  height: 5px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--saffron) 0, var(--saffron) 12px,
-    var(--marigold) 12px, var(--marigold) 24px,
-    var(--turmeric) 24px, var(--turmeric) 36px,
-    var(--marigold) 36px, var(--marigold) 48px
-  );
-}
-
-.modal-head {
-  background: linear-gradient(180deg, #5e1616, #8b1a1a);
-  padding: 16px 22px 14px;
-  border-bottom: 2px solid var(--marigold);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-title { font-family: var(--serif); font-size: 22px; color: var(--turmeric); text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
-.modal-close { background: none; border: none; color: rgba(240,192,64,0.6); font-size: 20px; cursor: pointer; padding: 2px 6px; border-radius: 3px; transition: 0.15s; }
-.modal-close:hover { color: var(--turmeric); background: rgba(255,255,255,0.1); }
-
-.modal-body { padding: 20px 22px; }
-
-.review-header {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-light);
-  padding-bottom: 6px;
-}
-
-.review-list { max-height: 160px; overflow-y: auto; margin-bottom: 16px; }
-
-.review-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 7px 0;
-  border-bottom: 1px dashed rgba(200,136,42,0.3);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.review-item:last-child { border-bottom: none; }
-
-.review-qty {
-  background: var(--light-orange);
-  border: 1px solid var(--border-color);
-  color: var(--deep-red);
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-size: 11px;
-  font-weight: 700;
-  font-family: var(--serif);
-}
-
-.input-group { margin-bottom: 10px; }
-.input-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 5px; }
-
-.modal input {
-  background: var(--warm-white);
-  border: 1px solid var(--border-color);
-  color: var(--text);
-  padding: 10px 12px;
-  font-family: var(--body);
-  font-size: 13px;
-  width: 100%;
-  margin-bottom: 0;
-  outline: none;
-  border-radius: 3px;
-  transition: 0.2s;
-}
-
-.modal input:focus { border-color: var(--saffron); background: var(--cream); box-shadow: 0 0 0 3px rgba(232,104,26,0.1); }
-
-.modal-actions { display: flex; gap: 8px; margin-top: 14px; }
-
-.btn-confirm {
-  flex: 1;
-  background: linear-gradient(135deg, #8b1a1a, #6b1919);
-  border: 2px solid var(--maroon);
-  color: var(--turmeric);
-  padding: 11px;
-  font-family: var(--serif);
-  font-size: 18px;
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  transition: all 0.15s;
-  border-radius: 4px;
-  box-shadow: 2px 2px 0 var(--shadow-red);
-}
-
-.btn-confirm:hover { background: var(--crimson); box-shadow: 1px 1px 0 var(--shadow-red); transform: translate(1px,1px); }
-
-.btn-cancel {
-  background: var(--warm-white);
-  border: 2px solid var(--border-color);
-  color: var(--muted);
-  padding: 11px 18px;
-  font-family: var(--serif);
-  font-size: 18px;
-  cursor: pointer;
-  transition: 0.15s;
-  border-radius: 4px;
-}
-.btn-cancel:hover { border-color: var(--saffron); color: var(--saffron); }
-
-/* ───── TOAST ───── */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: linear-gradient(135deg, #1a5c2a, #2d7a3a);
-  color: white;
-  padding: 14px 28px;
-  border-radius: 6px;
-  font-family: var(--serif);
-  font-size: 18px;
-  letter-spacing: 0.04em;
-  box-shadow: 0 8px 28px rgba(26,92,42,0.4), 0 2px 8px rgba(0,0,0,0.15);
-  z-index: 500;
-  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 2px solid rgba(255,255,255,0.2);
-  white-space: nowrap;
-}
-
-.toast.show { transform: translateX(-50%) translateY(0); }
-
-/* ───── LOADING STATE ───── */
-.loading-overlay {
-  position: fixed; inset: 0;
-  background: var(--cream);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  z-index: 400;
-  transition: opacity 0.5s;
-}
-
-.loading-overlay.hidden { opacity: 0; pointer-events: none; }
-
-.loading-medallion {
-  width: 80px; height: 80px;
-  border: 3px solid var(--marigold);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px;
-  animation: pulse 1.4s ease-in-out infinite;
-  margin-bottom: 16px;
-  background: var(--warm-white);
-  box-shadow: 0 0 0 0 rgba(245,166,35,0.4);
-}
-
-@keyframes pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
-  50% { box-shadow: 0 0 0 14px rgba(245,166,35,0); }
-}
-
-.loading-text {
-  font-family: var(--serif);
-  font-size: 18px;
-  color: var(--deep-red);
-  letter-spacing: 0.04em;
-}
-
-.loading-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
-/* ───── SCROLLBAR ───── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--light-orange); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--saffron); }
-
-/* ───── RESPONSIVE ───── */
-
-/* Tablet landscape & small desktops */
-@media (max-width: 1024px) {
-  .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .header-inner { padding: 0 16px; }
-  .container { padding: 18px 16px; }
-}
-
-/* Tablet portrait */
-@media (max-width: 768px) {
-  .header-center { display: none; }
-  .header-bottom { display: none; }
-  .logo-hindi { display: none; }
-  .logo-main { font-size: 18px; }
-  .logo-medallion { width: 36px; height: 36px; font-size: 16px; }
-  .cart-count-pill { display: none; }
-  .cart-btn { padding: 7px 12px; font-size: 15px; }
-  .container { padding: 14px 12px; }
-  .top-panel { padding: 12px 14px 14px; }
-  .top-items { gap: 7px; }
-  .top-item { font-size: 11px; padding: 8px 10px; }
-  .filter-wrap { padding: 12px 14px; gap: 10px; }
-  .inv-btn { padding: 7px 14px; font-size: 14px; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-  .card { padding: 12px 10px; }
-  .med-name { font-size: 13px; }
-  .cart-drawer { width: 360px; right: -370px; }
-}
-
-/* Mobile */
-@media (max-width: 480px) {
-  .header-logo-side { gap: 8px; }
-  .logo-medallion { display: none; }
-  .logo-main { font-size: 15px; }
-  .cart-btn { padding: 6px 10px; font-size: 14px; gap: 4px; }
-  .cart-badge-num { min-width: 18px; font-size: 12px; padding: 0 5px; }
-  .container { padding: 12px 10px; }
-  .top-panel { padding: 10px 12px 12px; margin-bottom: 12px; }
-  .section-title span { font-size: 14px; }
-  .top-items { grid-template-columns: 1fr 1fr; gap: 6px; }
-  .top-item { font-size: 11px; padding: 7px 8px; }
-  .filter-wrap { flex-direction: column; gap: 8px; padding: 10px 12px; }
-  .filter-field { min-width: 100%; }
-  .inv-filters { gap: 6px; }
-  .inv-btn { padding: 7px 10px; font-size: 13px; flex: 1; text-align: center; }
-  .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .card { padding: 10px 8px; }
-  .card-body { padding-top: 4px; }
-  .med-name { font-size: 12px; }
-  .med-company { font-size: 9px; margin-bottom: 6px; padding-bottom: 6px; }
-  .detail-row { font-size: 10px; padding: 3px 0; }
-  .detail-value { font-size: 10px; }
-  .status-tag { font-size: 9px; padding: 2px 6px; }
-  .status-row { gap: 4px; margin-bottom: 8px; }
-  .qty-ctrl button { width: 30px; height: 30px; font-size: 17px; }
-  .qty-num { font-size: 16px; }
-  .divider-ornament { margin: 5px 0; }
-  .pagination button { width: 30px; height: 30px; font-size: 13px; }
-  .pagination-info { font-size: 10px; padding: 0 6px; }
-  .cart-drawer { width: 100%; right: -100%; }
-  .cart-title { font-size: 22px; }
-  .modal-content { max-width: 100%; margin: 0 4px; }
-  .toast { font-size: 14px; padding: 12px 18px; max-width: 90vw; white-space: normal; text-align: center; }
-}
-
-/* Very small phones */
-@media (max-width: 360px) {
-  .grid { grid-template-columns: 1fr; }
-  .card { padding: 12px; }
-  .med-name { font-size: 14px; }
-  .top-items { grid-template-columns: 1fr 1fr; }
-  .inv-btn { font-size: 12px; padding: 6px 8px; }
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5b0;
+    --accent2: #0099ff;
+    --text: #e8edf5;
+    --muted: #6b7a99;
+    --danger: #ff4d6d;
+    --card-glow: rgba(0, 229, 176, 0.06);
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,229,176,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(0,153,255,0.06) 0%, transparent 60%);
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,15,26,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .brand-name {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .brand-sub {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ─── CART BUTTON ─── */
+  #cartBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  #cartBtn:hover {
+    border-color: var(--accent);
+    background: rgba(0,229,176,0.08);
+    color: var(--accent);
+  }
+
+  .cart-badge {
+    background: var(--accent);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 20px;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ─── CONTAINER ─── */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .item-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(0,229,176,0.08);
+    border: 1px solid rgba(0,229,176,0.2);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* ─── GRID ─── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover {
+    border-color: rgba(0,229,176,0.25);
+    background: var(--surface2);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,229,176,0.1);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  /* Price row: Rate + MRP side by side */
+  .card-prices {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .price-block { display: flex; flex-direction: column; gap: 2px; }
+
+  .price-block .meta-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .price-block .price-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .price-block .mrp-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .price-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border);
+  }
+
+  /* Info pills row */
+  .card-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .info-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 9px;
+  }
+
+  .info-pill .pill-label {
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 9px;
+  }
+
+  .info-pill .pill-val {
+    font-family: 'Space Mono', monospace;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .stock-low  { color: #f59e0b !important; }
+  .stock-zero { color: var(--danger) !important; }
+
+  /* ─── QTY BOX ─── */
+  .qty-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    margin-top: 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .qty-box button {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 18px;
+    font-weight: 700;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    font-family: 'Space Mono', monospace;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .qty-box button:hover { background: rgba(0,229,176,0.1); }
+  .qty-box button:active { background: rgba(0,229,176,0.2); }
+
+  .qty-box span {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 32px;
+    text-align: center;
+  }
+
+  /* ─── PAGINATION ─── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 40px;
+    padding: 20px;
+  }
+
+  .pagination button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .pagination button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,229,176,0.06);
+  }
+
+  #pageNum {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 9px 16px;
+    border-radius: 10px;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* ─── MODAL ─── */
+  #cartModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 16, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #cartModal.open {
+    display: flex;
+  }
+
+  .modal-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    width: 92%;
+    max-width: 560px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+    animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  #cartItems {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .cart-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .cart-row-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .cart-row-qty {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .cart-row-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .cart-total {
+    background: rgba(0,229,176,0.06);
+    border: 1px solid rgba(0,229,176,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .cart-total-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .cart-total-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: none;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+  }
+
+  .btn-pdf {
+    background: rgba(0,229,176,0.12);
+    border: 1px solid rgba(0,229,176,0.3);
+    color: var(--accent);
+  }
+
+  .btn-pdf:hover {
+    background: rgba(0,229,176,0.2);
+    transform: translateY(-1px);
+  }
+
+  .btn-wa {
+    background: rgba(37,211,102,0.12);
+    border: 1px solid rgba(37,211,102,0.3);
+    color: #25d366;
+  }
+
+  .btn-wa:hover {
+    background: rgba(37,211,102,0.2);
+    transform: translateY(-1px);
+  }
+
+  .btn-close {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .btn-close:hover {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    flex: 0;
+    min-width: 80px;
+  }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-cart {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .empty-cart-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* ─── LOADING ─── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    color: var(--muted);
+    font-size: 14px;
+    gap: 12px;
+  }
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Stagger cards */
+  .card:nth-child(1)  { animation-delay: 0.02s; }
+  .card:nth-child(2)  { animation-delay: 0.04s; }
+  .card:nth-child(3)  { animation-delay: 0.06s; }
+  .card:nth-child(4)  { animation-delay: 0.08s; }
+  .card:nth-child(5)  { animation-delay: 0.10s; }
+  .card:nth-child(6)  { animation-delay: 0.12s; }
+  .card:nth-child(7)  { animation-delay: 0.14s; }
+  .card:nth-child(8)  { animation-delay: 0.16s; }
+  .card:nth-child(9)  { animation-delay: 0.18s; }
+  .card:nth-child(10) { animation-delay: 0.20s; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ─── SHOP MODAL ─── */
+  #shopModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,8,16,0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #shopModal.open { display: flex; }
+
+  .shop-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .shop-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+  }
+
+  .shop-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .shop-input:focus { border-color: var(--accent); }
+  .shop-input::placeholder { color: var(--muted); }
+
+  .shop-error {
+    font-size: 12px;
+    color: var(--danger);
+    margin-top: -6px;
+    margin-bottom: 6px;
+  }
+
+  /* ─── ORDER PREVIEW MODAL ─── */
+  #orderPreviewModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,8,16,0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #orderPreviewModal.open { display: flex; }
+
+  .preview-shop-block {
+    background: rgba(0,229,176,0.06);
+    border: 1px solid rgba(0,229,176,0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .preview-shop-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .preview-shop-label {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    min-width: 60px;
+  }
+
+  .preview-shop-value {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .preview-items-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .preview-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+  }
 </style>
 </head>
+
 <body>
 
-<!-- Loading -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-medallion">💊</div>
-  <div class="loading-text">Aaradhya Pharmaceuticals</div>
-  <div class="loading-sub">आराध्या फार्मास्युटिकल्स — Loading inventory...</div>
-</div>
-
-<!-- Top stripe -->
-<div class="top-stripe"></div>
-
-<!-- Header -->
 <header>
-  <div class="header-inner">
-    <div class="header-top">
-      <div class="header-logo-side">
-        <div class="logo-medallion">💊</div>
-        <div class="logo-text-block">
-          <div class="logo-main">Aaradhya Pharmaceuticals</div>
-          <div class="logo-hindi">आराध्या फार्मास्युटिकल्स</div>
-        </div>
-      </div>
-
-      <div class="header-center">
-        <div class="header-tagline-main">✦ Medicine Ordering Portal ✦</div>
-      </div>
-
-      <div class="cart-area">
-        <div class="cart-count-pill" id="cartCountPill">0 items</div>
-        <button class="cart-btn" onclick="toggleCart()">
-          🛒 कार्ट
-          <span class="cart-badge-num" id="cartCount">0</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="header-bottom">
-      <span>स्वास्थ्य ही धन है — Health is Wealth</span>
-      <span>✦ Quality Medicines · Fast Delivery · Trusted Since Day One ✦</span>
-      <span>सेवा परमो धर्मः</span>
+  <div class="brand">
+    <div class="brand-icon">💊</div>
+    <div>
+      <div class="brand-name">Aaradhya Pharma</div>
+      <div class="brand-sub">Ordering Portal</div>
     </div>
   </div>
+  <button id="cartBtn" onclick="openCart()">
+    🛒 Cart
+    <span class="cart-badge" id="cartCount">0</span>
+  </button>
 </header>
 
-<!-- Main -->
 <div class="container">
-
-  <!-- Top ordered -->
-  <div class="top-panel">
-    <div class="corner tl">✦</div>
-    <div class="corner tr">✦</div>
-    <div class="corner bl">✦</div>
-    <div class="corner br">✦</div>
-    <div class="section-title">
-      <span>🔥 Top Ordered Medicines</span>
-    </div>
-    <div class="top-items" id="topItems"></div>
+  <div class="section-header">
+    <span class="section-title">Products</span>
+    <span class="item-count" id="itemCount">—</span>
   </div>
 
-  <!-- Filters -->
-  <div class="filter-wrap">
-    <div class="filter-field">
-      <div class="filter-lbl">🔍 दवाई खोजें (Search Medicine)</div>
-      <input id="search" placeholder="Type medicine name...">
-    </div>
-    <div class="filter-field">
-      <div class="filter-lbl">🏭 Company Filter</div>
-      <select id="companyFilter">
-        <option value="">— All Companies —</option>
-      </select>
+  <div id="items" class="grid">
+    <div class="loading" style="grid-column:1/-1">
+      <div class="spinner"></div> Loading catalogue…
     </div>
   </div>
 
-  <!-- View tabs -->
-  <div class="inv-filters">
-    <button class="inv-btn active" onclick="setView('all')" id="btn-all">सभी Products</button>
-    <button class="inv-btn" onclick="setView('low')" id="btn-low">⚠ Low Stock</button>
-    <button class="inv-btn" onclick="setView('expiry')" id="btn-expiry">⏰ Expiry Risk</button>
-  </div>
-
-  <!-- Grid -->
-  <div class="grid" id="grid"></div>
-
-  <!-- Pagination -->
-  <div class="pagination" id="pagination"></div>
-
-</div>
-
-<!-- Cart overlay -->
-<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
-
-<!-- Cart drawer -->
-<div class="cart-drawer" id="cartDrawer">
-  <div class="cart-stripe"></div>
-  <div class="cart-head">
-    <div class="cart-head-left">
-      <div class="cart-title">आपका कार्ट</div>
-      <div class="cart-subtitle">Your Order Cart</div>
-    </div>
-    <button class="cart-close-btn" onclick="toggleCart()">✕</button>
-  </div>
-  <div class="cart-body" id="cartItems">
-    <div class="cart-empty">
-      <span class="cart-empty-icon">🛒</span>
-      <span class="cart-empty-text">कार्ट खाली है<br><small style="font-family:var(--body);font-size:11px;color:var(--light-muted);">Add medicines to get started</small></span>
-    </div>
-  </div>
-  <div class="cart-footer">
-    <div class="total-box">
-      <div>
-        <div class="total-lbl">कुल राशि</div>
-        <span class="total-lbl-sub">ORDER TOTAL (INCL. TAX)</span>
-      </div>
-      <div class="total-amt" id="cartTotal">₹0.00</div>
-    </div>
-    <button class="place-order-btn" onclick="openReview()">
-      ऑर्डर करें <span style="font-size:14px">→</span>
-    </button>
+  <div class="pagination">
+    <button onclick="prevPage()">← Prev</button>
+    <span id="pageNum">Page 1</span>
+    <button onclick="nextPage()">Next →</button>
   </div>
 </div>
 
-<!-- Review modal -->
-<div class="modal" id="reviewModal">
+<!-- CART MODAL -->
+<div id="cartModal">
   <div class="modal-content">
-    <div class="modal-stripe"></div>
-    <div class="modal-head">
-      <div class="modal-title">ऑर्डर की पुष्टि करें</div>
-      <button class="modal-close" onclick="closeReview()">✕</button>
+    <div class="modal-header">
+      <h3>🛒 Order Summary</h3>
     </div>
-    <div class="modal-body">
-      <div class="review-header">
-        <span>Medicine</span>
-        <span>Qty</span>
-      </div>
-      <div class="review-list" id="reviewList"></div>
-
-      <div class="input-group">
-        <div class="input-lbl">🏪 दुकान का नाम (Shop Name)</div>
-        <input id="shopName" placeholder="Enter shop name...">
-      </div>
-      <div class="input-group">
-        <div class="input-lbl">📱 फ़ोन नंबर (Phone Number)</div>
-        <input id="phoneNumber" placeholder="Enter phone number...">
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-confirm" onclick="confirmOrder()">पुष्टि करें ✓</button>
-        <button class="btn-cancel" onclick="closeReview()">रद्द करें</button>
-      </div>
+    <div id="cartItems"></div>
+    <div class="cart-total">
+      <span class="cart-total-label">Grand Total</span>
+      <span class="cart-total-value" id="total">₹0</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-pdf" onclick="openShopModal()">✔ Place Order</button>
+      <button class="btn btn-close" onclick="closeCart()">Close</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast">✅ ऑर्डर सफलतापूर्वक दर्ज हुआ!</div>
+<!-- SHOP DETAILS MODAL -->
+<div id="shopModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📋 Shop Details</h3>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Please enter your details to place the order.</p>
+    <div class="shop-field">
+      <label class="shop-label">Shop Name</label>
+      <input type="text" id="shopName" class="shop-input" placeholder="e.g. Ravi Medical Store" />
+    </div>
+    <div class="shop-field">
+      <label class="shop-label">Contact Number</label>
+      <input type="tel" id="shopContact" class="shop-input" placeholder="e.g. 9876543210" />
+    </div>
+    <div id="shopError" class="shop-error" style="display:none;">Please fill in both fields.</div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-pdf" onclick="confirmShopAndProceed()">✔ Confirm & Proceed</button>
+      <button class="btn btn-close" onclick="closeShopModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER PREVIEW MODAL -->
+<div id="orderPreviewModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>✅ Order Preview</h3>
+    </div>
+    <div id="orderPreviewBody"></div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-pdf" onclick="downloadPDF()">⬇ Download PDF</button>
+      <button class="btn btn-wa" onclick="shareWhatsApp()">💬 Share on WhatsApp</button>
+      <button class="btn btn-close" onclick="closeOrderPreview()">Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk_KwG4YCKte3jjsuGsXf_vPG_RsPQRexmJl_fIs0_Pjasq7I7g6nlxXskgncP6Xg6ca9__obX-5d/pub?gid=0&single=true&output=csv"
-const ORDER_API = "https://script.google.com/macros/s/AKfycby3QoqXU5UI_ofm_NX6F7wH4X84hAwArPFMZ4BOkn1KmRs0JpLFRJO91f63YSmupgejOg/exec"
 
-let rows = [], cart = {}, currentPage = 1, itemsPerPage = 10, currentView = "all"
+// ─────────────────────────────────────────────────────────────────
+// REPLACE your Apps Script with this CORS-safe version:
+//
+// function doGet(e) {
+//   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+//   const rows = sheet.getDataRange().getValues();
+//   const callback = e && e.parameter && e.parameter.callback;
+//   const json = JSON.stringify(rows);
+//   if (callback) {
+//     return ContentService
+//       .createTextOutput(callback + "(" + json + ")")
+//       .setMimeType(ContentService.MimeType.JAVASCRIPT);
+//   }
+//   return ContentService
+//     .createTextOutput(json)
+//     .setMimeType(ContentService.MimeType.JSON);
+// }
+//
+// function doPost(e) {
+//   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+//   const updates = JSON.parse(e.postData.contents);
+//   updates.forEach(u => sheet.getRange(u.row, 3).setValue(u.stock));
+//   return ContentService.createTextOutput("OK");
+// }
+// ─────────────────────────────────────────────────────────────────
 
-fetch(SHEET_URL)
-  .then(r => r.text())
-  .then(data => {
-    rows = data.split("\n").slice(1).map(r => r.split(",")).filter(r => r.length > 2)
-    initCompanies()
-    initTopItems()
-    render()
-    document.getElementById("loadingOverlay").classList.add("hidden")
-    setTimeout(() => document.getElementById("loadingOverlay").remove(), 600)
-  })
-  .catch(() => {
-    document.getElementById("loadingOverlay").innerHTML = `
-      <div class="loading-medallion" style="animation:none;border-color:var(--deep-red)">⚠</div>
-      <div class="loading-text" style="color:var(--deep-red)">Could not load inventory</div>
-      <div class="loading-sub">Please check your connection and refresh</div>`
-  })
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys0kg-vLBebvLNWUtpE3qFYhCdcyX2H-Cc4ixHLBZF7iGltPkzWz_3fEWxaNN4hVsd-A/exec";
 
-function initCompanies() {
-  const companies = [...new Set(rows.map(r => r[0].trim()).filter(Boolean))]
-  const select = document.getElementById("companyFilter")
-  companies.forEach(c => {
-    const opt = document.createElement("option")
-    opt.value = c; opt.textContent = c; select.appendChild(opt)
-  })
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRIA-e9LgjI3ZEthvS_-N-XsurvTJu_XrxpWnIypbqMXNXLB95DaFG1qXv9kvTrrU4_0Fw5ZjVDxxZc/pub?gid=1990410876&single=true&output=csv";
+
+let data = [];
+let cart = [];
+let currentPage = 1;
+const perPage = 10;
+
+// ─── HELPERS ───
+
+function formatExpiry(val) {
+  if (!val) return '—';
+  if (typeof val === 'string' && isNaN(Number(val))) return val.trim();
+  const serial = Number(val);
+  if (!serial) return String(val).trim();
+  const date = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const yyyy = date.getUTCFullYear();
+  return `${mm}/${yyyy}`;
 }
 
-document.getElementById("search").addEventListener("input", () => { currentPage = 1; render() })
-document.getElementById("companyFilter").addEventListener("change", () => { currentPage = 1; render() })
-
-function initTopItems() {
-  const topRows = rows.slice(0, 10)
-  // Pad to exactly 10 if fewer rows exist
-  const html = topRows.map(r =>
-    `<div class="top-item" onclick="add('${esc(r[1])}',${r[6]},1,${r[5]})">
-      <span class="fire">🔥</span><span style="overflow:hidden;text-overflow:ellipsis">${r[1]}</span>
-    </div>`
-  ).join("")
-  document.getElementById("topItems").innerHTML = html
+function parseStock(val) {
+  const n = parseInt(val);
+  return isNaN(n) ? 0 : n;
 }
 
-function setView(v) {
-  currentView = v
-  document.querySelectorAll(".inv-btn").forEach(b => b.classList.remove("active"))
-  document.getElementById("btn-" + v).classList.add("active")
-  currentPage = 1; render()
-}
+// JSONP loader — bypasses CORS entirely
+function fetchViaJSONP(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__gs_cb_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    }, 10000);
 
-function getFiltered() {
-  const search = document.getElementById("search").value.toLowerCase()
-  const company = document.getElementById("companyFilter").value
-  return rows.filter(r => {
-    const name = (r[1] || "").toLowerCase()
-    const stock = parseInt(r[5]) || 0
-    const expiry = new Date(r[4])
-    const match = name.includes(search) && (!company || r[0].trim() === company)
-    if (!match) return false
-    if (currentView === "low") return stock < 10
-    if (currentView === "expiry") {
-      const diff = (expiry - new Date()) / (1000 * 60 * 60 * 24)
-      return diff < 90 && diff > 0
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
     }
-    return true
-  })
+
+    window[cbName] = function(data) {
+      cleanup();
+      resolve(data);
+    };
+
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => { cleanup(); reject(new Error('Script load error')); };
+    document.head.appendChild(script);
+  });
 }
 
+// CSV fallback parser
+function parseCSV(text) {
+  return text.split('\n').slice(1)
+    .filter(row => row.trim())
+    .map((row, i) => {
+      const cols = row.split(',');
+      const stock = parseStock(cols[2]);
+      return {
+        rowIndex:      i + 2,
+        dataIndex:     i,
+        name:          String(cols[1] || '').trim(),
+        stock:         stock,
+        originalStock: stock,
+        mrp:           String(cols[4] || '').trim(),
+        rate:          String(cols[5] || '').trim(),
+        batch:         String(cols[8] || '').trim(),
+        expiry:        formatExpiry(String(cols[9] || '').trim())
+      };
+    })
+    .filter(item => item.name !== '');
+}
+
+async function loadData() {
+  // Use allorigins proxy to bypass CORS — works whether file is local or hosted
+  const PROXY = "https://api.allorigins.win/raw?url=";
+  const csvProxied = PROXY + encodeURIComponent(sheetURL);
+
+  try {
+    // ── Try JSONP first (reads live stock from sheet via Apps Script)
+    try {
+      const rows = await fetchViaJSONP(APPS_SCRIPT_URL);
+      data = rows.slice(1)
+        .filter(cols => cols[1] && String(cols[1]).trim() !== '')
+        .map((cols, i) => {
+          const stock = parseStock(cols[2]);
+          return {
+            rowIndex:      i + 2,
+            dataIndex:     i,
+            name:          String(cols[1] || '').trim(),
+            stock:         stock,
+            originalStock: stock,
+            mrp:           String(cols[4] || '').trim(),
+            rate:          String(cols[5] || '').trim(),
+            batch:         String(cols[8] || '').trim(),
+            expiry:        formatExpiry(cols[9])
+          };
+        });
+      console.log("✅ Loaded via JSONP:", data.length, "items");
+      render();
+      return;
+    } catch (jsonpErr) {
+      console.warn("⚠ JSONP failed:", jsonpErr.message, "— trying CSV via proxy...");
+    }
+
+    // ── Fallback: CSV via CORS proxy
+    const res = await fetch(csvProxied);
+    if (!res.ok) throw new Error("Proxy fetch failed: " + res.status);
+    const text = await res.text();
+    data = parseCSV(text);
+    console.log("✅ Loaded via CSV proxy:", data.length, "items");
+    render();
+
+  } catch (err) {
+    console.error("Load error:", err);
+    document.getElementById("items").innerHTML =
+      `<div class="loading" style="grid-column:1/-1;color:var(--danger)">
+        ⚠ Could not load products.<br>
+        <small style="color:var(--muted);font-size:11px;">
+          Make sure you are connected to the internet, then reload the page.
+        </small>
+      </div>`;
+  }
+}
+
+// ─── RENDER ITEMS ───
 function render() {
-  const filtered = getFiltered()
-  const start = (currentPage - 1) * itemsPerPage
-  const pageItems = filtered.slice(start, start + itemsPerPage)
+  const start = (currentPage - 1) * perPage;
+  const pageData = data.slice(start, start + perPage);
 
-  if (pageItems.length === 0) {
-    document.getElementById("grid").innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <div class="empty-text">कोई परिणाम नहीं मिला</div>
-        <div style="font-size:12px;color:var(--light-muted);margin-top:6px;">No medicines found for this filter</div>
-      </div>`
-    document.getElementById("pagination").innerHTML = ""
-    return
-  }
+  const container = document.getElementById("items");
+  container.innerHTML = "";
 
-  const html = pageItems.map(r => {
-    const name = r[1] || ""
-    const stock = parseInt(r[5]) || 0
-    const rate = parseFloat(r[6]) || 0
-    const mrp = parseFloat(r[3]) || 0
-    const margin = mrp > 0 ? ((mrp - rate) / mrp) * 100 : 0
-    const marginClass = margin > 35 ? "margin-high" : margin > 20 ? "margin-mid" : "margin-low"
-    const stockClass = stock <= 0 ? "stock-low" : stock < 25 ? "stock-mid" : "stock-good"
-    const qty = cart[name]?.qty || 0
-    return `
-      <div class="card">
-        <div class="card-stripe"></div>
-        <div class="card-body">
-          <div class="med-name">${name}</div>
-          <div class="med-company">${r[0] || ""}</div>
-          <div class="detail-list">
-            <div class="detail-row">
-              <span class="detail-label">💰 MRP</span>
-              <span class="detail-value">₹${mrp.toFixed(2)}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">📦 Batch</span>
-              <span class="detail-value">${r[2] || "—"}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">📅 Expiry</span>
-              <span class="detail-value">${r[4] || "—"}</span>
-            </div>
-          </div>
-          <div class="divider-ornament">· ✦ ·</div>
-          <div class="status-row">
-            <span class="status-tag ${stockClass}">Stock: ${stock}</span>
-            <span class="status-tag ${marginClass}">Margin ${margin.toFixed(1)}%</span>
-          </div>
-          <div class="qty-ctrl">
-            <button onclick="add('${esc(name)}',${rate},-1,${stock})">−</button>
-            <div class="qty-num" id="qty-${esc(name)}">${qty}</div>
-            <button onclick="add('${esc(name)}',${rate},1,${stock})">+</button>
-          </div>
+  document.getElementById("itemCount").textContent = data.length + " items";
+
+  pageData.forEach((item, pagePos) => {
+    let cartItem = cart.find(i => i.dataIndex === item.dataIndex);
+    let qty = cartItem ? cartItem.qty : 0;
+
+    const div = document.createElement("div");
+    div.className = "card";
+    div.dataset.idx = item.dataIndex;
+
+    const stockNum = parseStock(item.stock);
+    const stockClass = stockNum <= 0 ? 'pill-val stock-zero' : stockNum <= 10 ? 'pill-val stock-low' : 'pill-val';
+
+    div.innerHTML = `
+      <h4>${item.name}</h4>
+      <div class="card-prices">
+        <div class="price-block">
+          <span class="meta-label">Rate</span>
+          <span class="price-val">₹${item.rate}</span>
         </div>
-      </div>`
-  }).join("")
+        <div class="price-divider"></div>
+        <div class="price-block">
+          <span class="meta-label">MRP</span>
+          <span class="mrp-val">₹${item.mrp}</span>
+        </div>
+      </div>
+      
+      <div class="qty-box">
+        <button onclick='decreaseQty(${item.dataIndex})'>−</button>
+        <span data-qty>${qty}</span>
+        <button onclick='increaseQty(${item.dataIndex})'>+</button>
+      </div>
+    `;
 
-  document.getElementById("grid").innerHTML = html
-  renderPagination(filtered.length)
+    container.appendChild(div);
+  });
+
+  document.getElementById("pageNum").innerText = "Page " + currentPage;
 }
 
-function renderPagination(total) {
-  const pages = Math.ceil(total / itemsPerPage)
-  if (pages <= 1) { document.getElementById("pagination").innerHTML = ""; return }
-
-  let html = ""
-  const s = Math.max(1, currentPage - 2)
-  const e = Math.min(pages, s + 4)
-
-  if (currentPage > 1) html += `<button onclick="goPage(${currentPage - 1})">◀</button>`
-  for (let i = s; i <= e; i++)
-    html += `<button class="${i === currentPage ? 'active-page' : ''}" onclick="goPage(${i})">${i}</button>`
-  if (currentPage < pages) html += `<button onclick="goPage(${currentPage + 1})">▶</button>`
-
-  html += `<span class="pagination-info">${(currentPage - 1) * itemsPerPage + 1}–${Math.min(currentPage * itemsPerPage, total)} of ${total}</span>`
-
-  document.getElementById("pagination").innerHTML = html
-}
-
-function goPage(p) { currentPage = p; render(); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-
-function esc(str) { return (str || "").replace(/'/g, "\\'") }
-
-function add(item, rate, change, stock) {
-  if (stock <= 0) { showToastError("यह दवाई उपलब्ध नहीं है"); return }
-  if (!cart[item]) cart[item] = { qty: 0, rate, stock }
-  const newQty = cart[item].qty + change
-  if (newQty > stock) { showToastError("स्टॉक से अधिक नहीं हो सकता"); return }
-  cart[item].qty = Math.max(newQty, 0)
-  updateCart()
-  const el = document.getElementById("qty-" + item)
-  if (el) {
-    el.innerText = cart[item].qty
-    el.classList.add("bumped")
-    setTimeout(() => el.classList.remove("bumped"), 300)
+// ─── PAGINATION ───
+function nextPage() {
+  if ((currentPage * perPage) < data.length) {
+    currentPage++;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
-function updateCart() {
-  let html = "", count = 0, total = 0
+function prevPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
 
-  for (const i in cart) {
-    if (cart[i].qty > 0) {
-      count += cart[i].qty
-      const lineTotal = cart[i].qty * cart[i].rate
-      total += lineTotal
-      html += `
-        <div class="cart-item-row">
-          <div class="cart-item-dot"></div>
-          <div class="cart-item-name">${i}</div>
-          <div class="cart-item-meta">
-            <span class="cart-item-qty">Qty: ${cart[i].qty}</span>
-            <span class="cart-item-price">₹${lineTotal.toFixed(2)}</span>
-          </div>
-        </div>`
-    }
+// ─── INCREASE QTY ───
+function increaseQty(idx) {
+  const item = data[idx];
+  if (!item) return;
+
+  const currentStock = parseStock(item.stock);
+  if (currentStock <= 0) return;
+
+  let existing = cart.find(i => i.dataIndex === idx);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ ...item, qty: 1 });
   }
 
-  if (!count) {
-    html = `<div class="cart-empty">
-      <span class="cart-empty-icon">🛒</span>
-      <span class="cart-empty-text">कार्ट खाली है<br><small style="font-family:var(--body);font-size:11px;color:var(--light-muted);">Add medicines to get started</small></span>
-    </div>`
+  item.stock = currentStock - 1;
+  updateCartCount();
+  updateCardDisplay(idx);
+}
+
+// ─── DECREASE QTY ───
+function decreaseQty(idx) {
+  const item = data[idx];
+  if (!item) return;
+
+  let cartIdx = cart.findIndex(i => i.dataIndex === idx);
+  if (cartIdx === -1) return;
+
+  cart[cartIdx].qty--;
+  item.stock = parseStock(item.stock) + 1;
+
+  if (cart[cartIdx].qty <= 0) cart.splice(cartIdx, 1);
+
+  updateCartCount();
+  updateCardDisplay(idx);
+}
+
+// ─── UPDATE ONLY THE AFFECTED CARD ───
+function updateCardDisplay(idx) {
+  const item = data[idx];
+  const cartItem = cart.find(i => i.dataIndex === idx);
+  const qty = cartItem ? cartItem.qty : 0;
+  const stock = parseStock(item.stock);
+
+  const card = document.querySelector(`.card[data-idx="${idx}"]`);
+  if (!card) return;
+
+  const qtySpan = card.querySelector('[data-qty]');
+  const stockSpan = card.querySelector('[data-stock]');
+  if (qtySpan) qtySpan.textContent = qty;
+  if (stockSpan) {
+    stockSpan.textContent = stock;
+    stockSpan.className = stock <= 0 ? 'pill-val stock-zero' : stock <= 10 ? 'pill-val stock-low' : 'pill-val';
+  }
+}
+
+// ─── CART COUNT ───
+function updateCartCount() {
+  let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.getElementById("cartCount").innerText = totalQty;
+}
+
+// ─── OPEN CART ───
+function openCart() {
+  const div = document.getElementById("cartItems");
+  div.innerHTML = "";
+  let total = 0;
+
+  if (cart.length === 0) {
+    div.innerHTML = `<div class="empty-cart"><div class="empty-cart-icon">🛒</div>Your cart is empty</div>`;
+  } else {
+    cart.forEach(item => {
+      let value = item.rate * item.qty;
+      total += value;
+      div.innerHTML += `
+        <div class="cart-row">
+          <span class="cart-row-name">${item.name}</span>
+          <span class="cart-row-qty">× ${item.qty}</span>
+          <span class="cart-row-price">₹${value}</span>
+        </div>`;
+    });
   }
 
-  document.getElementById("cartItems").innerHTML = html
-  document.getElementById("cartCount").innerText = count
-  document.getElementById("cartCountPill").innerText = count + (count === 1 ? " item" : " items")
-  document.getElementById("cartTotal").innerText = "₹" + total.toFixed(2)
+  document.getElementById("total").innerText = "₹" + total;
+  const modal = document.getElementById("cartModal");
+  modal.style.display = "flex";
+  modal.classList.add("open");
 }
 
-function toggleCart() {
-  document.getElementById("cartDrawer").classList.toggle("open")
-  document.getElementById("cartOverlay").classList.toggle("active")
+function closeCart() {
+  const modal = document.getElementById("cartModal");
+  modal.style.display = "none";
+  modal.classList.remove("open");
 }
 
-function openReview() {
-  const items = Object.entries(cart).filter(([, v]) => v.qty > 0)
-  if (!items.length) { showToastError("कार्ट खाली है! पहले दवाईं जोड़ें"); return }
-  toggleCart()
-  const html = items.map(([name, v]) =>
-    `<div class="review-item"><span>${name}</span><span class="review-qty">× ${v.qty}</span></div>`
-  ).join("")
-  document.getElementById("reviewList").innerHTML = html
-  document.getElementById("reviewModal").style.display = "flex"
+// ─── SHOP MODAL ───
+let currentShopName = '';
+let currentShopContact = '';
+
+function openShopModal() {
+  if (cart.length === 0) return;
+  document.getElementById('shopError').style.display = 'none';
+  document.getElementById('shopName').value = currentShopName;
+  document.getElementById('shopContact').value = currentShopContact;
+  document.getElementById('shopModal').style.display = 'flex';
+  document.getElementById('shopModal').classList.add('open');
 }
 
-function closeReview() { document.getElementById("reviewModal").style.display = "none" }
+function closeShopModal() {
+  document.getElementById('shopModal').style.display = 'none';
+  document.getElementById('shopModal').classList.remove('open');
+}
 
-function confirmOrder() {
-  const shop = document.getElementById("shopName").value.trim()
-  const phone = document.getElementById("phoneNumber").value.trim()
-  if (!shop || !phone) { showToastError("कृपया दुकान का नाम और फ़ोन नंबर भरें"); return }
+function confirmShopAndProceed() {
+  const name = document.getElementById('shopName').value.trim();
+  const contact = document.getElementById('shopContact').value.trim();
+  if (!name || !contact) {
+    document.getElementById('shopError').style.display = 'block';
+    return;
+  }
+  currentShopName = name;
+  currentShopContact = contact;
+  closeShopModal();
 
-  let items = [], totalAmount = 0
-  for (const i in cart) {
-    if (cart[i].qty > 0) {
-      const lineTotal = cart[i].qty * cart[i].rate
-      totalAmount += lineTotal
-      items.push({ name: i, qty: cart[i].qty, rate: cart[i].rate, total: lineTotal })
-    }
+  // Write updated stock back to sheet
+  if (APPS_SCRIPT_URL) {
+    const updates = cart.map(cartItem => {
+      const d = data[cartItem.dataIndex];
+      return { row: d.rowIndex, stock: parseStock(d.stock) };
+    });
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(updates)
+    }).catch(err => console.warn("Stock sync failed:", err));
   }
 
-  fetch(ORDER_API, {
-    method: "POST", mode: "no-cors",
-    body: JSON.stringify({ shop, mobile: phone, total: totalAmount, items })
-  })
-
-  closeReview()
-  cart = {}; updateCart()
-  document.getElementById("shopName").value = ""
-  document.getElementById("phoneNumber").value = ""
-  showToast("✅ ऑर्डर सफलतापूर्वक दर्ज हुआ!")
+  showOrderPreview();
 }
 
-function showToast(msg) {
-  const t = document.getElementById("toast")
-  t.textContent = msg
-  t.style.background = "linear-gradient(135deg, #1a5c2a, #2d7a3a)"
-  t.classList.add("show")
-  setTimeout(() => t.classList.remove("show"), 3500)
+// ─── ORDER PREVIEW ───
+function showOrderPreview() {
+  const body = document.getElementById('orderPreviewBody');
+  let total = 0;
+  let itemsHTML = '';
+
+  cart.forEach(item => {
+    let value = item.rate * item.qty;
+    total += value;
+    itemsHTML += `
+      <div class="cart-row">
+        <span class="cart-row-name">${item.name}</span>
+        <span class="cart-row-qty">× ${item.qty}</span>
+        <span class="cart-row-price">₹${value}</span>
+      </div>`;
+  });
+
+  body.innerHTML = `
+    <div class="preview-shop-block">
+      <div class="preview-shop-row">
+        <span class="preview-shop-label">Shop</span>
+        <span class="preview-shop-value">${currentShopName}</span>
+      </div>
+      <div class="preview-shop-row">
+        <span class="preview-shop-label">Contact</span>
+        <span class="preview-shop-value">${currentShopContact}</span>
+      </div>
+    </div>
+    <div class="preview-items-title">Ordered Items</div>
+    <div class="preview-items">${itemsHTML}</div>
+    <div class="cart-total">
+      <span class="cart-total-label">Grand Total</span>
+      <span class="cart-total-value">₹${total}</span>
+    </div>
+  `;
+
+  document.getElementById('orderPreviewModal').style.display = 'flex';
+  document.getElementById('orderPreviewModal').classList.add('open');
 }
 
-function showToastError(msg) {
-  const t = document.getElementById("toast")
-  t.textContent = "⚠ " + msg
-  t.style.background = "linear-gradient(135deg, #8b1a1a, #6b1919)"
-  t.classList.add("show")
-  setTimeout(() => t.classList.remove("show"), 2500)
+function closeOrderPreview() {
+  document.getElementById('orderPreviewModal').style.display = 'none';
+  document.getElementById('orderPreviewModal').classList.remove('open');
 }
+
+// ─── PDF DOWNLOAD ───
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  let y = 14;
+  doc.setFontSize(16);
+  doc.text("Aaradhya Pharma - Order", 10, y); y += 10;
+  doc.setFontSize(11);
+  doc.text(`Shop: ${currentShopName}`, 10, y); y += 7;
+  doc.text(`Contact: ${currentShopContact}`, 10, y); y += 10;
+  doc.setFontSize(12);
+
+  let total = 0;
+  cart.forEach(item => {
+    let value = item.rate * item.qty;
+    total += value;
+    doc.text(`${item.name} - Qty: ${item.qty} - Rs.${value}`, 10, y);
+    y += 8;
+  });
+
+  y += 4;
+  doc.setFontSize(13);
+  doc.text("Total: Rs." + total, 10, y);
+  doc.save("order.pdf");
+}
+
+// ─── WHATSAPP SHARE ───
+function shareWhatsApp() {
+  let text = `*Aaradhya Pharma Order*\nShop: ${currentShopName}\nContact: ${currentShopContact}\n\n`;
+  let total = 0;
+
+  cart.forEach(item => {
+    let value = item.rate * item.qty;
+    total += value;
+    text += `${item.name} - Qty: ${item.qty} - Rs.${value}\n`;
+  });
+
+  text += `\n*Total: Rs.${total}*`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+
+// ─── INIT ───
+loadData();
+
 </script>
+
 </body>
 </html>
