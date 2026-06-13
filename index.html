@@ -4,505 +4,734 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aaradhya Pharmaceuticals — Partner Rewards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;min-height:100vh;color:#1a1a1a}
-.app{max-width:960px;margin:0 auto;padding:16px}
-/* Topbar */
-.topbar{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
-.topbar-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1e3a5f,#2e6fa7);display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:700;flex-shrink:0}
-.topbar-info{flex:1}
-.topbar-title{font-size:15px;font-weight:600;color:#1a1a1a}
-.topbar-sub{font-size:11px;color:#6b7280;margin-top:1px}
-.topbar-actions{display:flex;gap:8px;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;cursor:pointer;transition:all 0.15s;white-space:nowrap;font-weight:500}
-.btn:hover{background:#f9fafb;border-color:#9ca3af}
-.btn.primary{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
-.btn.primary:hover{background:#162d4a}
-.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-/* Pages */
-.page{display:none}
-.page.visible{display:block}
-/* Filter bar */
-.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;align-items:center}
-.filter-label{font-size:13px;color:#6b7280;font-weight:500}
-.filter-btn{padding:5px 14px;font-size:12px;border-radius:20px;border:1px solid #d1d5db;background:#fff;cursor:pointer;color:#6b7280;transition:all 0.15s;font-weight:500}
-.filter-btn.sel{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
-/* Metric cards */
-.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
-.metric-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.metric-label{font-size:12px;color:#6b7280;margin-bottom:6px;font-weight:500}
-.metric-value{font-size:28px;font-weight:700;color:#1a1a1a}
-.metric-value.small{font-size:20px}
-/* Section card */
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.section-title{font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px}
-/* Tier grid */
-.tier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.tier-card{border-radius:10px;padding:14px 12px;text-align:center;border:1px solid transparent}
-.tier-icon{font-size:22px;margin-bottom:6px}
-.tier-name{font-size:11px;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em}
-.tier-count{font-size:26px;font-weight:700}
-.tier-thresh{font-size:10px;margin-top:4px;opacity:0.75}
-/* Top purchasers */
-.top-list{display:flex;flex-direction:column;gap:8px}
-.top-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f9fafb;border-radius:10px;cursor:pointer;transition:all 0.15s;border:1px solid #f3f4f6}
-.top-item:hover{background:#f3f4f6;border-color:#e5e7eb}
-.rank-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
-.top-name{flex:1;font-size:14px;font-weight:500;color:#1a1a1a}
-.top-amt{font-size:14px;font-weight:700;color:#1e3a5f}
-.top-tier{font-size:11px;color:#6b7280;margin-top:2px}
-/* Details list */
-.search-wrap{position:relative;margin-bottom:16px}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:#9ca3af;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.search-box{width:100%;padding:10px 12px 10px 38px;border:1px solid #d1d5db;border-radius:10px;background:#fff;color:#1a1a1a;font-size:14px;outline:none;transition:border 0.15s}
-.search-box:focus{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,0.1)}
-.biz-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
-.biz-item{padding:12px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;cursor:pointer;transition:all 0.15s}
-.biz-item:hover{border-color:#9ca3af;box-shadow:0 2px 6px rgba(0,0,0,0.06);transform:translateY(-1px)}
-.biz-name{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
-.biz-meta{font-size:11px;color:#9ca3af;margin-top:2px}
-/* Detail card */
-.detail-hero{border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid transparent}
-.detail-header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-.avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
-.detail-name{font-size:18px;font-weight:700;margin-bottom:4px}
-.tier-badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.04em}
-.detail-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.field{background:rgba(255,255,255,0.65);border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.07)}
-.field-label{font-size:11px;color:#6b7280;margin-bottom:4px;font-weight:500}
-.field-value{font-size:13px;font-weight:600;color:#1a1a1a;word-break:break-all}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
-.stat-box{background:rgba(255,255,255,0.65);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(0,0,0,0.07)}
-.stat-num{font-size:20px;font-weight:700}
-.stat-lbl{font-size:11px;color:#6b7280;margin-top:3px;font-weight:500}
-/* Orders table */
-.orders-table{width:100%;border-collapse:collapse;font-size:13px}
-.orders-table th{text-align:left;padding:8px 10px;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb;font-size:11px;text-transform:uppercase;letter-spacing:0.04em}
-.orders-table td{padding:9px 10px;border-bottom:1px solid #f3f4f6;color:#374151}
-.orders-table tr:last-child td{border-bottom:none}
-.orders-table tr:hover td{background:#f9fafb}
-/* Loading */
-.loading{text-align:center;padding:48px 24px;color:#6b7280}
-.loading-spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#1e3a5f;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.error-msg{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;font-size:13px;margin-bottom:16px}
-/* Nav dots */
-.nav-tabs{display:flex;gap:6px;background:#f3f4f6;border-radius:10px;padding:4px}
-.nav-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:#6b7280;transition:all 0.15s;border:none;background:transparent}
-.nav-tab.active{background:#fff;color:#1e3a5f;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-@media(max-width:600px){
-.detail-fields{grid-template-columns:1fr}
-.stats-grid{grid-template-columns:1fr 1fr}
-.metric-grid{grid-template-columns:1fr 1fr}
+:root {
+  --navy: #0F2744;
+  --navy-mid: #1A3A5C;
+  --navy-soft: #E8EFF8;
+  --canvas: #F7F8FA;
+  --white: #FFFFFF;
+  --amber: #F59E0B;
+  --amber-light: #FEF3C7;
+  --slate: #64748B;
+  --slate-light: #CBD5E1;
+  --ink: #1E293B;
+  --muted: #94A3B8;
+  --border: #E8EEF4;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --tier-bronze: #B45309;
+  --tier-silver: #64748B;
+  --tier-gold: #B45309;
+  --tier-platinum: #5B21B6;
+  --tier-diamond: #1D4ED8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LAYOUT ── */
+.shell { display: flex; flex-direction: column; min-height: 100vh; }
+.topbar {
+  background: var(--navy);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo-mark {
+  width: 32px; height: 32px;
+  background: var(--amber);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: var(--navy);
+  flex-shrink: 0;
+}
+.topbar-title {
+  font-size: 14px; font-weight: 600; color: #fff; flex: 1;
+  letter-spacing: -0.01em;
+}
+.topbar-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.main { flex: 1; padding: 28px; max-width: 1000px; margin: 0 auto; width: 100%; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; font-size: 13px; font-weight: 500;
+  border-radius: var(--radius-sm); border: 1.5px solid transparent;
+  cursor: pointer; transition: all 0.15s; font-family: inherit;
+  white-space: nowrap;
+}
+.btn-ghost {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+  border-color: rgba(255,255,255,0.12);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
+.btn-amber {
+  background: var(--amber); color: var(--navy);
+  border-color: var(--amber); font-weight: 600;
+}
+.btn-amber:hover { background: #E08D00; border-color: #E08D00; }
+.btn-outline {
+  background: var(--white); color: var(--ink);
+  border-color: var(--border);
+}
+.btn-outline:hover { border-color: var(--slate-light); background: var(--canvas); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+/* ── NAV TABS ── */
+.tab-row {
+  display: flex; gap: 2px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 3px;
+}
+.tab-btn {
+  padding: 6px 16px; font-size: 13px; font-weight: 500;
+  border-radius: 8px; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.5); background: transparent;
+  transition: all 0.15s; font-family: inherit;
+}
+.tab-btn.active { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.visible { display: block; }
+
+/* ── FILTER PILLS ── */
+.filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; align-items: center; }
+.filter-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 4px; }
+.pill {
+  padding: 5px 14px; font-size: 12px; font-weight: 500;
+  border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--white); color: var(--slate); cursor: pointer;
+  transition: all 0.15s;
+}
+.pill:hover { border-color: var(--slate-light); color: var(--ink); }
+.pill.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+/* ── METRIC CARDS ── */
+.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.metric-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px 22px; border: 1px solid var(--border);
+}
+.metric-card.accent { background: var(--navy); border-color: var(--navy); }
+.metric-lbl { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.metric-card.accent .metric-lbl { color: rgba(255,255,255,0.5); }
+.metric-val { font-size: 32px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; line-height: 1; }
+.metric-card.accent .metric-val { color: var(--amber); }
+.metric-sub { font-size: 11px; color: var(--muted); margin-top: 5px; }
+.metric-card.accent .metric-sub { color: rgba(255,255,255,0.4); }
+
+/* ── SECTION HEADER ── */
+.section-hd {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.section-hd h2 { font-size: 13px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── TIER CARDS ── */
+.tier-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px; }
+.tier-card {
+  background: var(--white); border-radius: var(--radius-sm);
+  padding: 16px 12px; text-align: center;
+  border: 1px solid var(--border);
+  border-top-width: 3px;
+  transition: transform 0.15s;
+}
+.tier-card:hover { transform: translateY(-2px); }
+.tier-emoji { font-size: 20px; margin-bottom: 6px; }
+.tier-nm { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.tier-ct { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+.tier-mn { font-size: 10px; color: var(--muted); margin-top: 5px; }
+
+/* ── TOP LIST ── */
+.top-list { display: flex; flex-direction: column; gap: 0; }
+.top-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 10px;
+  cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border);
+}
+.top-item:last-child { border-bottom: none; }
+.top-item:hover { background: var(--canvas); }
+.rank-num {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.top-info { flex: 1; min-width: 0; }
+.top-nm { font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.top-right { text-align: right; flex-shrink: 0; }
+.top-amt { font-size: 15px; font-weight: 700; color: var(--navy); }
+.top-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; margin-top: 4px; display: inline-block; }
+.chev { color: var(--slate-light); font-size: 18px; flex-shrink: 0; margin-left: 4px; }
+
+/* ── PARTNERS LIST ── */
+.search-wrap { position: relative; margin-bottom: 16px; }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+.search-box {
+  width: 100%; padding: 11px 14px 11px 42px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--white); color: var(--ink);
+  font-size: 14px; font-family: inherit; outline: none;
+  transition: border-color 0.15s;
+}
+.search-box:focus { border-color: var(--navy); }
+.biz-list { display: flex; flex-direction: column; gap: 0; background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.biz-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 18px; cursor: pointer;
+  transition: background 0.12s;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+}
+.biz-item:last-child { border-bottom: none; }
+.biz-item:hover { background: var(--canvas); border-left-color: var(--amber); }
+.biz-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.biz-info { flex: 1; min-width: 0; }
+.biz-nm { font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.biz-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.biz-right { text-align: right; flex-shrink: 0; }
+.biz-amt { font-size: 13px; font-weight: 700; color: var(--navy); }
+.biz-tier-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; }
+
+/* ── DETAIL PAGE ── */
+.detail-hero {
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-left-width: 5px;
+  background: var(--white);
+}
+.detail-hdr { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.detail-avatar {
+  width: 54px; height: 54px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; font-weight: 700; flex-shrink: 0;
+}
+.detail-name { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; }
+.tier-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 4px 12px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.detail-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.det-field {
+  background: var(--canvas); border-radius: var(--radius-sm);
+  padding: 11px 14px;
+}
+.det-lbl { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.det-val { font-size: 13px; font-weight: 600; color: var(--ink); word-break: break-word; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.stat-box {
+  background: var(--canvas); border-radius: var(--radius-sm);
+  padding: 14px 12px; text-align: center;
+}
+.stat-n { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.stat-l { font-size: 10px; font-weight: 600; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── ORDER HISTORY ── */
+.orders-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.orders-card-hd { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: 0.06em; }
+.orders-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.orders-tbl th { padding: 10px 18px; text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; background: var(--canvas); border-bottom: 1px solid var(--border); }
+.orders-tbl td { padding: 11px 18px; border-bottom: 1px solid var(--border); color: var(--ink); }
+.orders-tbl tr:last-child td { border-bottom: none; }
+.orders-tbl tr:hover td { background: var(--canvas); }
+.order-id { font-family: 'Menlo', monospace; font-size: 11px; color: var(--muted); }
+.month-tag { font-size: 11px; background: var(--navy-soft); color: var(--navy); padding: 2px 9px; border-radius: 6px; font-weight: 600; }
+.amount-cell { font-weight: 700; color: var(--navy); text-align: right; }
+
+/* ── LOADING / ERROR ── */
+.loading-wrap { text-align: center; padding: 60px 24px; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.75s linear infinite; margin: 0 auto 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-txt { font-size: 14px; font-weight: 500; color: var(--slate); }
+.loading-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.error-banner { background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--radius-sm); padding: 14px 18px; font-size: 13px; color: #991B1B; margin-bottom: 20px; }
+
+/* ── EMPTY ── */
+.empty-state { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 13px; }
+
+/* ── UTILITIES ── */
+.fw7 { font-weight: 700; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.full-span { grid-column: 1 / -1; }
+
+@media (max-width: 680px) {
+  .main { padding: 16px; }
+  .metrics-row { grid-template-columns: 1fr 1fr; }
+  .metrics-row .metric-card:last-child { grid-column: 1 / -1; }
+  .tier-row { grid-template-columns: repeat(3, 1fr); }
+  .tier-row .tier-card:nth-child(4), .tier-row .tier-card:nth-child(5) { grid-column: span 1; }
+  .detail-fields { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .topbar-title .sub-part { display: none; }
 }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="topbar">
-    <div class="topbar-logo">A</div>
-    <div class="topbar-info">
-      <div class="topbar-title">Aaradhya Pharmaceuticals — Partner Rewards</div>
-      <div class="topbar-sub" id="data-status">Loading live data...</div>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo-mark">A</div>
+    <div style="flex:1">
+      <div class="topbar-title">Partner Rewards <span class="sub-part" style="opacity:0.4;font-weight:400">· Aaradhya Pharmaceuticals</span></div>
+      <div class="topbar-sub" id="data-status">Connecting to Google Sheets…</div>
     </div>
     <div class="topbar-actions">
       <div id="nav-back-wrap" style="display:none">
-        <button class="btn" onclick="goBack()">
-          <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg> Back
-        </button>
+        <button class="btn btn-ghost btn-sm" onclick="goBack()">← Back</button>
       </div>
       <div id="nav-home-wrap" style="display:none">
-        <button class="btn" onclick="goHome()">
-          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home
-        </button>
+        <button class="btn btn-ghost btn-sm" onclick="goHome()">⌂ Dashboard</button>
       </div>
-      <div class="nav-tabs" id="main-tabs">
-        <button class="nav-tab active" onclick="showPage('dashboard');setTab(this)">Dashboard</button>
-        <button class="nav-tab" onclick="showPage('details');setTab(this)">Partners</button>
+      <div class="tab-row" id="main-tabs">
+        <button class="tab-btn active" onclick="switchTab('dashboard', this)">Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('details', this)">Partners</button>
       </div>
-      <button class="btn primary" onclick="loadData()">
-        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        Refresh
-      </button>
+      <button class="btn btn-amber btn-sm" onclick="loadData()">↺ Refresh</button>
     </div>
-  </div>
+  </header>
 
-  <div id="loading-state" class="loading">
-    <div class="loading-spinner"></div>
-    <div>Fetching data from Google Sheets...</div>
-    <div style="font-size:12px;margin-top:8px;color:#9ca3af">This may take a few seconds</div>
-  </div>
+  <main class="main">
 
-  <div id="error-state" class="error-msg" style="display:none"></div>
-
-  <!-- DASHBOARD PAGE -->
-  <div id="page-dashboard" class="page">
-    <div class="filter-bar">
-      <span class="filter-label">Period:</span>
-      <div id="month-filters" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    <!-- LOADING -->
+    <div id="loading-state" class="loading-wrap">
+      <div class="spinner"></div>
+      <div class="loading-txt">Fetching live data…</div>
+      <div class="loading-hint">Reading from Google Sheets</div>
     </div>
-    <div class="metric-grid" id="metrics-area"></div>
-    <div class="card">
-      <div class="section-title">Partners by tier — live count</div>
-      <div class="tier-grid" id="tier-grid-area"></div>
-    </div>
-    <div class="card">
-      <div class="section-title">Top purchasers</div>
-      <div class="top-list" id="top-list-area"></div>
-    </div>
-  </div>
 
-  <!-- DETAILS LIST PAGE -->
-  <div id="page-details" class="page">
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="search-box" type="text" id="search-input" placeholder="Search partner name..." oninput="filterBiz()">
-    </div>
-    <div id="biz-list-area" class="biz-list"></div>
-  </div>
+    <!-- ERROR -->
+    <div id="error-state" class="error-banner" style="display:none"></div>
 
-  <!-- DETAIL PAGE -->
-  <div id="page-detail" class="page"></div>
+    <!-- ══ DASHBOARD PAGE ══ -->
+    <div id="page-dashboard" class="page">
+      <div class="filter-row">
+        <span class="filter-label">Period</span>
+        <div id="month-filters" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+      <div class="metrics-row" id="metrics-area"></div>
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:20px 22px;margin-bottom:16px">
+        <div class="section-hd"><h2>Partners by tier</h2></div>
+        <div class="tier-row" id="tier-row-area"></div>
+      </div>
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:0 0 4px">
+        <div style="padding:18px 20px 4px">
+          <div class="section-hd"><h2>Top purchasers</h2></div>
+        </div>
+        <div class="top-list" id="top-list-area"></div>
+      </div>
+    </div>
+
+    <!-- ══ PARTNERS LIST PAGE ══ -->
+    <div id="page-details" class="page">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-box" id="search-input" type="text" placeholder="Search by business name or city…" oninput="filterBiz()">
+      </div>
+      <div class="biz-list" id="biz-list-area"></div>
+    </div>
+
+    <!-- ══ DETAIL PAGE ══ -->
+    <div id="page-detail" class="page"></div>
+
+  </main>
 </div>
 
 <script>
+/* ─── DATA ─── */
 const SHEET_ID = '17bW1LAfb4QxzGa7cNG_qsFjR6pdt5Q7D34IKBSRH-Lg';
-const BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=';
+const BASE_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=';
 
-let customers = [], orders = [];
+let customers = [], orders = [], allMonths = [];
 let selectedMonth = 'All';
 let navStack = ['dashboard'];
-let allMonths = [];
 
+/* ─── TIER CONFIG ─── */
 const TIERS = [
-  {name:'Diamond Partner', emoji:'💎', min:100000, bg:'#E8F0FE', border:'#4472C4', text:'#042C53', badge:'#E8F0FE', badgeText:'#042C53'},
-  {name:'Platinum Partner', emoji:'🌟', min:70000, bg:'#F0F0FE', border:'#7B68EE', text:'#26215C', badge:'#EEEDFE', badgeText:'#26215C'},
-  {name:'Gold Partner', emoji:'🥇', min:50000, bg:'#FFFBEB', border:'#D97706', text:'#78350F', badge:'#FEF3C7', badgeText:'#78350F'},
-  {name:'Silver Partner', emoji:'🥈', min:20000, bg:'#F8F9FA', border:'#808080', text:'#2C2C2A', badge:'#F1EFE8', badgeText:'#2C2C2A'},
-  {name:'Bronze Partner', emoji:'🥉', min:10000, bg:'#FFF7F4', border:'#CD7F32', text:'#7C3015', badge:'#FAECE7', badgeText:'#7C3015'},
+  { name:'Diamond Partner', emoji:'💎', min:100000, color:'#1D4ED8', bg:'#EFF6FF', text:'#1E40AF', borderTop:'#1D4ED8' },
+  { name:'Platinum Partner', emoji:'🌟', min:70000,  color:'#7C3AED', bg:'#F5F3FF', text:'#5B21B6', borderTop:'#7C3AED' },
+  { name:'Gold Partner',    emoji:'🥇', min:50000,  color:'#D97706', bg:'#FFFBEB', text:'#92400E', borderTop:'#D97706' },
+  { name:'Silver Partner',  emoji:'🥈', min:20000,  color:'#64748B', bg:'#F8FAFC', text:'#475569', borderTop:'#94A3B8' },
+  { name:'Bronze Partner',  emoji:'🥉', min:10000,  color:'#B45309', bg:'#FFFBEB', text:'#92400E', borderTop:'#CD7F32' },
 ];
+const UNRANKED = { name:'Unranked', emoji:'—', min:0, color:'#CBD5E1', bg:'#F8FAFC', text:'#94A3B8', borderTop:'#CBD5E1' };
 
-const UNRANKED = {name:'Unranked', emoji:'⚪', min:0, bg:'#F9FAFB', border:'#E5E7EB', text:'#6B7280', badge:'#F3F4F6', badgeText:'#6B7280'};
-
-function getTier(amount) {
-  for (const t of TIERS) { if (amount >= t.min) return t; }
+function getTier(amt) {
+  for (const t of TIERS) if (amt >= t.min) return t;
   return UNRANKED;
 }
 
-function fmtCurr(n) {
-  return '₹' + Math.round(n).toLocaleString('en-IN');
-}
+/* ─── FORMATTING ─── */
+function fmtINR(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
 
-function parseCSV(text) {
+/* ─── CSV PARSER ─── */
+function parseCSV(txt) {
   const rows = [];
   let cur = '', inQ = false, row = [];
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
+  for (let i = 0; i < txt.length; i++) {
+    const c = txt[i];
     if (c === '"') {
-      if (inQ && text[i + 1] === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
+      if (inQ && txt[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ;
     } else if (c === ',' && !inQ) {
       row.push(cur.trim()); cur = '';
     } else if ((c === '\n' || c === '\r') && !inQ) {
-      if (c === '\r' && text[i + 1] === '\n') i++;
+      if (c === '\r' && txt[i+1] === '\n') i++;
       row.push(cur.trim()); cur = '';
       if (row.some(x => x !== '')) rows.push(row);
       row = [];
     } else cur += c;
   }
-  if (cur || row.length) { row.push(cur.trim()); if (row.some(x => x !== '')) rows.push(row); }
+  if (row.length) { row.push(cur.trim()); if (row.some(x=>x!=='')) rows.push(row); }
   return rows;
 }
 
-async function fetchSheet(sheet) {
-  const res = await fetch(BASE + encodeURIComponent(sheet));
-  if (!res.ok) throw new Error('Cannot fetch sheet: ' + sheet);
-  return parseCSV(await res.text());
+async function fetchSheet(name) {
+  const r = await fetch(BASE_URL + encodeURIComponent(name));
+  if (!r.ok) throw new Error('Cannot read sheet "' + name + '"');
+  return parseCSV(await r.text());
 }
 
+/* ─── LOAD ─── */
 async function loadData() {
   document.getElementById('loading-state').style.display = 'block';
   document.getElementById('error-state').style.display = 'none';
-  ['dashboard','details','detail'].forEach(p => document.getElementById('page-' + p).classList.remove('visible'));
-  document.getElementById('main-tabs').style.display = 'flex';
-  document.getElementById('nav-back-wrap').style.display = 'none';
-  document.getElementById('nav-home-wrap').style.display = 'none';
+  ['dashboard','details','detail'].forEach(p => document.getElementById('page-'+p).classList.remove('visible'));
 
   try {
-    const [custRows, ordRows] = await Promise.all([fetchSheet('1_CUSTOMERS'), fetchSheet('2_ORDERS')]);
+    const [cr, or] = await Promise.all([fetchSheet('1_CUSTOMERS'), fetchSheet('2_ORDERS')]);
 
     customers = [];
-    for (let i = 1; i < custRows.length; i++) {
-      const r = custRows[i];
+    for (let i = 1; i < cr.length; i++) {
+      const r = cr[i];
       if (!r[0] || !r[1]) continue;
-      customers.push({
-        id: r[0], name: r[1], owner: r[2] || '', mobile: r[3] || '',
-        address: r[5] || '', city: r[6] || '', district: r[7] || '',
-        license: r[9] || ''
-      });
+      customers.push({ id:r[0], name:r[1], owner:r[2]||'', mobile:r[3]||'', address:r[5]||'', city:r[6]||'', district:r[7]||'', license:r[9]||'' });
     }
 
     orders = [];
-    for (let i = 1; i < ordRows.length; i++) {
-      const r = ordRows[i];
+    for (let i = 1; i < or.length; i++) {
+      const r = or[i];
       if (!r[0]) continue;
-      const raw = (r[6] || '').replace(/[₹,\s]/g, '');
-      const amt = parseFloat(raw) || 0;
-      orders.push({ id: r[0], custId: r[1] || '', bizName: r[2] || '', date: r[3] || '', month: r[4] || '', amount: amt });
+      const amt = parseFloat((r[6]||'').replace(/[₹,\s]/g,'')) || 0;
+      orders.push({ id:r[0], custId:r[1]||'', bizName:r[2]||'', date:r[3]||'', month:r[4]||'', amount:amt });
     }
 
-    allMonths = [...new Set(orders.map(o => o.month).filter(Boolean))].sort((a, b) => {
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const parse = m => { const p = m.split('-'); return parseInt(p[1]) * 12 + months.indexOf(p[0]); };
-      return parse(a) - parse(b);
-    }).reverse();
+    /* sort months chronologically */
+    const MMAP = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+    allMonths = [...new Set(orders.map(o=>o.month).filter(Boolean))].sort((a,b) => {
+      const pa = a.split('-'), pb = b.split('-');
+      const ya = parseInt(pa[1]||0), yb = parseInt(pb[1]||0);
+      if (ya !== yb) return yb - ya;
+      return (MMAP[pb[0]]||0) - (MMAP[pa[0]]||0);
+    });
 
-    buildMonthFilters();
-    renderDashboard();
-    renderBizList();
+    buildFilters();
+    renderDash();
+    buildBizList();
 
     document.getElementById('loading-state').style.display = 'none';
-    document.getElementById('data-status').textContent = `Live data · ${customers.length} partners · ${orders.length} orders`;
+    document.getElementById('data-status').textContent = `Live · ${customers.length} partners · ${orders.length} orders`;
     showPage('dashboard');
-  } catch (e) {
+  } catch(e) {
     document.getElementById('loading-state').style.display = 'none';
     const el = document.getElementById('error-state');
     el.style.display = 'block';
-    el.innerHTML = '<strong>Error loading data:</strong> ' + e.message + '<br><small>Make sure the Google Sheet is publicly accessible (Anyone with link → Viewer).</small>';
+    el.innerHTML = '<strong>Could not load data:</strong> ' + e.message + ' — Ensure the sheet is set to "Anyone with the link can view".';
   }
 }
 
-function buildMonthFilters() {
-  const container = document.getElementById('month-filters');
-  container.innerHTML = '';
+/* ─── FILTERS ─── */
+function buildFilters() {
+  const c = document.getElementById('month-filters');
+  c.innerHTML = '';
   ['All', ...allMonths].forEach(m => {
     const b = document.createElement('button');
-    b.className = 'filter-btn' + (m === selectedMonth ? ' sel' : '');
+    b.className = 'pill' + (m === selectedMonth ? ' active' : '');
     b.textContent = m;
-    b.onclick = () => { selectedMonth = m; buildMonthFilters(); renderDashboard(); };
-    container.appendChild(b);
+    b.onclick = () => { selectedMonth = m; buildFilters(); renderDash(); };
+    c.appendChild(b);
   });
 }
 
-function getFilteredOrders() {
-  if (selectedMonth === 'All') return orders;
-  return orders.filter(o => o.month === selectedMonth);
+function filteredOrders() {
+  return selectedMonth === 'All' ? orders : orders.filter(o => o.month === selectedMonth);
 }
 
-function calcCustTotals(ordList) {
-  const totals = {};
-  ordList.forEach(o => {
-    if (!o.custId || o.custId.toLowerCase() === 'unknown') return;
-    totals[o.custId] = (totals[o.custId] || 0) + o.amount;
+function custTotalsFrom(ords) {
+  const t = {};
+  ords.forEach(o => {
+    if (!o.custId || o.custId.toLowerCase()==='unknown') return;
+    t[o.custId] = (t[o.custId]||0) + o.amount;
   });
-  return totals;
+  return t;
 }
 
-function renderDashboard() {
-  const filtered = getFilteredOrders();
-  const custTotals = calcCustTotals(filtered);
-  const custIds = Object.keys(custTotals);
+/* ─── DASHBOARD ─── */
+function renderDash() {
+  const ords = filteredOrders();
+  const totals = custTotalsFrom(ords);
+  const ids = Object.keys(totals);
+  const revenue = ords.reduce((s,o)=>s+o.amount,0);
 
-  const totalRev = filtered.reduce((s, o) => s + o.amount, 0);
-
+  /* metrics */
   document.getElementById('metrics-area').innerHTML = `
-    <div class="metric-card">
-      <div class="metric-label">Active partners</div>
-      <div class="metric-value">${custIds.length}</div>
+    <div class="metric-card accent">
+      <div class="metric-lbl">Total Revenue</div>
+      <div class="metric-val" style="font-size:24px">${fmtINR(revenue)}</div>
+      <div class="metric-sub">${selectedMonth === 'All' ? 'All time' : selectedMonth}</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">Total orders</div>
-      <div class="metric-value">${filtered.length}</div>
+      <div class="metric-lbl">Active Partners</div>
+      <div class="metric-val">${ids.length}</div>
+      <div class="metric-sub">with orders placed</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">Total revenue</div>
-      <div class="metric-value small">${fmtCurr(totalRev)}</div>
-    </div>
-  `;
+      <div class="metric-lbl">Total Orders</div>
+      <div class="metric-val">${ords.length}</div>
+      <div class="metric-sub">transactions</div>
+    </div>`;
 
-  const tierCounts = TIERS.map((t, i) => {
-    const nextMin = i > 0 ? TIERS[i - 1].min : Infinity;
-    const count = custIds.filter(id => custTotals[id] >= t.min && custTotals[id] < nextMin).length;
-    return { ...t, count };
-  });
+  /* tiers */
+  const tierCards = TIERS.map((t, i) => {
+    const nextMin = i > 0 ? TIERS[i-1].min : Infinity;
+    const cnt = ids.filter(id => totals[id] >= t.min && totals[id] < nextMin).length;
+    return `<div class="tier-card" style="border-top-color:${t.borderTop}">
+      <div class="tier-emoji">${t.emoji}</div>
+      <div class="tier-nm" style="color:${t.color}">${t.name.replace(' Partner','')}</div>
+      <div class="tier-ct" style="color:${t.text}">${cnt}</div>
+      <div class="tier-mn">≥ ${fmtINR(t.min)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('tier-row-area').innerHTML = tierCards;
 
-  document.getElementById('tier-grid-area').innerHTML = tierCounts.map(t => `
-    <div class="tier-card" style="background:${t.bg};border-color:${t.border}40;border-style:solid;border-width:1px">
-      <div class="tier-icon">${t.emoji}</div>
-      <div class="tier-name" style="color:${t.border}">${t.name.replace(' Partner','')}</div>
-      <div class="tier-count" style="color:${t.text}">${t.count}</div>
-      <div class="tier-thresh" style="color:${t.border}">≥ ${fmtCurr(t.min)}/mo</div>
-    </div>
-  `).join('');
+  /* top 5 */
+  const sorted = ids.sort((a,b) => totals[b]-totals[a]).slice(0,5);
+  const custNameMap = {};
+  ords.forEach(o => { if(o.custId && o.bizName) custNameMap[o.custId] = o.bizName; });
 
-  const custNames = {};
-  filtered.forEach(o => { if (o.custId && o.bizName) custNames[o.custId] = o.bizName; });
-
-  const sorted = custIds.sort((a, b) => custTotals[b] - custTotals[a]).slice(0, 5);
   const medals = [
-    { icon: '🥇', bg: '#FEF9C3', text: '#78350F', label: 'Rank #1' },
-    { icon: '🥈', bg: '#F1F5F9', text: '#334155', label: 'Rank #2' },
-    { icon: '🥉', bg: '#FFF7F4', text: '#7C3015', label: 'Rank #3' },
-    { icon: '4', bg: '#F3F4F6', text: '#6B7280', label: 'Rank #4' },
-    { icon: '5', bg: '#F3F4F6', text: '#6B7280', label: 'Rank #5' },
+    {bg:'#FEF3C7',color:'#D97706',label:'#1'},
+    {bg:'#F1F5F9',color:'#64748B',label:'#2'},
+    {bg:'#FFF7ED',color:'#B45309',label:'#3'},
+    {bg:'#F3F4F6',color:'#9CA3AF',label:'#4'},
+    {bg:'#F3F4F6',color:'#9CA3AF',label:'#5'},
   ];
 
   document.getElementById('top-list-area').innerHTML = sorted.length === 0
-    ? '<div style="text-align:center;color:#6b7280;padding:20px;font-size:13px">No orders in selected period</div>'
-    : sorted.map((id, i) => {
+    ? '<div class="empty-state">No orders in selected period</div>'
+    : sorted.map((id,i) => {
       const m = medals[i];
-      const tier = getTier(custTotals[id]);
+      const tier = getTier(totals[id]);
+      const nm = custNameMap[id] || id;
       return `<div class="top-item" onclick="showDetailById('${id}')">
-        <div class="rank-badge" style="background:${m.bg};color:${m.text}">${m.icon}</div>
-        <div style="flex:1">
-          <div class="top-name">${custNames[id] || id}</div>
-          <div class="top-tier">${tier.emoji} ${tier.name}</div>
+        <div class="rank-num" style="background:${m.bg};color:${m.color}">${m.label}</div>
+        <div class="top-info">
+          <div class="top-nm">${nm}</div>
+          <div class="top-sub">${tier.emoji} ${tier.name}</div>
         </div>
-        <div class="top-amt">${fmtCurr(custTotals[id])}</div>
-        <svg style="width:14px;height:14px;stroke:#9ca3af;fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        <div class="top-right">
+          <div class="top-amt">${fmtINR(totals[id])}</div>
+          <div class="top-badge" style="background:${tier.bg};color:${tier.color}">${tier.name}</div>
+        </div>
+        <span class="chev">›</span>
       </div>`;
     }).join('');
 }
 
-function renderBizList() {
-  const allTotals = calcCustTotals(orders);
+/* ─── BIZ LIST ─── */
+function buildBizList() {
+  const allTotals = custTotalsFrom(orders);
   window._allTotals = allTotals;
-  const sorted = [...customers].sort((a, b) => (allTotals[b.id] || 0) - (allTotals[a.id] || 0));
-  window._sortedCustomers = sorted;
+  const sorted = [...customers].sort((a,b)=>(allTotals[b.id]||0)-(allTotals[a.id]||0));
+  window._sortedCust = sorted;
   renderBizCards(sorted);
 }
 
+function initials(name) { return name.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?'; }
+
 function renderBizCards(list) {
-  const totals = window._allTotals || {};
-  document.getElementById('biz-list-area').innerHTML = list.slice(0, 150).map(c => {
-    const amt = totals[c.id] || 0;
+  const t = window._allTotals || {};
+  if (!list.length) { document.getElementById('biz-list-area').innerHTML = '<div class="empty-state">No partners found</div>'; return; }
+  document.getElementById('biz-list-area').innerHTML = list.slice(0,200).map(c => {
+    const amt = t[c.id]||0;
     const tier = getTier(amt);
-    return `<div class="biz-item" onclick="showDetailById('${c.id}')">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div class="biz-name" style="flex:1;margin-right:8px">${c.name}</div>
-        <span style="font-size:16px">${tier.emoji}</span>
+    const ini = initials(c.name);
+    return `<div class="biz-item" style="border-left-color:transparent" onmouseenter="this.style.borderLeftColor='${tier.color}'" onmouseleave="this.style.borderLeftColor='transparent'" onclick="showDetailById('${c.id}')">
+      <div class="biz-avatar" style="background:${tier.bg};color:${tier.color}">${ini}</div>
+      <div class="biz-info">
+        <div class="biz-nm">${c.name}</div>
+        <div class="biz-meta">${[c.city,c.district].filter(Boolean).join(' · ') || 'Location not set'}</div>
       </div>
-      <div class="biz-meta">${c.city || c.district || '—'} · ${tier.name}</div>
-      ${amt > 0 ? `<div style="font-size:12px;font-weight:600;color:#1e3a5f;margin-top:4px">${fmtCurr(amt)} all-time</div>` : '<div style="font-size:12px;color:#d1d5db;margin-top:4px">No orders yet</div>'}
+      <div class="biz-right">
+        ${amt > 0 ? `<div class="biz-amt">${fmtINR(amt)}</div>` : '<div style="font-size:12px;color:var(--muted)">No orders</div>'}
+        <div class="biz-tier-tag" style="background:${tier.bg};color:${tier.color}">${tier.emoji} ${tier.name}</div>
+      </div>
+      <span style="color:var(--slate-light);font-size:18px;margin-left:4px">›</span>
     </div>`;
   }).join('');
 }
 
 function filterBiz() {
   const q = document.getElementById('search-input').value.toLowerCase();
-  const filtered = (window._sortedCustomers || []).filter(c => c.name.toLowerCase().includes(q) || (c.city || '').toLowerCase().includes(q));
-  renderBizCards(filtered);
+  const res = (window._sortedCust||[]).filter(c =>
+    c.name.toLowerCase().includes(q) ||
+    c.city.toLowerCase().includes(q) ||
+    c.district.toLowerCase().includes(q)
+  );
+  renderBizCards(res);
 }
 
+/* ─── DETAIL ─── */
 function showDetailById(custId) {
-  const cust = customers.find(c => c.id === custId);
-  if (!cust) return;
+  const c = customers.find(x=>x.id===custId);
+  if (!c) return;
 
-  const custOrders = orders.filter(o => o.custId === custId);
-  const latestMonth = allMonths[0] || '';
-  const monthOrders = custOrders.filter(o => o.month === latestMonth);
-  const monthPurchase = monthOrders.reduce((s, o) => s + o.amount, 0);
-  const monthCount = monthOrders.length;
-  const allTimePurchase = custOrders.reduce((s, o) => s + o.amount, 0);
-  const allTimeCount = custOrders.length;
-  const tier = getTier(monthPurchase);
+  const custOrds = orders.filter(o=>o.custId===custId);
+  const latestMo = allMonths[0]||'';
+  const moOrds = custOrds.filter(o=>o.month===latestMo);
+  const moPurchase = moOrds.reduce((s,o)=>s+o.amount,0);
+  const moCount = moOrds.length;
+  const allPurchase = custOrds.reduce((s,o)=>s+o.amount,0);
+  const allCount = custOrds.length;
+  const tier = getTier(moPurchase > 0 ? moPurchase : allPurchase / Math.max(allMonths.length,1));
+  const ini = initials(c.name);
 
-  const initials = cust.name.split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || '?';
+  /* sort orders newest first */
+  const MMAP = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+  const parseDateStr = d => {
+    const p = d.split('-');
+    return p.length===3 ? new Date(2000+parseInt(p[2]||0), MMAP[p[1]]||1, parseInt(p[0])||1) : new Date(0);
+  };
+  const sorted = custOrds.slice().sort((a,b) => parseDateStr(b.date)-parseDateStr(a.date));
 
   document.getElementById('page-detail').innerHTML = `
-    <div class="detail-hero" style="background:${tier.bg};border-color:${tier.border}60">
-      <div class="detail-header">
-        <div class="avatar" style="background:${tier.border}25;color:${tier.border}">${initials}</div>
-        <div>
-          <div class="detail-name" style="color:${tier.text}">${cust.name}</div>
-          <span class="tier-badge" style="background:${tier.badge};color:${tier.badgeText}">${tier.emoji} ${tier.name}</span>
+    <div class="detail-hero" style="border-left-color:${tier.color}">
+      <div class="detail-hdr">
+        <div class="detail-avatar" style="background:${tier.bg};color:${tier.color}">${ini}</div>
+        <div style="flex:1">
+          <div class="detail-name">${c.name}</div>
+          <div class="tier-pill" style="background:${tier.bg};color:${tier.color}">${tier.emoji} ${tier.name}</div>
         </div>
       </div>
       <div class="detail-fields">
-        <div class="field"><div class="field-label">Customer ID</div><div class="field-value" style="font-size:12px;letter-spacing:0.02em">${cust.id}</div></div>
-        <div class="field"><div class="field-label">Owner name</div><div class="field-value">${cust.owner || '—'}</div></div>
-        <div class="field"><div class="field-label">Mobile (WhatsApp)</div><div class="field-value">${cust.mobile ? '<a href="tel:' + cust.mobile + '" style="color:#1e3a5f;text-decoration:none">'+cust.mobile+'</a>' : '—'}</div></div>
-        <div class="field"><div class="field-label">City / District</div><div class="field-value">${[cust.city, cust.district].filter(Boolean).join(' · ') || '—'}</div></div>
-        <div class="field" style="grid-column:1/-1"><div class="field-label">Address</div><div class="field-value">${cust.address || '—'}</div></div>
-        <div class="field" style="grid-column:1/-1"><div class="field-label">Drug license no.</div><div class="field-value" style="font-size:12px;letter-spacing:0.03em">${cust.license || '—'}</div></div>
+        <div class="det-field">
+          <div class="det-lbl">Customer ID</div>
+          <div class="det-val" style="font-family:monospace;font-size:12px;letter-spacing:0.03em">${c.id}</div>
+        </div>
+        <div class="det-field">
+          <div class="det-lbl">Owner name</div>
+          <div class="det-val">${c.owner||'—'}</div>
+        </div>
+        <div class="det-field">
+          <div class="det-lbl">Mobile (WhatsApp)</div>
+          <div class="det-val">${c.mobile ? `<a href="tel:${c.mobile}" style="color:var(--navy);text-decoration:none">${c.mobile}</a>` : '—'}</div>
+        </div>
+        <div class="det-field">
+          <div class="det-lbl">City · District</div>
+          <div class="det-val">${[c.city,c.district].filter(Boolean).join(' · ')||'—'}</div>
+        </div>
+        <div class="det-field full-span">
+          <div class="det-lbl">Address</div>
+          <div class="det-val">${c.address||'—'}</div>
+        </div>
+        <div class="det-field full-span">
+          <div class="det-lbl">Drug licence no.</div>
+          <div class="det-val" style="font-family:monospace;font-size:12px">${c.license||'—'}</div>
+        </div>
       </div>
-      <div class="stats-grid">
+      <div class="stats-row">
         <div class="stat-box">
-          <div class="stat-num" style="color:${tier.border}">${fmtCurr(monthPurchase)}</div>
-          <div class="stat-lbl">Purchases · ${latestMonth || 'this month'}</div>
+          <div class="stat-n" style="color:${tier.color}">${fmtINR(moPurchase)}</div>
+          <div class="stat-l">This month</div>
         </div>
         <div class="stat-box">
-          <div class="stat-num" style="color:${tier.border}">${monthCount}</div>
-          <div class="stat-lbl">Orders · ${latestMonth || 'this month'}</div>
+          <div class="stat-n" style="color:${tier.color}">${moCount}</div>
+          <div class="stat-l">Orders · ${latestMo}</div>
         </div>
         <div class="stat-box">
-          <div class="stat-num">${fmtCurr(allTimePurchase)}</div>
-          <div class="stat-lbl">All-time purchases</div>
+          <div class="stat-n">${fmtINR(allPurchase)}</div>
+          <div class="stat-l">All-time value</div>
         </div>
         <div class="stat-box">
-          <div class="stat-num">${allTimeCount}</div>
-          <div class="stat-lbl">All-time orders</div>
+          <div class="stat-n">${allCount}</div>
+          <div class="stat-l">All-time orders</div>
         </div>
       </div>
     </div>
-    ${custOrders.length > 0 ? `
-    <div class="card">
-      <div class="section-title">Order history (${allTimeCount} orders)</div>
-      <table class="orders-table">
+
+    ${sorted.length > 0 ? `
+    <div class="orders-card">
+      <div class="orders-card-hd">Order history — ${allCount} orders</div>
+      <table class="orders-tbl">
         <thead><tr>
           <th>Order ID</th><th>Date</th><th>Month</th><th style="text-align:right">Amount</th>
         </tr></thead>
         <tbody>
-          ${custOrders.slice().sort((a, b) => {
-            const dp = d => { const p = d.split('-'); return p.length===3 ? new Date(p[2],['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(p[1]),+p[0]) : new Date(0); };
-            return dp(b.date) - dp(a.date);
-          }).slice(0, 20).map(o => `
-          <tr>
-            <td style="font-family:monospace;font-size:11px;color:#6b7280">${o.id}</td>
+          ${sorted.slice(0,25).map(o=>`<tr>
+            <td><span class="order-id">${o.id}</span></td>
             <td>${o.date}</td>
-            <td><span style="font-size:11px;background:#F3F4F6;padding:2px 8px;border-radius:4px;color:#374151">${o.month}</span></td>
-            <td style="text-align:right;font-weight:600;color:#1e3a5f">${fmtCurr(o.amount)}</td>
+            <td><span class="month-tag">${o.month}</span></td>
+            <td class="amount-cell">${fmtINR(o.amount)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
-      ${allTimeCount > 20 ? `<div style="text-align:center;font-size:12px;color:#9ca3af;padding:10px 0">Showing 20 of ${allTimeCount} orders</div>` : ''}
-    </div>` : '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:20px">No orders found for this partner.</div>'}
+      ${allCount > 25 ? `<div style="text-align:center;padding:12px;font-size:12px;color:var(--muted)">Showing 25 of ${allCount} orders</div>` : ''}
+    </div>` : '<div class="empty-state" style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:32px">No orders found for this partner</div>'}
   `;
   showPage('detail');
 }
 
+/* ─── NAVIGATION ─── */
 function showPage(page) {
-  ['dashboard', 'details', 'detail'].forEach(p => document.getElementById('page-' + p).classList.remove('visible'));
-  document.getElementById('page-' + page).classList.add('visible');
-  const onDetail = page === 'detail';
-  const onDash = page === 'dashboard';
-  document.getElementById('main-tabs').style.display = onDetail ? 'none' : 'flex';
-  document.getElementById('nav-back-wrap').style.display = onDetail ? 'block' : 'none';
-  document.getElementById('nav-home-wrap').style.display = onDetail ? 'block' : 'none';
-  if (navStack[navStack.length - 1] !== page) navStack.push(page);
-  if (page === 'dashboard') {
-    document.querySelectorAll('.nav-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
-  } else if (page === 'details') {
-    document.querySelectorAll('.nav-tab').forEach((t, i) => t.classList.toggle('active', i === 1));
+  ['dashboard','details','detail'].forEach(p => document.getElementById('page-'+p).classList.remove('visible'));
+  document.getElementById('page-'+page).classList.add('visible');
+  const isDetail = page === 'detail';
+  document.getElementById('main-tabs').style.display = isDetail ? 'none' : 'flex';
+  document.getElementById('nav-back-wrap').style.display = isDetail ? 'block' : 'none';
+  document.getElementById('nav-home-wrap').style.display = isDetail ? 'block' : 'none';
+  if (navStack[navStack.length-1] !== page) navStack.push(page);
+  if (!isDetail) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (page==='dashboard'&&i===0)||(page==='details'&&i===1)));
   }
+  window.scrollTo(0,0);
 }
 
-function goHome() {
-  navStack = ['dashboard'];
-  showPage('dashboard');
+function switchTab(page, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  navStack = [page];
+  showPage(page);
 }
 
+function goHome() { navStack = ['dashboard']; showPage('dashboard'); }
 function goBack() {
   navStack.pop();
-  const prev = navStack[navStack.length - 1] || 'dashboard';
-  if (prev !== 'detail') navStack = [prev];
-  showPage(prev);
-}
-
-function setTab(el) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  showPage(navStack[navStack.length-1]||'dashboard');
 }
 
 loadData();
