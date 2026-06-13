@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aaradhya Pharmaceuticals — Partner Rewards</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;min-height:100vh;color:#1a1a1a}
+.app{max-width:960px;margin:0 auto;padding:16px}
+/* Topbar */
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.topbar-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1e3a5f,#2e6fa7);display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:700;flex-shrink:0}
+.topbar-info{flex:1}
+.topbar-title{font-size:15px;font-weight:600;color:#1a1a1a}
+.topbar-sub{font-size:11px;color:#6b7280;margin-top:1px}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;cursor:pointer;transition:all 0.15s;white-space:nowrap;font-weight:500}
+.btn:hover{background:#f9fafb;border-color:#9ca3af}
+.btn.primary{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
+.btn.primary:hover{background:#162d4a}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* Pages */
+.page{display:none}
+.page.visible{display:block}
+/* Filter bar */
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;align-items:center}
+.filter-label{font-size:13px;color:#6b7280;font-weight:500}
+.filter-btn{padding:5px 14px;font-size:12px;border-radius:20px;border:1px solid #d1d5db;background:#fff;cursor:pointer;color:#6b7280;transition:all 0.15s;font-weight:500}
+.filter-btn.sel{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
+/* Metric cards */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.metric-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.metric-label{font-size:12px;color:#6b7280;margin-bottom:6px;font-weight:500}
+.metric-value{font-size:28px;font-weight:700;color:#1a1a1a}
+.metric-value.small{font-size:20px}
+/* Section card */
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.section-title{font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px}
+/* Tier grid */
+.tier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.tier-card{border-radius:10px;padding:14px 12px;text-align:center;border:1px solid transparent}
+.tier-icon{font-size:22px;margin-bottom:6px}
+.tier-name{font-size:11px;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em}
+.tier-count{font-size:26px;font-weight:700}
+.tier-thresh{font-size:10px;margin-top:4px;opacity:0.75}
+/* Top purchasers */
+.top-list{display:flex;flex-direction:column;gap:8px}
+.top-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f9fafb;border-radius:10px;cursor:pointer;transition:all 0.15s;border:1px solid #f3f4f6}
+.top-item:hover{background:#f3f4f6;border-color:#e5e7eb}
+.rank-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.top-name{flex:1;font-size:14px;font-weight:500;color:#1a1a1a}
+.top-amt{font-size:14px;font-weight:700;color:#1e3a5f}
+.top-tier{font-size:11px;color:#6b7280;margin-top:2px}
+/* Details list */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:#9ca3af;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.search-box{width:100%;padding:10px 12px 10px 38px;border:1px solid #d1d5db;border-radius:10px;background:#fff;color:#1a1a1a;font-size:14px;outline:none;transition:border 0.15s}
+.search-box:focus{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,0.1)}
+.biz-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.biz-item{padding:12px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;cursor:pointer;transition:all 0.15s}
+.biz-item:hover{border-color:#9ca3af;box-shadow:0 2px 6px rgba(0,0,0,0.06);transform:translateY(-1px)}
+.biz-name{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+.biz-meta{font-size:11px;color:#9ca3af;margin-top:2px}
+/* Detail card */
+.detail-hero{border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid transparent}
+.detail-header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.detail-name{font-size:18px;font-weight:700;margin-bottom:4px}
+.tier-badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.04em}
+.detail-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{background:rgba(255,255,255,0.65);border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.07)}
+.field-label{font-size:11px;color:#6b7280;margin-bottom:4px;font-weight:500}
+.field-value{font-size:13px;font-weight:600;color:#1a1a1a;word-break:break-all}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.stat-box{background:rgba(255,255,255,0.65);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(0,0,0,0.07)}
+.stat-num{font-size:20px;font-weight:700}
+.stat-lbl{font-size:11px;color:#6b7280;margin-top:3px;font-weight:500}
+/* Orders table */
+.orders-table{width:100%;border-collapse:collapse;font-size:13px}
+.orders-table th{text-align:left;padding:8px 10px;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb;font-size:11px;text-transform:uppercase;letter-spacing:0.04em}
+.orders-table td{padding:9px 10px;border-bottom:1px solid #f3f4f6;color:#374151}
+.orders-table tr:last-child td{border-bottom:none}
+.orders-table tr:hover td{background:#f9fafb}
+/* Loading */
+.loading{text-align:center;padding:48px 24px;color:#6b7280}
+.loading-spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#1e3a5f;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:10px;padding:14px 16px;font-size:13px;margin-bottom:16px}
+/* Nav dots */
+.nav-tabs{display:flex;gap:6px;background:#f3f4f6;border-radius:10px;padding:4px}
+.nav-tab{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:#6b7280;transition:all 0.15s;border:none;background:transparent}
+.nav-tab.active{background:#fff;color:#1e3a5f;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+@media(max-width:600px){
+.detail-fields{grid-template-columns:1fr}
+.stats-grid{grid-template-columns:1fr 1fr}
+.metric-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">A</div>
+    <div class="topbar-info">
+      <div class="topbar-title">Aaradhya Pharmaceuticals — Partner Rewards</div>
+      <div class="topbar-sub" id="data-status">Loading live data...</div>
+    </div>
+    <div class="topbar-actions">
+      <div id="nav-back-wrap" style="display:none">
+        <button class="btn" onclick="goBack()">
+          <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg> Back
+        </button>
+      </div>
+      <div id="nav-home-wrap" style="display:none">
+        <button class="btn" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home
+        </button>
+      </div>
+      <div class="nav-tabs" id="main-tabs">
+        <button class="nav-tab active" onclick="showPage('dashboard');setTab(this)">Dashboard</button>
+        <button class="nav-tab" onclick="showPage('details');setTab(this)">Partners</button>
+      </div>
+      <button class="btn primary" onclick="loadData()">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div id="loading-state" class="loading">
+    <div class="loading-spinner"></div>
+    <div>Fetching data from Google Sheets...</div>
+    <div style="font-size:12px;margin-top:8px;color:#9ca3af">This may take a few seconds</div>
+  </div>
+
+  <div id="error-state" class="error-msg" style="display:none"></div>
+
+  <!-- DASHBOARD PAGE -->
+  <div id="page-dashboard" class="page">
+    <div class="filter-bar">
+      <span class="filter-label">Period:</span>
+      <div id="month-filters" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <div class="metric-grid" id="metrics-area"></div>
+    <div class="card">
+      <div class="section-title">Partners by tier — live count</div>
+      <div class="tier-grid" id="tier-grid-area"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Top purchasers</div>
+      <div class="top-list" id="top-list-area"></div>
+    </div>
+  </div>
+
+  <!-- DETAILS LIST PAGE -->
+  <div id="page-details" class="page">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-box" type="text" id="search-input" placeholder="Search partner name..." oninput="filterBiz()">
+    </div>
+    <div id="biz-list-area" class="biz-list"></div>
+  </div>
+
+  <!-- DETAIL PAGE -->
+  <div id="page-detail" class="page"></div>
+</div>
+
+<script>
+const SHEET_ID = '17bW1LAfb4QxzGa7cNG_qsFjR6pdt5Q7D34IKBSRH-Lg';
+const BASE = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=';
+
+let customers = [], orders = [];
+let selectedMonth = 'All';
+let navStack = ['dashboard'];
+let allMonths = [];
+
+const TIERS = [
+  {name:'Diamond Partner', emoji:'💎', min:100000, bg:'#E8F0FE', border:'#4472C4', text:'#042C53', badge:'#E8F0FE', badgeText:'#042C53'},
+  {name:'Platinum Partner', emoji:'🌟', min:70000, bg:'#F0F0FE', border:'#7B68EE', text:'#26215C', badge:'#EEEDFE', badgeText:'#26215C'},
+  {name:'Gold Partner', emoji:'🥇', min:50000, bg:'#FFFBEB', border:'#D97706', text:'#78350F', badge:'#FEF3C7', badgeText:'#78350F'},
+  {name:'Silver Partner', emoji:'🥈', min:20000, bg:'#F8F9FA', border:'#808080', text:'#2C2C2A', badge:'#F1EFE8', badgeText:'#2C2C2A'},
+  {name:'Bronze Partner', emoji:'🥉', min:10000, bg:'#FFF7F4', border:'#CD7F32', text:'#7C3015', badge:'#FAECE7', badgeText:'#7C3015'},
+];
+
+const UNRANKED = {name:'Unranked', emoji:'⚪', min:0, bg:'#F9FAFB', border:'#E5E7EB', text:'#6B7280', badge:'#F3F4F6', badgeText:'#6B7280'};
+
+function getTier(amount) {
+  for (const t of TIERS) { if (amount >= t.min) return t; }
+  return UNRANKED;
+}
+
+function fmtCurr(n) {
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let cur = '', inQ = false, row = [];
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQ && text[i + 1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) {
+      row.push(cur.trim()); cur = '';
+    } else if ((c === '\n' || c === '\r') && !inQ) {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(cur.trim()); cur = '';
+      if (row.some(x => x !== '')) rows.push(row);
+      row = [];
+    } else cur += c;
+  }
+  if (cur || row.length) { row.push(cur.trim()); if (row.some(x => x !== '')) rows.push(row); }
+  return rows;
+}
+
+async function fetchSheet(sheet) {
+  const res = await fetch(BASE + encodeURIComponent(sheet));
+  if (!res.ok) throw new Error('Cannot fetch sheet: ' + sheet);
+  return parseCSV(await res.text());
+}
+
+async function loadData() {
+  document.getElementById('loading-state').style.display = 'block';
+  document.getElementById('error-state').style.display = 'none';
+  ['dashboard','details','detail'].forEach(p => document.getElementById('page-' + p).classList.remove('visible'));
+  document.getElementById('main-tabs').style.display = 'flex';
+  document.getElementById('nav-back-wrap').style.display = 'none';
+  document.getElementById('nav-home-wrap').style.display = 'none';
+
+  try {
+    const [custRows, ordRows] = await Promise.all([fetchSheet('1_CUSTOMERS'), fetchSheet('2_ORDERS')]);
+
+    customers = [];
+    for (let i = 1; i < custRows.length; i++) {
+      const r = custRows[i];
+      if (!r[0] || !r[1]) continue;
+      customers.push({
+        id: r[0], name: r[1], owner: r[2] || '', mobile: r[3] || '',
+        address: r[5] || '', city: r[6] || '', district: r[7] || '',
+        license: r[9] || ''
+      });
+    }
+
+    orders = [];
+    for (let i = 1; i < ordRows.length; i++) {
+      const r = ordRows[i];
+      if (!r[0]) continue;
+      const raw = (r[6] || '').replace(/[₹,\s]/g, '');
+      const amt = parseFloat(raw) || 0;
+      orders.push({ id: r[0], custId: r[1] || '', bizName: r[2] || '', date: r[3] || '', month: r[4] || '', amount: amt });
+    }
+
+    allMonths = [...new Set(orders.map(o => o.month).filter(Boolean))].sort((a, b) => {
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const parse = m => { const p = m.split('-'); return parseInt(p[1]) * 12 + months.indexOf(p[0]); };
+      return parse(a) - parse(b);
+    }).reverse();
+
+    buildMonthFilters();
+    renderDashboard();
+    renderBizList();
+
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('data-status').textContent = `Live data · ${customers.length} partners · ${orders.length} orders`;
+    showPage('dashboard');
+  } catch (e) {
+    document.getElementById('loading-state').style.display = 'none';
+    const el = document.getElementById('error-state');
+    el.style.display = 'block';
+    el.innerHTML = '<strong>Error loading data:</strong> ' + e.message + '<br><small>Make sure the Google Sheet is publicly accessible (Anyone with link → Viewer).</small>';
+  }
+}
+
+function buildMonthFilters() {
+  const container = document.getElementById('month-filters');
+  container.innerHTML = '';
+  ['All', ...allMonths].forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn' + (m === selectedMonth ? ' sel' : '');
+    b.textContent = m;
+    b.onclick = () => { selectedMonth = m; buildMonthFilters(); renderDashboard(); };
+    container.appendChild(b);
+  });
+}
+
+function getFilteredOrders() {
+  if (selectedMonth === 'All') return orders;
+  return orders.filter(o => o.month === selectedMonth);
+}
+
+function calcCustTotals(ordList) {
+  const totals = {};
+  ordList.forEach(o => {
+    if (!o.custId || o.custId.toLowerCase() === 'unknown') return;
+    totals[o.custId] = (totals[o.custId] || 0) + o.amount;
+  });
+  return totals;
+}
+
+function renderDashboard() {
+  const filtered = getFilteredOrders();
+  const custTotals = calcCustTotals(filtered);
+  const custIds = Object.keys(custTotals);
+
+  const totalRev = filtered.reduce((s, o) => s + o.amount, 0);
+
+  document.getElementById('metrics-area').innerHTML = `
+    <div class="metric-card">
+      <div class="metric-label">Active partners</div>
+      <div class="metric-value">${custIds.length}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total orders</div>
+      <div class="metric-value">${filtered.length}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total revenue</div>
+      <div class="metric-value small">${fmtCurr(totalRev)}</div>
+    </div>
+  `;
+
+  const tierCounts = TIERS.map((t, i) => {
+    const nextMin = i > 0 ? TIERS[i - 1].min : Infinity;
+    const count = custIds.filter(id => custTotals[id] >= t.min && custTotals[id] < nextMin).length;
+    return { ...t, count };
+  });
+
+  document.getElementById('tier-grid-area').innerHTML = tierCounts.map(t => `
+    <div class="tier-card" style="background:${t.bg};border-color:${t.border}40;border-style:solid;border-width:1px">
+      <div class="tier-icon">${t.emoji}</div>
+      <div class="tier-name" style="color:${t.border}">${t.name.replace(' Partner','')}</div>
+      <div class="tier-count" style="color:${t.text}">${t.count}</div>
+      <div class="tier-thresh" style="color:${t.border}">≥ ${fmtCurr(t.min)}/mo</div>
+    </div>
+  `).join('');
+
+  const custNames = {};
+  filtered.forEach(o => { if (o.custId && o.bizName) custNames[o.custId] = o.bizName; });
+
+  const sorted = custIds.sort((a, b) => custTotals[b] - custTotals[a]).slice(0, 5);
+  const medals = [
+    { icon: '🥇', bg: '#FEF9C3', text: '#78350F', label: 'Rank #1' },
+    { icon: '🥈', bg: '#F1F5F9', text: '#334155', label: 'Rank #2' },
+    { icon: '🥉', bg: '#FFF7F4', text: '#7C3015', label: 'Rank #3' },
+    { icon: '4', bg: '#F3F4F6', text: '#6B7280', label: 'Rank #4' },
+    { icon: '5', bg: '#F3F4F6', text: '#6B7280', label: 'Rank #5' },
+  ];
+
+  document.getElementById('top-list-area').innerHTML = sorted.length === 0
+    ? '<div style="text-align:center;color:#6b7280;padding:20px;font-size:13px">No orders in selected period</div>'
+    : sorted.map((id, i) => {
+      const m = medals[i];
+      const tier = getTier(custTotals[id]);
+      return `<div class="top-item" onclick="showDetailById('${id}')">
+        <div class="rank-badge" style="background:${m.bg};color:${m.text}">${m.icon}</div>
+        <div style="flex:1">
+          <div class="top-name">${custNames[id] || id}</div>
+          <div class="top-tier">${tier.emoji} ${tier.name}</div>
+        </div>
+        <div class="top-amt">${fmtCurr(custTotals[id])}</div>
+        <svg style="width:14px;height:14px;stroke:#9ca3af;fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>`;
+    }).join('');
+}
+
+function renderBizList() {
+  const allTotals = calcCustTotals(orders);
+  window._allTotals = allTotals;
+  const sorted = [...customers].sort((a, b) => (allTotals[b.id] || 0) - (allTotals[a.id] || 0));
+  window._sortedCustomers = sorted;
+  renderBizCards(sorted);
+}
+
+function renderBizCards(list) {
+  const totals = window._allTotals || {};
+  document.getElementById('biz-list-area').innerHTML = list.slice(0, 150).map(c => {
+    const amt = totals[c.id] || 0;
+    const tier = getTier(amt);
+    return `<div class="biz-item" onclick="showDetailById('${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="biz-name" style="flex:1;margin-right:8px">${c.name}</div>
+        <span style="font-size:16px">${tier.emoji}</span>
+      </div>
+      <div class="biz-meta">${c.city || c.district || '—'} · ${tier.name}</div>
+      ${amt > 0 ? `<div style="font-size:12px;font-weight:600;color:#1e3a5f;margin-top:4px">${fmtCurr(amt)} all-time</div>` : '<div style="font-size:12px;color:#d1d5db;margin-top:4px">No orders yet</div>'}
+    </div>`;
+  }).join('');
+}
+
+function filterBiz() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const filtered = (window._sortedCustomers || []).filter(c => c.name.toLowerCase().includes(q) || (c.city || '').toLowerCase().includes(q));
+  renderBizCards(filtered);
+}
+
+function showDetailById(custId) {
+  const cust = customers.find(c => c.id === custId);
+  if (!cust) return;
+
+  const custOrders = orders.filter(o => o.custId === custId);
+  const latestMonth = allMonths[0] || '';
+  const monthOrders = custOrders.filter(o => o.month === latestMonth);
+  const monthPurchase = monthOrders.reduce((s, o) => s + o.amount, 0);
+  const monthCount = monthOrders.length;
+  const allTimePurchase = custOrders.reduce((s, o) => s + o.amount, 0);
+  const allTimeCount = custOrders.length;
+  const tier = getTier(monthPurchase);
+
+  const initials = cust.name.split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || '?';
+
+  document.getElementById('page-detail').innerHTML = `
+    <div class="detail-hero" style="background:${tier.bg};border-color:${tier.border}60">
+      <div class="detail-header">
+        <div class="avatar" style="background:${tier.border}25;color:${tier.border}">${initials}</div>
+        <div>
+          <div class="detail-name" style="color:${tier.text}">${cust.name}</div>
+          <span class="tier-badge" style="background:${tier.badge};color:${tier.badgeText}">${tier.emoji} ${tier.name}</span>
+        </div>
+      </div>
+      <div class="detail-fields">
+        <div class="field"><div class="field-label">Customer ID</div><div class="field-value" style="font-size:12px;letter-spacing:0.02em">${cust.id}</div></div>
+        <div class="field"><div class="field-label">Owner name</div><div class="field-value">${cust.owner || '—'}</div></div>
+        <div class="field"><div class="field-label">Mobile (WhatsApp)</div><div class="field-value">${cust.mobile ? '<a href="tel:' + cust.mobile + '" style="color:#1e3a5f;text-decoration:none">'+cust.mobile+'</a>' : '—'}</div></div>
+        <div class="field"><div class="field-label">City / District</div><div class="field-value">${[cust.city, cust.district].filter(Boolean).join(' · ') || '—'}</div></div>
+        <div class="field" style="grid-column:1/-1"><div class="field-label">Address</div><div class="field-value">${cust.address || '—'}</div></div>
+        <div class="field" style="grid-column:1/-1"><div class="field-label">Drug license no.</div><div class="field-value" style="font-size:12px;letter-spacing:0.03em">${cust.license || '—'}</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num" style="color:${tier.border}">${fmtCurr(monthPurchase)}</div>
+          <div class="stat-lbl">Purchases · ${latestMonth || 'this month'}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:${tier.border}">${monthCount}</div>
+          <div class="stat-lbl">Orders · ${latestMonth || 'this month'}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">${fmtCurr(allTimePurchase)}</div>
+          <div class="stat-lbl">All-time purchases</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">${allTimeCount}</div>
+          <div class="stat-lbl">All-time orders</div>
+        </div>
+      </div>
+    </div>
+    ${custOrders.length > 0 ? `
+    <div class="card">
+      <div class="section-title">Order history (${allTimeCount} orders)</div>
+      <table class="orders-table">
+        <thead><tr>
+          <th>Order ID</th><th>Date</th><th>Month</th><th style="text-align:right">Amount</th>
+        </tr></thead>
+        <tbody>
+          ${custOrders.slice().sort((a, b) => {
+            const dp = d => { const p = d.split('-'); return p.length===3 ? new Date(p[2],['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(p[1]),+p[0]) : new Date(0); };
+            return dp(b.date) - dp(a.date);
+          }).slice(0, 20).map(o => `
+          <tr>
+            <td style="font-family:monospace;font-size:11px;color:#6b7280">${o.id}</td>
+            <td>${o.date}</td>
+            <td><span style="font-size:11px;background:#F3F4F6;padding:2px 8px;border-radius:4px;color:#374151">${o.month}</span></td>
+            <td style="text-align:right;font-weight:600;color:#1e3a5f">${fmtCurr(o.amount)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      ${allTimeCount > 20 ? `<div style="text-align:center;font-size:12px;color:#9ca3af;padding:10px 0">Showing 20 of ${allTimeCount} orders</div>` : ''}
+    </div>` : '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:20px">No orders found for this partner.</div>'}
+  `;
+  showPage('detail');
+}
+
+function showPage(page) {
+  ['dashboard', 'details', 'detail'].forEach(p => document.getElementById('page-' + p).classList.remove('visible'));
+  document.getElementById('page-' + page).classList.add('visible');
+  const onDetail = page === 'detail';
+  const onDash = page === 'dashboard';
+  document.getElementById('main-tabs').style.display = onDetail ? 'none' : 'flex';
+  document.getElementById('nav-back-wrap').style.display = onDetail ? 'block' : 'none';
+  document.getElementById('nav-home-wrap').style.display = onDetail ? 'block' : 'none';
+  if (navStack[navStack.length - 1] !== page) navStack.push(page);
+  if (page === 'dashboard') {
+    document.querySelectorAll('.nav-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+  } else if (page === 'details') {
+    document.querySelectorAll('.nav-tab').forEach((t, i) => t.classList.toggle('active', i === 1));
+  }
+}
+
+function goHome() {
+  navStack = ['dashboard'];
+  showPage('dashboard');
+}
+
+function goBack() {
+  navStack.pop();
+  const prev = navStack[navStack.length - 1] || 'dashboard';
+  if (prev !== 'detail') navStack = [prev];
+  showPage(prev);
+}
+
+function setTab(el) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+loadData();
+</script>
+</body>
+</html>
