@@ -328,6 +328,72 @@ body {
   border-radius: 8px;
 }
 
+/* ── QUEST CARD ── */
+.quest-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+}
+.quest-card-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #0F2744 0%, #1A3A5C 100%);
+}
+.quest-card-title {
+  font-size: 13px; font-weight: 700; color: #fff;
+  text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px;
+}
+.quest-month-tag {
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 12px; background: rgba(245,158,11,0.2);
+  color: var(--amber); border: 1px solid rgba(245,158,11,0.3);
+}
+.quest-list { display: flex; flex-direction: column; gap: 0; }
+.quest-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+}
+.quest-item:last-child { border-bottom: none; }
+.quest-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.quest-body { flex: 1; min-width: 0; }
+.quest-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+.quest-desc { font-size: 11px; color: var(--muted); margin-bottom: 7px; }
+.quest-bar-wrap {
+  height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 4px;
+}
+.quest-bar-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.quest-progress-lbl {
+  font-size: 10px; font-weight: 600; color: var(--muted);
+}
+.quest-status {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.quest-check {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+}
+.quest-check.done { background: #DCFCE7; color: #15803D; border: 2px solid #86EFAC; }
+.quest-check.pending { background: var(--canvas); color: var(--muted); border: 2px solid var(--border); }
+.quest-check.close { background: #FEF3C7; color: #D97706; border: 2px solid #FCD34D; }
+.quest-pct { font-size: 10px; font-weight: 700; }
+.quest-summary {
+  display: flex; gap: 10px; padding: 12px 20px;
+  background: var(--canvas); border-top: 1px solid var(--border);
+}
+.quest-sum-box {
+  flex: 1; text-align: center; background: var(--white);
+  border-radius: 8px; padding: 10px 6px; border: 1px solid var(--border);
+}
+.quest-sum-n { font-size: 18px; font-weight: 700; }
+.quest-sum-l { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
 /* ── UTILITIES ── */
 .fw7 { font-weight: 700; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -836,6 +902,128 @@ function filterBiz() {
   renderBizCards(res);
 }
 
+/* ─── QUEST ENGINE ─── */
+/*
+  Quest 1: Order at least 2 times in the current month
+  Quest 2: Order total ≥ ₹20,000 in the current month
+  Quest 3: Same tier in two consecutive months (curMo & prevMo)
+*/
+function computeQuests(custId, curMo, prevMo) {
+  const curOrds  = orders.filter(o => o.custId === custId && o.month === curMo);
+  const prevOrds = orders.filter(o => o.custId === custId && o.month === prevMo);
+
+  const curOrderCount  = curOrds.length;
+  const curTotal       = curOrds.reduce((s,o) => s + o.amount, 0);
+  const curTier        = getTier(curTotal);
+  const prevTotal      = prevOrds.reduce((s,o) => s + o.amount, 0);
+  const prevTier       = getTier(prevTotal);
+  const sameLeague     = curMo && prevMo && tierRank(curTier) === tierRank(prevTier) && tierRank(curTier) > tierRank(UNRANKED);
+
+  /* Quest 1 — Order 2 times */
+  const q1Target = 2;
+  const q1Val    = Math.min(curOrderCount, q1Target);
+  const q1Done   = curOrderCount >= q1Target;
+  const q1Pct    = Math.min(100, Math.round((q1Val / q1Target) * 100));
+
+  /* Quest 2 — Total ₹20,000 */
+  const q2Target = 20000;
+  const q2Val    = Math.min(curTotal, q2Target);
+  const q2Done   = curTotal >= q2Target;
+  const q2Pct    = Math.min(100, Math.round((q2Val / q2Target) * 100));
+
+  /* Quest 3 — Same league 2 consecutive months */
+  /* For Q3: done if same non-Unranked tier in both months */
+  const q3Done   = sameLeague;
+  const q3Pct    = q3Done ? 100 : (prevMo && prevTotal > 0 && curTotal > 0 ? 50 : (curTotal > 0 ? 25 : 0));
+
+  return [
+    {
+      id: 'q1', icon: '📦', name: 'Frequent Buyer',
+      desc: `Place at least ${q1Target} orders this month`,
+      target: q1Target, value: q1Val, pct: q1Pct, done: q1Done,
+      progressLabel: `${curOrderCount} / ${q1Target} orders`,
+      color: '#6366F1',
+      tip: q1Done ? 'Quest complete! 🎉' : `${q1Target - curOrderCount} more order${q1Target - curOrderCount > 1 ? 's' : ''} needed`
+    },
+    {
+      id: 'q2', icon: '💰', name: 'High Spender',
+      desc: `Purchase ₹20,000 or more this month`,
+      target: q2Target, value: q2Val, pct: q2Pct, done: q2Done,
+      progressLabel: `${fmtINR(curTotal)} / ${fmtINR(q2Target)}`,
+      color: '#D97706',
+      tip: q2Done ? 'Quest complete! 🎉' : `${fmtINR(q2Target - curTotal)} more to go`
+    },
+    {
+      id: 'q3', icon: '🏆', name: 'League Loyalist',
+      desc: `Stay in the same tier for two consecutive months`,
+      target: 2, value: q3Done ? 2 : (prevTotal > 0 && curTotal > 0 ? 1 : 0), pct: q3Pct, done: q3Done,
+      progressLabel: q3Done
+        ? `${prevMo} + ${curMo} — ${curTier.name}`
+        : (prevMo && prevTotal > 0
+            ? `${prevTier.emoji} ${prevTier.name} (${prevMo}) → ${curTier.emoji} ${curTier.name} (${curMo})`
+            : `No data for ${prevMo || 'previous month'}`),
+      color: '#0EA5E9',
+      tip: q3Done
+        ? 'Quest complete! 🎉'
+        : (prevTotal > 0 && curTotal > 0
+            ? `Tiers differ — stay in ${curTier.name} next month`
+            : 'Need activity in both months')
+    }
+  ];
+}
+
+function questCardHTML(quests, curMo) {
+  const doneCount = quests.filter(q => q.done).length;
+  const totalCount = quests.length;
+
+  const itemsHTML = quests.map(q => {
+    const statusClass = q.done ? 'done' : (q.pct >= 50 ? 'close' : 'pending');
+    const statusIcon  = q.done ? '✓' : (q.pct >= 50 ? '◑' : '○');
+    const barColor    = q.done ? '#22C55E' : (q.pct >= 50 ? q.color : '#CBD5E1');
+
+    return `<div class="quest-item">
+      <div class="quest-icon" style="background:${q.color}15;border:1px solid ${q.color}30">${q.icon}</div>
+      <div class="quest-body">
+        <div class="quest-name">${q.name}</div>
+        <div class="quest-desc">${q.desc}</div>
+        <div class="quest-bar-wrap">
+          <div class="quest-bar-fill" style="width:${q.pct}%;background:${barColor}"></div>
+        </div>
+        <div class="quest-progress-lbl" style="color:${q.done ? '#15803D' : q.pct >= 50 ? q.color : 'var(--muted)'}">
+          ${q.progressLabel}
+          <span style="float:right;color:var(--muted)">${q.tip}</span>
+        </div>
+      </div>
+      <div class="quest-status">
+        <div class="quest-check ${statusClass}">${statusIcon}</div>
+        <div class="quest-pct" style="color:${q.done ? '#15803D' : q.pct >= 50 ? q.color : 'var(--muted)'}">${q.pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="quest-card">
+    <div class="quest-card-hd">
+      <div class="quest-card-title">⚔️ Monthly Quests</div>
+      <span class="quest-month-tag">${curMo}</span>
+    </div>
+    <div class="quest-list">${itemsHTML}</div>
+    <div class="quest-summary">
+      <div class="quest-sum-box">
+        <div class="quest-sum-n" style="color:${doneCount === totalCount ? '#15803D' : doneCount > 0 ? '#D97706' : 'var(--muted)'}">${doneCount}/${totalCount}</div>
+        <div class="quest-sum-l">Completed</div>
+      </div>
+      <div class="quest-sum-box">
+        <div class="quest-sum-n" style="color:var(--navy)">${totalCount - doneCount}</div>
+        <div class="quest-sum-l">Remaining</div>
+      </div>
+      <div class="quest-sum-box">
+        <div class="quest-sum-n" style="color:var(--amber)">${Math.round(quests.reduce((s,q)=>s+q.pct,0)/totalCount)}%</div>
+        <div class="quest-sum-l">Avg Progress</div>
+      </div>
+    </div>
+  </div>`;
+}
+
 /* ─── DETAIL ─── */
 function showDetailById(custId) {
   const c = customers.find(x=>x.id===custId);
@@ -890,6 +1078,9 @@ function showDetailById(custId) {
         </div>
       </div>
     </div>` : '';
+
+  const quests = computeQuests(custId, curMo, prevMo);
+  const qCardHTML = questCardHTML(quests, curMo || 'Current Month');
 
   document.getElementById('page-detail').innerHTML = `
     <div class="detail-hero" style="border-left-color:${tier.color}">
@@ -961,6 +1152,8 @@ function showDetailById(custId) {
         </div>
       </div>
     </div>
+
+    ${qCardHTML}
 
     ${sorted.length > 0 ? `
     <div class="orders-card">
