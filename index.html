@@ -2,419 +2,681 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aaradhya Partner Rewards</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Aaradhya Rx Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════════
-   TOKENS
-══════════════════════════════════════════ */
-:root {
-  --navy:       #0D1F3C;
-  --navy2:      #152d52;
-  --navy3:      #1e3a63;
-  --amber:      #F59E0B;
-  --amber2:     #FBBF24;
-  --amber-bg:   #FFFBEB;
-  --green:      #16A34A;
-  --green-bg:   #F0FDF4;
-  --green-bd:   #86EFAC;
-  --red:        #DC2626;
-  --red-bg:     #FEF2F2;
-  --red-bd:     #FECACA;
-  --canvas:     #F0F2F5;
-  --surface:    #FFFFFF;
-  --surface2:   #F8FAFC;
-  --border:     #E2E8F0;
-  --border2:    #CBD5E1;
-  --ink:        #0F172A;
-  --ink2:       #334155;
-  --muted:      #64748B;
-  --faint:      #94A3B8;
-  --r-lg:       16px;
-  --r-md:       10px;
-  --r-sm:       7px;
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:  0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
-  --shadow-card:0 0 0 1px rgba(0,0,0,.05), 0 2px 8px rgba(0,0,0,.06);
+/* ═══════════ TOKENS ═══════════ */
+:root{
+  --bg:       #04080F;
+  --panel:    #090E1A;
+  --panel2:   #0D1525;
+  --panel3:   #111D30;
+  --cyan:     #00E5FF;
+  --cyan2:    #00B8CC;
+  --cyan-dim: rgba(0,229,255,.08);
+  --cyan-glow:0 0 12px rgba(0,229,255,.35);
+  --amber:    #FFB800;
+  --amber2:   #CC9200;
+  --amber-glow:0 0 12px rgba(255,184,0,.35);
+  --green:    #00FF88;
+  --green2:   #00CC6A;
+  --green-glow:0 0 12px rgba(0,255,136,.3);
+  --red:      #FF2D78;
+  --red2:     #CC2460;
+  --red-glow: 0 0 12px rgba(255,45,120,.3);
+  --purple:   #B44FFF;
+  --text:     #C8D8E8;
+  --text2:    #7A8FA8;
+  --text3:    #3A5068;
+  --border:   rgba(0,229,255,.15);
+  --border2:  rgba(0,229,255,.08);
+  --r:        6px;
+  --r2:       3px;
 }
-/* ══════════════════════════════════════════
-   RESET & BASE
-══════════════════════════════════════════ */
+/* ═══════════ RESET ═══════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:'Inter',-apple-system,sans-serif;background:var(--canvas);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  /* scanline overlay */
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.012) 2px,rgba(0,229,255,.012) 4px);
+}
 a{text-decoration:none;color:inherit}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
+/* headings use Rajdhani */
+.rj{font-family:'Rajdhani',sans-serif}
+.mono{font-family:'Share Tech Mono',monospace}
 
-/* ══════════════════════════════════════════
-   TOPBAR
-══════════════════════════════════════════ */
+/* ═══════════ GRID CORNERS MIXIN (pseudo brackets) ═══════════ */
+.hud-box{position:relative}
+.hud-box::before,.hud-box::after{
+  content:'';position:absolute;width:10px;height:10px;
+  border-color:var(--cyan);border-style:solid;opacity:.5;
+}
+.hud-box::before{top:0;left:0;border-width:1.5px 0 0 1.5px}
+.hud-box::after{top:0;right:0;border-width:1.5px 1.5px 0 0}
+.hud-box-b{position:relative}
+.hud-box-b::before,.hud-box-b::after{
+  content:'';position:absolute;width:10px;height:10px;
+  border-color:var(--cyan);border-style:solid;opacity:.5;
+}
+.hud-box-b::before{bottom:0;left:0;border-width:0 0 1.5px 1.5px}
+.hud-box-b::after{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
+
+/* ═══════════ TOPBAR ═══════════ */
 .topbar{
-  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
-  height:60px;padding:0 24px;display:flex;align-items:center;gap:14px;
-  position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 12px rgba(0,0,0,.25);
+  height:58px;padding:0 20px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:300;
+  background:rgba(4,8,15,.95);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  box-shadow:0 1px 0 rgba(0,229,255,.08), 0 4px 24px rgba(0,0,0,.6);
 }
-.logo{
-  width:36px;height:36px;border-radius:9px;flex-shrink:0;
-  background:var(--amber);display:flex;align-items:center;justify-content:center;
-  font-size:17px;font-weight:800;color:var(--navy);letter-spacing:-0.5px;
-  box-shadow:0 2px 8px rgba(245,158,11,.4);
+/* animated cyan scan line on topbar */
+.topbar::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,var(--cyan) 50%,transparent 100%);
+  animation:scan 3s linear infinite;opacity:.4;
 }
-.topbar-text{flex:1;min-width:0}
-.topbar-title{font-size:14px;font-weight:700;color:#fff;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topbar-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
-.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-/* pill tabs */
-.tab-capsule{background:rgba(255,255,255,.08);border-radius:9px;padding:3px;display:flex;gap:2px}
-.tab-btn{padding:6px 15px;font-size:12px;font-weight:600;border-radius:7px;color:rgba(255,255,255,.5);transition:all .15s;letter-spacing:.01em}
-.tab-btn.on{background:rgba(255,255,255,.16);color:#fff}
-/* topbar action btns */
-.tb-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;font-size:12px;font-weight:600;border-radius:8px;transition:all .15s;letter-spacing:.01em}
-.tb-btn-ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.12)}
-.tb-btn-ghost:hover{background:rgba(255,255,255,.14)}
-.tb-btn-amber{background:var(--amber);color:var(--navy);border:1px solid var(--amber);font-weight:700}
-.tb-btn-amber:hover{background:var(--amber2)}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 
-/* ══════════════════════════════════════════
-   PAGE SHELL
-══════════════════════════════════════════ */
-.main{max-width:980px;margin:0 auto;padding:24px 20px 48px}
+/* logo = pill cross */
+.logo-wrap{width:36px;height:36px;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center}
+.logo-pill{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#00E5FF22,#00FF8822);
+  border:1.5px solid var(--cyan);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--cyan-glow);
+  position:relative;overflow:hidden;
+}
+.logo-pill span{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--cyan);letter-spacing:-0.5px}
+.logo-dot{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:var(--cyan-glow);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+.bar-brand{flex:1;min-width:0}
+.bar-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--cyan);letter-spacing:.5px;text-shadow:var(--cyan-glow)}
+.bar-sub{font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
+.bar-sub span{color:var(--cyan2);opacity:.6}
+
+.bar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+/* tab switcher */
+.tab-rack{display:flex;gap:2px;background:rgba(0,229,255,.05);border:1px solid var(--border2);border-radius:5px;padding:3px}
+.tab-btn{padding:5px 14px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;color:var(--text3);border-radius:3px;transition:all .15s}
+.tab-btn.on{background:rgba(0,229,255,.12);color:var(--cyan);box-shadow:inset 0 0 8px rgba(0,229,255,.15)}
+/* hud buttons */
+.hbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;border-radius:4px;transition:all .15s;cursor:pointer}
+.hbtn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.hbtn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.hbtn-cyan{background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.4);box-shadow:var(--cyan-glow)}
+.hbtn-cyan:hover{background:rgba(0,229,255,.2)}
+
+/* ═══════════ LAYOUT ═══════════ */
+.shell{max-width:980px;margin:0 auto;padding:20px 16px 60px}
 .page{display:none}
 .page.on{display:block}
 
-/* ══════════════════════════════════════════
-   PERIOD FILTER
-══════════════════════════════════════════ */
-.period-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:22px}
-.period-lbl{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;margin-right:2px}
-.pill{padding:5px 14px;font-size:12px;font-weight:600;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s;cursor:pointer}
-.pill:hover{border-color:var(--border2);color:var(--ink2)}
-.pill.on{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 2px 8px rgba(13,31,60,.25)}
+/* ═══════════ PERIOD FILTER ═══════════ */
+.period-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:20px}
+.period-lbl{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-right:4px}
+.pill{padding:4px 14px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);transition:all .15s;cursor:pointer}
+.pill:hover{border-color:var(--cyan);color:var(--cyan)}
+.pill.on{background:rgba(0,229,255,.1);color:var(--cyan);border-color:rgba(0,229,255,.5);box-shadow:0 0 10px rgba(0,229,255,.2)}
 
-/* ══════════════════════════════════════════
-   LOADING / ERROR
-══════════════════════════════════════════ */
-.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;gap:14px}
-.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite}
+/* ═══════════ LOADING ═══════════ */
+.loading-scr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;gap:16px}
+.hud-spinner{width:44px;height:44px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite;box-shadow:var(--cyan-glow)}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-screen p{font-size:14px;font-weight:500;color:var(--muted)}
-.loading-screen small{font-size:12px;color:var(--faint)}
-.err-box{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--r-md);padding:14px 18px;font-size:13px;color:var(--red);margin-bottom:20px}
+.loading-scr .lt{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase}
+.loading-scr .ls{font-size:11px;color:var(--text3)}
+.err-bar{background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.3);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:18px}
 
-/* ══════════════════════════════════════════
-   DASHBOARD — METRICS ROW
-══════════════════════════════════════════ */
-.metrics-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;margin-bottom:22px}
-.mc{background:var(--surface);border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--shadow-card);border:1px solid var(--border)}
-.mc.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);border-color:transparent;box-shadow:0 4px 20px rgba(13,31,60,.3)}
-.mc-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px}
-.mc-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:6px}
-.mc.hero .mc-lbl{color:rgba(255,255,255,.45)}
-.mc-val{font-size:30px;font-weight:800;color:var(--ink);letter-spacing:-0.03em;line-height:1}
-.mc.hero .mc-val{color:var(--amber);font-size:26px}
-.mc-sub{font-size:11px;color:var(--faint);margin-top:5px;font-weight:500}
-.mc.hero .mc-sub{color:rgba(255,255,255,.35)}
+/* ═══════════ SECTION PANEL ═══════════ */
+.panel{
+  background:var(--panel);border-radius:var(--r);
+  border:1px solid var(--border);margin-bottom:14px;overflow:hidden;
+  position:relative;
+}
+.panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:.3;
+}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border2)}
+.panel-title{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:8px}
+.panel-tag{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:.07em;padding:3px 10px;border-radius:3px;background:rgba(0,229,255,.08);color:var(--cyan2);border:1px solid var(--border2)}
 
-/* ══════════════════════════════════════════
-   DASHBOARD — SECTION WRAPPER
-══════════════════════════════════════════ */
-.section{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow-card);border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
-.section-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
-.section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;align-items:center;gap:8px}
-.section-title span{font-size:16px}
-.section-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+/* ═══════════ METRICS ═══════════ */
+.metrics-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.mc{
+  background:var(--panel);border-radius:var(--r);padding:18px 20px;
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+.mc::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,currentColor,transparent);
+  opacity:.25;
+}
+.mc.hero{
+  background:linear-gradient(135deg,#04101F 0%,#071525 100%);
+  border-color:rgba(0,229,255,.35);
+  box-shadow:inset 0 0 30px rgba(0,229,255,.04), var(--cyan-glow);
+}
+.mc.hero::after{color:var(--cyan)}
+/* grid pattern inside hero */
+.mc.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,229,255,.04) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,229,255,.04) 1px,transparent 1px);
+  background-size:20px 20px;pointer-events:none;
+}
+.mc-ico{font-size:18px;margin-bottom:10px;line-height:1}
+.mc-lbl{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.mc-val{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;letter-spacing:-0.01em;line-height:1;color:var(--text)}
+.mc.hero .mc-val{color:var(--cyan);font-size:26px;text-shadow:var(--cyan-glow)}
+.mc-sub{font-size:11px;color:var(--text3);margin-top:4px}
 
-/* ══════════════════════════════════════════
-   TIER GRID
-══════════════════════════════════════════ */
-.tier-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding:0}
-.tier-cell{padding:18px 10px;text-align:center;border-right:1px solid var(--border);position:relative;transition:background .15s;cursor:default}
-.tier-cell:last-child{border-right:none}
-.tier-cell::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.tier-cell:hover{background:var(--surface2)}
-.tier-emoji-lg{font-size:24px;display:block;margin-bottom:6px;line-height:1}
-.tier-name-sm{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
-.tier-count-lg{font-size:32px;font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:4px}
-.tier-min-lbl{font-size:10px;color:var(--faint);font-weight:500}
+/* ═══════════ TIER GRID ═══════════ */
+/* Tier defs */
+.tier-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.tc{padding:16px 8px;text-align:center;border-right:1px solid var(--border2);position:relative;transition:background .15s;cursor:default;overflow:hidden}
+.tc:last-child{border-right:none}
+.tc:hover{background:rgba(255,255,255,.02)}
+.tc-glow{position:absolute;top:0;left:0;right:0;height:2px}
+.tc-emoji{font-size:22px;line-height:1;margin-bottom:5px;display:block}
+.tc-nm{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}
+.tc-ct{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:3px}
+.tc-mn{font-size:9px;color:var(--text3);font-weight:500;letter-spacing:.03em}
 
-/* ══════════════════════════════════════════
-   TOP PURCHASERS
-══════════════════════════════════════════ */
-.top-row{display:flex;align-items:center;gap:12px;padding:13px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+/* ═══════════ TOP PURCHASERS ═══════════ */
+.top-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .12s;position:relative}
 .top-row:last-child{border-bottom:none}
-.top-row:hover{background:var(--surface2)}
-.rank-bubble{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
-.top-info{flex:1;min-width:0}
-.top-name{font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top-meta{font-size:11px;color:var(--faint);margin-top:2px;display:flex;align-items:center;gap:6px}
-.top-right{text-align:right;flex-shrink:0}
-.top-amount{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:-0.01em}
-.top-tier-pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;margin-top:4px;display:inline-block}
-.chev-icon{color:var(--border2);font-size:16px;flex-shrink:0;margin-left:2px}
+.top-row:hover{background:rgba(0,229,255,.03)}
+.top-row:hover .tr-chev{color:var(--cyan);opacity:1}
+/* rank medal */
+.rank-orb{
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;flex-shrink:0;
+  border:1.5px solid;position:relative;
+}
+.rank-orb::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1px solid;opacity:.2}
+.tr-info{flex:1;min-width:0}
+.tr-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr-meta{font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:5px}
+.tr-right{text-align:right;flex-shrink:0}
+.tr-amt{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:.02em}
+.tr-badge{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;padding:2px 9px;border-radius:2px;margin-top:4px;display:inline-block}
+.tr-chev{color:var(--text3);font-size:18px;opacity:.4;transition:all .15s;flex-shrink:0;margin-left:4px}
 
 /* inline change badges */
-.ibadge{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;vertical-align:middle;margin-left:4px;white-space:nowrap}
-.ibadge.up{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
-.ibadge.dn{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.ibadge{display:inline-flex;align-items:center;gap:3px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:2px;vertical-align:middle;margin-left:5px}
+.ibadge.up{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.3)}
+.ibadge.dn{background:rgba(255,45,120,.1);color:var(--red);border:1px solid rgba(255,45,120,.3)}
 
-/* ══════════════════════════════════════════
-   TIER CHANGES SECTION
-══════════════════════════════════════════ */
-.tc-head-promo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--green);padding:9px 20px;background:#F0FDF4;border-bottom:1px solid var(--border);border-top:1px solid var(--border);display:flex;align-items:center;gap:6px}
-.tc-head-demo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red);padding:9px 20px;background:var(--red-bg);border-bottom:1px solid var(--border);border-top:1px solid var(--border);display:flex;align-items:center;gap:6px}
-.tc-row{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
-.tc-row:hover{background:var(--surface2)}
-.tc-arrow{font-size:18px;width:28px;text-align:center;flex-shrink:0}
-.tc-info{flex:1;min-width:0}
-.tc-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tc-tiers{font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px}
-.tc-right{text-align:right;flex-shrink:0}
-.tc-amt{font-size:13px;font-weight:700}
-.tc-prev{font-size:10px;color:var(--faint);margin-top:2px}
-.no-change-note{padding:18px 20px;text-align:center;font-size:13px;color:var(--faint)}
+/* ═══════════ TIER CHANGE SECTION ═══════════ */
+.tc-head-up{padding:8px 18px;background:rgba(0,255,136,.06);border-bottom:1px solid rgba(0,255,136,.12);border-top:1px solid var(--border2);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:6px}
+.tc-head-dn{padding:8px 18px;background:rgba(255,45,120,.06);border-bottom:1px solid rgba(255,45,120,.12);border-top:1px solid var(--border2);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);display:flex;align-items:center;gap:6px}
+.tch-row{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .12s}
+.tch-row:hover{background:rgba(0,229,255,.03)}
+.tch-arr{font-size:18px;width:26px;text-align:center;flex-shrink:0}
+.tch-info{flex:1;min-width:0}
+.tch-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tch-tiers{font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tch-right{text-align:right;flex-shrink:0}
+.tch-amt{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700}
+.tch-prev{font-size:10px;color:var(--text3);margin-top:2px}
+.no-chg{padding:18px;text-align:center;font-size:12px;color:var(--text3)}
 
-/* ══════════════════════════════════════════
-   PARTNERS LIST
-══════════════════════════════════════════ */
-.search-bar{position:relative;margin-bottom:14px}
-.search-bar svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--faint);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-.search-input{width:100%;padding:11px 14px 11px 40px;border:1.5px solid var(--border);border-radius:var(--r-md);background:var(--surface);font-size:14px;font-family:inherit;color:var(--ink);outline:none;transition:border .15s;box-shadow:var(--shadow-sm)}
-.search-input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(13,31,60,.08)}
-.search-input::placeholder{color:var(--faint)}
+/* ═══════════ PARTNERS LIST ═══════════ */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.search-inp{
+  width:100%;padding:10px 14px 10px 38px;
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
+  font-size:13px;font-family:'Inter',sans-serif;color:var(--text);outline:none;transition:border .15s;
+}
+.search-inp:focus{border-color:rgba(0,229,255,.5);box-shadow:0 0 0 3px rgba(0,229,255,.06)}
+.search-inp::placeholder{color:var(--text3)}
 
-.plist{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow-card);border:1px solid var(--border);overflow:hidden}
-.plist-item{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;border-left:3px solid transparent}
-.plist-item:last-child{border-bottom:none}
-.plist-item:hover{background:var(--surface2)}
-.p-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
-.p-info{flex:1;min-width:0}
-.p-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.p-loc{font-size:11px;color:var(--faint);margin-top:2px}
-.p-right{text-align:right;flex-shrink:0}
-.p-amt{font-size:13px;font-weight:700;color:var(--navy)}
-.p-tier-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block}
-.empty-note{padding:48px 24px;text-align:center;font-size:13px;color:var(--faint)}
+.plist{background:var(--panel);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.pl-item{
+  display:flex;align-items:center;gap:12px;padding:11px 16px;
+  border-bottom:1px solid var(--border2);cursor:pointer;transition:all .12s;
+  border-left:3px solid transparent;
+}
+.pl-item:last-child{border-bottom:none}
+.pl-item:hover{background:rgba(0,229,255,.03)}
+/* avatar */
+.pl-av{
+  width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;flex-shrink:0;
+  border:1px solid;
+}
+.pl-info{flex:1;min-width:0}
+.pl-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-loc{font-size:11px;color:var(--text3);margin-top:1px}
+.pl-right{text-align:right;flex-shrink:0}
+.pl-amt{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--cyan)}
+.pl-tier{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:.05em;padding:2px 8px;border-radius:2px;margin-top:3px;display:inline-block}
 
-/* ══════════════════════════════════════════
-   PARTNER DETAIL — HERO
-══════════════════════════════════════════ */
-.det-hero{border-radius:var(--r-lg);padding:22px;margin-bottom:14px;border:1px solid transparent;border-left-width:5px;background:var(--surface);box-shadow:var(--shadow-card)}
-.det-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}
-.det-avatar{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0;letter-spacing:-.5px}
-.det-name{font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-0.02em;margin-bottom:6px;line-height:1.2}
-.det-pills{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-.det-tier-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em}
-.chg-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1.5px solid}
-.chg-pill.up{background:var(--green-bg);color:var(--green);border-color:var(--green-bd)}
-.chg-pill.dn{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+/* ═══════════ DETAIL HERO ═══════════ */
+.det-panel{
+  background:var(--panel);border-radius:var(--r);border:1px solid var(--border);
+  border-left-width:4px;margin-bottom:12px;overflow:hidden;position:relative;
+}
+.det-panel::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;
+}
+.det-top-bar{
+  padding:18px 20px;display:flex;align-items:center;gap:16px;
+  border-bottom:1px solid var(--border2);position:relative;
+}
+.det-avatar{
+  width:54px;height:54px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;flex-shrink:0;
+  border:1.5px solid;position:relative;
+}
+.det-avatar::after{content:'';position:absolute;inset:-4px;border-radius:8px;border:1px solid;opacity:.2}
+.det-name{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:.02em;line-height:1.1;margin-bottom:6px}
+.det-pills-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.det-tier-pill{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 12px;border-radius:2px;display:inline-flex;align-items:center;gap:5px}
+.chg-pill{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;padding:4px 11px;border-radius:2px;border:1px solid;display:inline-flex;align-items:center;gap:4px}
+.chg-pill.up{background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.3)}
+.chg-pill.dn{background:rgba(255,45,120,.1);color:var(--red);border-color:rgba(255,45,120,.3)}
 
 /* tier change banner */
-.tier-banner{border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
-.tier-banner.up{background:#F0FDF4;border:1px solid #BBF7D0}
-.tier-banner.dn{background:var(--red-bg);border:1px solid var(--red-bd)}
-.tb-icon{font-size:26px;flex-shrink:0;line-height:1}
-.tb-label{font-size:13px;font-weight:700;margin-bottom:3px}
-.tb-label.up{color:var(--green)}
-.tb-label.dn{color:var(--red)}
-.tb-tiers{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.chg-banner{display:flex;align-items:center;gap:14px;margin:0 20px 16px;padding:12px 16px;border-radius:4px;border:1px solid}
+.chg-banner.up{background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.25)}
+.chg-banner.dn{background:rgba(255,45,120,.06);border-color:rgba(255,45,120,.25)}
+.chg-banner-icon{font-size:28px;flex-shrink:0}
+.chg-banner-lbl{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
+.chg-banner-lbl.up{color:var(--green)}
+.chg-banner-lbl.dn{color:var(--red)}
+.chg-banner-tiers{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 
 /* info grid */
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.info-field{background:var(--surface2);border-radius:var(--r-sm);padding:10px 13px;border:1px solid var(--border)}
-.info-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:4px}
-.info-val{font-size:13px;font-weight:600;color:var(--ink);word-break:break-word}
-.info-val.mono{font-family:ui-monospace,'SF Mono',monospace;font-size:11px;letter-spacing:.03em}
-.span2{grid-column:1/-1}
-/* call/wa buttons */
-.contact-btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
-.cb{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:8px;font-size:12px;font-weight:700;transition:filter .15s;cursor:pointer;border:none}
-.cb:hover{filter:brightness(1.08)}
-.cb-call{background:var(--navy);color:#fff}
-.cb-wa{background:#25D366;color:#fff}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 16px;position:relative}
+.inf{background:var(--panel2);border-radius:4px;padding:10px 13px;border:1px solid var(--border2)}
+.inf-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.inf-val{font-size:13px;font-weight:600;color:var(--text);word-break:break-word}
+.inf-val.mono{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan2);letter-spacing:.04em}
+.s2{grid-column:1/-1}
+/* capsule-style contact btns */
+.cbtns{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.cbtn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;transition:filter .15s;cursor:pointer;border:1px solid}
+.cbtn:hover{filter:brightness(1.15)}
+.cbtn-call{background:rgba(0,229,255,.1);color:var(--cyan);border-color:rgba(0,229,255,.35)}
+.cbtn-wa{background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.3)}
 
 /* stats strip */
-.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.stat-cell{background:var(--surface2);border-radius:var(--r-md);padding:13px 10px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden}
-.stat-cell::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.stat-num{font-size:17px;font-weight:800;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
-.stat-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
-.stat-diff{font-size:10px;font-weight:700;margin-top:5px}
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 18px;position:relative}
+.st{background:var(--panel2);border-radius:4px;padding:12px 10px;text-align:center;border:1px solid var(--border2);position:relative;overflow:hidden}
+.st-bar{position:absolute;top:0;left:0;right:0;height:2px}
+.st-num{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:.01em;line-height:1;margin-bottom:4px}
+.st-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.st-diff{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;margin-top:5px;letter-spacing:.03em}
 
-/* ══════════════════════════════════════════
-   QUEST CARD
-══════════════════════════════════════════ */
-.quest-wrap{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow-card);border:1px solid var(--border);overflow:hidden;margin-bottom:14px}
-.quest-hd{padding:0;display:flex;align-items:stretch}
-.quest-hd-left{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);padding:16px 20px;flex:1;display:flex;align-items:center;gap:10px}
-.quest-hd-icon{font-size:22px;line-height:1}
-.quest-hd-text{}
-.quest-hd-title{font-size:13px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.06em}
-.quest-hd-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
-.quest-hd-right{background:rgba(245,158,11,.12);padding:16px 18px;display:flex;align-items:center;gap:8px;border-left:1px solid rgba(245,158,11,.2)}
-.quest-score{text-align:center}
-.quest-score-num{font-size:24px;font-weight:800;color:var(--amber);line-height:1}
-.quest-score-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.4);margin-top:2px}
+/* ═══════════ QUEST CARD ═══════════ */
+.quest-panel{background:var(--panel);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:12px;position:relative}
+.quest-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.5}
+/* header */
+.qhd{display:flex;align-items:stretch;min-height:68px}
+.qhd-left{
+  flex:1;padding:14px 20px;
+  background:linear-gradient(135deg,rgba(255,184,0,.08) 0%,rgba(255,184,0,.03) 100%);
+  border-right:1px solid rgba(255,184,0,.15);
+  display:flex;align-items:center;gap:12px;
+}
+.qhd-icon{font-size:26px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,184,0,.5))}
+.qhd-ttl{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);text-shadow:0 0 12px rgba(255,184,0,.4)}
+.qhd-sub{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:.03em}
+/* ring + score */
+.qhd-right{padding:14px 20px;display:flex;align-items:center;gap:14px;background:rgba(255,184,0,.04)}
+.qring-wrap{position:relative;width:54px;height:54px;flex-shrink:0}
+.qring-wrap svg{transform:rotate(-90deg)}
+.qring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--amber)}
+.qscore-num{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:var(--amber);line-height:1;text-shadow:0 0 12px rgba(255,184,0,.4)}
+.qscore-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-top:3px}
+/* quest items */
+.qi{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border2);transition:background .12s}
+.qi:last-child{border-bottom:none}
+.qi:hover{background:rgba(255,255,255,.015)}
+/* icon pill — looks like a medicine capsule */
+.qi-pill{
+  width:44px;height:44px;border-radius:22px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  position:relative;overflow:hidden;border:1px solid;
+}
+/* vertical half-split like a capsule */
+.qi-pill::before{content:'';position:absolute;top:0;bottom:0;left:0;width:50%;background:rgba(255,255,255,.04)}
+.qi-body{flex:1;min-width:0}
+.qi-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.04em;color:var(--text);margin-bottom:2px}
+.qi-desc{font-size:11px;color:var(--text3);margin-bottom:8px}
+/* XP bar */
+.xp-track{height:8px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;margin-bottom:5px;position:relative}
+.xp-track::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 20px)}
+.xp-fill{height:100%;border-radius:1px;transition:width .6s cubic-bezier(.4,0,.2,1);position:relative}
+.xp-fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:3px;background:rgba(255,255,255,.8);filter:blur(2px)}
+.xp-row{display:flex;justify-content:space-between;align-items:center}
+.xp-prog{font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:600}
+.xp-tip{font-size:10px;color:var(--text3)}
+/* status ring */
+.q-stat{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;min-width:44px}
+.q-orb{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid;font-family:'Rajdhani',sans-serif}
+.q-orb.done{background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.4);box-shadow:0 0 10px rgba(0,255,136,.25)}
+.q-orb.mid{background:rgba(255,184,0,.1);color:var(--amber);border-color:rgba(255,184,0,.4);box-shadow:0 0 10px rgba(255,184,0,.2)}
+.q-orb.low{background:rgba(255,255,255,.04);color:var(--text3);border-color:var(--border2)}
+.q-pct{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700}
 
-/* progress ring */
-.ring-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
-.ring-wrap svg{transform:rotate(-90deg)}
-.ring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--amber)}
+/* ═══════════ ORDER TABLE ═══════════ */
+.ord-panel{background:var(--panel);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.ord-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border2)}
+.ord-hd-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
+.ord-hd-cnt{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text3);letter-spacing:.06em}
+.ord-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.ord-tbl th{padding:8px 16px;text-align:left;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);background:rgba(0,0,0,.2);border-bottom:1px solid var(--border2)}
+.ord-tbl td{padding:10px 16px;border-bottom:1px solid var(--border2);color:var(--text2)}
+.ord-tbl tr:last-child td{border-bottom:none}
+.ord-tbl tr:hover td{background:rgba(0,229,255,.02)}
+.oid{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text3)}
+.mo-chip{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;background:rgba(0,229,255,.08);color:var(--cyan2);padding:2px 9px;border-radius:2px;border:1px solid var(--border2);display:inline-block}
+.ord-amt{text-align:right;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:var(--cyan)}
+.tbl-more{text-align:center;padding:10px;font-size:11px;color:var(--text3);border-top:1px solid var(--border2)}
+.empty-note{text-align:center;padding:40px 20px;font-size:13px;color:var(--text3)}
 
-.quest-list{}
-.quest-item{display:flex;align-items:center;gap:14px;padding:15px 20px;border-bottom:1px solid var(--border);transition:background .12s}
-.quest-item:last-child{border-bottom:none}
-.quest-item:hover{background:var(--surface2)}
-.q-icon-box{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.q-body{flex:1;min-width:0}
-.q-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.q-desc{font-size:11px;color:var(--faint);margin-bottom:8px}
-.q-bar-track{height:7px;background:var(--border);border-radius:7px;overflow:hidden;margin-bottom:5px}
-.q-bar-fill{height:100%;border-radius:7px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.q-prog-row{display:flex;justify-content:space-between;align-items:center}
-.q-prog-val{font-size:11px;font-weight:600}
-.q-tip{font-size:10px;color:var(--faint)}
-.q-status-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;min-width:44px}
-.q-ring{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2.5px solid}
-.q-ring.done{background:#DCFCE7;color:var(--green);border-color:var(--green-bd)}
-.q-ring.mid{background:var(--amber-bg);color:#B45309;border-color:#FCD34D}
-.q-ring.low{background:var(--surface2);color:var(--faint);border-color:var(--border)}
-.q-pct{font-size:10px;font-weight:700}
+/* ═══════════════════════════════════════
+   MOBILE BOTTOM NAV BAR
+═══════════════════════════════════════ */
+.mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:400;
+  background:rgba(4,8,15,.97);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  padding:0;
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -4px 24px rgba(0,0,0,.6);
+}
+.mob-nav::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:.3;animation:scan 3s linear infinite;
+}
+.mob-nav-inner{display:flex;align-items:stretch}
+.mob-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:10px 6px;
+  font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;
+  color:var(--text3);transition:all .15s;border:none;background:none;cursor:pointer;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-tab::after{
+  content:'';position:absolute;top:0;left:20%;right:20%;height:2px;
+  background:var(--cyan);border-radius:0 0 2px 2px;
+  transform:scaleX(0);transition:transform .2s;
+}
+.mob-tab.on{color:var(--cyan)}
+.mob-tab.on::after{transform:scaleX(1);box-shadow:0 0 8px var(--cyan)}
+.mob-tab-icon{font-size:18px;line-height:1;transition:transform .15s}
+.mob-tab.on .mob-tab-icon{transform:scale(1.1);filter:drop-shadow(0 0 4px var(--cyan))}
+.mob-tab-sync{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--amber);border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mob-tab-sync .mob-tab-icon{filter:drop-shadow(0 0 4px var(--amber))}
 
-/* ══════════════════════════════════════════
-   ORDER HISTORY
-══════════════════════════════════════════ */
-.orders-wrap{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow-card);border:1px solid var(--border);overflow:hidden}
-.orders-hd{padding:14px 20px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
-.orders-tbl{width:100%;border-collapse:collapse;font-size:13px}
-.orders-tbl th{padding:9px 18px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);background:var(--surface2);border-bottom:1px solid var(--border)}
-.orders-tbl td{padding:10px 18px;border-bottom:1px solid var(--border);color:var(--ink2)}
-.orders-tbl tr:last-child td{border-bottom:none}
-.orders-tbl tr:hover td{background:var(--surface2)}
-.oid{font-family:ui-monospace,'SF Mono',monospace;font-size:11px;color:var(--faint)}
-.mo-chip{font-size:10px;font-weight:700;background:var(--navy);color:rgba(255,255,255,.85);padding:3px 9px;border-radius:6px;display:inline-block}
-.amt-cell{text-align:right;font-weight:700;color:var(--navy);font-size:13px}
-.tbl-more{text-align:center;padding:12px;font-size:11px;color:var(--faint);border-top:1px solid var(--border)}
+/* ═══════════════════════════════════════
+   MOBILE TOPBAR ADJUSTMENTS
+═══════════════════════════════════════ */
+@media(max-width:600px){
+  /* Show bottom nav, hide desktop tabs + sync btn in topbar */
+  .mob-nav{display:block}
+  .tab-rack{display:none !important}
+  .desk-sync{display:none !important}
 
-/* ══════════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════════ */
-@media(max-width:680px){
-  .main{padding:16px 14px 48px}
-  .metrics-grid{grid-template-columns:1fr 1fr}
+  /* Compact topbar */
+  .topbar{height:52px;padding:0 14px;gap:10px}
+  .logo-pill{width:32px;height:32px}
+  .logo-pill span{font-size:14px}
+  .bar-title{font-size:14px;letter-spacing:.2px}
+  .bar-sub{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+  .bar-right{gap:6px}
+  .hbtn{padding:5px 10px;font-size:11px}
+
+  /* Shell — room for bottom nav */
+  .shell{padding:14px 10px 86px}
+
+  /* Metrics: hero full-width, other 2 side by side */
+  .metrics-grid{grid-template-columns:1fr 1fr;gap:10px}
   .metrics-grid .mc:first-child{grid-column:1/-1}
+  .mc{padding:14px 14px}
+  .mc-val{font-size:24px}
+  .mc.hero .mc-val{font-size:22px}
+  .mc-ico{font-size:16px;margin-bottom:8px}
+
+  /* Tier grid: 3 columns, wrap to 2 rows */
   .tier-grid{grid-template-columns:repeat(3,1fr)}
-  .tier-cell:nth-child(4){border-top:1px solid var(--border)}
-  .tier-cell:nth-child(5){border-top:1px solid var(--border);border-right:none}
-  .info-grid{grid-template-columns:1fr}
-  .stats-strip{grid-template-columns:1fr 1fr}
-  .topbar-title .long{display:none}
-  .tab-capsule{display:none}
+  .tc{padding:13px 6px}
+  .tc:nth-child(4){border-top:1px solid var(--border2)}
+  .tc:nth-child(5){border-top:1px solid var(--border2);border-right:none}
+  .tc-ct{font-size:26px}
+  .tc-emoji{font-size:18px}
+
+  /* Top row: tighter */
+  .top-row{padding:11px 12px;gap:10px}
+  .rank-orb{width:28px;height:28px;font-size:11px}
+  .tr-name{font-size:13px}
+  .tr-amt{font-size:14px}
+  .tr-right .tr-badge{display:none} /* hide on mobile, space is tight */
+
+  /* Tier change section */
+  .tch-row{padding:10px 12px;gap:10px}
+  .panel-hd{padding:11px 14px}
+
+  /* Search */
+  .search-inp{font-size:14px;padding:11px 12px 11px 36px}
+  .search-wrap svg{left:11px}
+
+  /* Partner list items */
+  .pl-item{padding:10px 12px;gap:10px}
+  .pl-av{width:34px;height:34px;font-size:12px}
+  .pl-name{font-size:13px}
+  .pl-amt{font-size:12px}
+
+  /* Period pills — horizontal scroll */
+  .period-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
+  .period-bar::-webkit-scrollbar{display:none}
+  .period-bar .period-lbl{flex-shrink:0}
+  #period-pills{flex-wrap:nowrap;flex-shrink:0}
+  .pill{white-space:nowrap;flex-shrink:0}
+
+  /* Detail page */
+  .det-top-bar{padding:14px 14px;gap:12px}
+  .det-avatar{width:46px;height:46px;font-size:17px}
+  .det-name{font-size:18px}
+  .info-grid{grid-template-columns:1fr;gap:7px;padding:0 14px 14px}
+  .stats-strip{grid-template-columns:1fr 1fr;gap:7px;padding:0 14px 14px}
+  .st{padding:10px 8px}
+  .st-num{font-size:15px}
+  .chg-banner{margin:12px 14px 0;padding:10px 12px;gap:10px}
+  .chg-banner-icon{font-size:22px}
+
+  /* Quest card */
+  .qhd{flex-direction:column}
+  .qhd-left{border-right:none;border-bottom:1px solid rgba(255,184,0,.15);padding:12px 16px}
+  .qhd-right{padding:12px 16px;border-top:none;justify-content:flex-start;gap:16px}
+  .qi{padding:12px 14px;gap:10px}
+  .qi-pill{width:38px;height:38px;font-size:17px}
+  .qi-name{font-size:13px}
+  .qi-desc{font-size:10px;margin-bottom:6px}
+  .q-stat{min-width:38px}
+  .q-orb{width:32px;height:32px;font-size:13px}
+
+  /* Order table: hide date col, compact */
+  .ord-tbl .col-date{display:none}
+  .ord-tbl th:nth-child(2){display:none}
+  .ord-tbl td:nth-child(2){display:none}
+  .ord-tbl th{padding:7px 10px;font-size:9px}
+  .ord-tbl td{padding:9px 10px;font-size:12px}
+  .oid{font-size:10px}
+  .ord-amt{font-size:13px}
+
+  /* Contact buttons */
+  .cbtns{gap:8px}
+  .cbtn{padding:9px 18px;font-size:13px}
+
+  /* ibadge on mobile — shorter text */
+  .ibadge{font-size:9px;padding:2px 5px}
+}
+
+/* ═══════════════════════════════════════
+   TABLET (601–900px)
+═══════════════════════════════════════ */
+@media(min-width:601px) and (max-width:900px){
+  .shell{padding:18px 16px 48px}
+  .metrics-grid{grid-template-columns:1.2fr 1fr 1fr;gap:12px}
+  .tier-grid{grid-template-columns:repeat(5,1fr)}
+  .info-grid{grid-template-columns:1fr 1fr}
+  .stats-strip{grid-template-columns:repeat(4,1fr)}
+  .tab-rack{display:flex}
+}
+
+/* ═══════════════════════════════════════
+   TOUCH — larger tap targets
+═══════════════════════════════════════ */
+@media(hover:none){
+  .top-row,.pl-item,.tch-row,.ord-tbl tr{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .top-row:active,.pl-item:active,.tch-row:active{background:rgba(0,229,255,.05)!important}
+  .pill{padding:7px 16px}
+  .hbtn{min-height:38px}
+  .mob-tab{min-height:52px}
+}
+
+/* ═══════════════════════════════════════
+   SAFE AREA (notch phones)
+═══════════════════════════════════════ */
+@supports(padding-bottom:env(safe-area-inset-bottom)){
+  .mob-nav{padding-bottom:env(safe-area-inset-bottom)}
+  @media(max-width:600px){
+    .shell{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+  }
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════ TOPBAR ═══════════════════ -->
+<!-- ═══ TOPBAR ═══ -->
 <header class="topbar">
-  <div class="logo">A</div>
-  <div class="topbar-text">
-    <div class="topbar-title">Partner Rewards <span class="long" style="opacity:.35;font-weight:400">· Aaradhya Pharmaceuticals</span></div>
-    <div class="topbar-sub" id="data-status">Connecting…</div>
-  </div>
-  <div class="topbar-right">
-    <div id="nav-back" style="display:none"><button class="tb-btn tb-btn-ghost" onclick="goBack()">← Back</button></div>
-    <div id="nav-home" style="display:none"><button class="tb-btn tb-btn-ghost" onclick="goHome()">⌂ Home</button></div>
-    <div class="tab-capsule" id="main-tabs">
-      <button class="tab-btn on" onclick="switchTab('dashboard',this)">Dashboard</button>
-      <button class="tab-btn"    onclick="switchTab('details',this)">Partners</button>
+  <div class="logo-wrap">
+    <div class="logo-pill">
+      <span>Rx</span>
+      <div class="logo-dot" style="top:4px;right:4px"></div>
     </div>
-    <button class="tb-btn tb-btn-amber" onclick="loadData()">↺ Refresh</button>
+  </div>
+  <div class="bar-brand">
+    <div class="bar-title">AARADHYA RX COMMAND<span class="long"></span></div>
+    <div class="bar-sub"><span id="data-status">CONNECTING TO DATA FEED…</span></div>
+  </div>
+  <div class="bar-right">
+    <div id="nav-back" style="display:none"><button class="hbtn hbtn-ghost" onclick="goBack()">◄ BACK</button></div>
+    <div id="nav-home" style="display:none"><button class="hbtn hbtn-ghost" onclick="goHome()">⌂ BASE</button></div>
+    <div class="tab-rack" id="main-tabs">
+      <button class="tab-btn on" onclick="switchTab('dashboard',this)">COMMAND</button>
+      <button class="tab-btn"   onclick="switchTab('details',this)">AGENTS</button>
+    </div>
+    <button class="hbtn hbtn-cyan" onclick="loadData()">⟳ SYNC</button>
   </div>
 </header>
 
-<!-- ═══════════════════ MAIN ═══════════════════ -->
-<main class="main">
+<!-- ═══ MAIN ═══ -->
+<div class="shell">
 
   <!-- loading -->
-  <div id="loading-screen" class="loading-screen">
-    <div class="spinner"></div>
-    <p>Fetching live data from Google Sheets…</p>
-    <small>This takes a moment on first load</small>
+  <div id="loading-scr" class="loading-scr">
+    <div class="hud-spinner"></div>
+    <div class="lt">INITIALISING DATA FEED</div>
+    <div class="ls">Connecting to Google Sheets HQ…</div>
   </div>
-  <div id="err-box" class="err-box" style="display:none"></div>
+  <div id="err-bar" class="err-bar" style="display:none"></div>
 
-  <!-- ─── DASHBOARD ─── -->
+  <!-- ── DASHBOARD ── -->
   <div id="page-dashboard" class="page">
     <div class="period-bar">
-      <span class="period-lbl">Period</span>
+      <span class="period-lbl">◈ CYCLE</span>
       <div id="period-pills" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
+    <!-- metrics -->
     <div class="metrics-grid" id="metrics-area"></div>
-    <div class="section" style="margin-bottom:16px">
-      <div class="section-head">
-        <div class="section-title"><span>🏅</span> Partners by Tier</div>
-        <div class="section-badge" id="tier-sub-lbl">Live count</div>
+    <!-- tiers -->
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-hd">
+        <div class="panel-title">◈ RANK DISTRIBUTION</div>
+        <div class="panel-tag" id="tier-cycle-lbl">LIVE</div>
       </div>
       <div class="tier-grid" id="tier-grid-area"></div>
     </div>
-    <div class="section" style="margin-bottom:16px">
-      <div class="section-head">
-        <div class="section-title"><span>🏆</span> Top Purchasers</div>
-      </div>
+    <!-- top purchasers -->
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-hd"><div class="panel-title">◈ TOP AGENTS</div></div>
       <div id="top-list-area"></div>
     </div>
+    <!-- tier changes -->
     <div id="tc-section"></div>
   </div>
 
-  <!-- ─── PARTNERS LIST ─── -->
+  <!-- ── AGENTS LIST ── -->
   <div id="page-details" class="page">
-    <div class="search-bar">
+    <div class="search-wrap">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="search-input" id="search-input" type="text" placeholder="Search partner name, city or district…" oninput="filterBiz()">
+      <input class="search-inp" id="search-inp" type="text" placeholder="Search agent name, city or district…" oninput="filterBiz()">
     </div>
     <div class="plist" id="plist-area"></div>
   </div>
 
-  <!-- ─── PARTNER DETAIL ─── -->
+  <!-- ── AGENT DETAIL ── -->
   <div id="page-detail" class="page"></div>
 
-</main>
+</div><!-- /shell -->
 
 <script>
-/* ═══════════ CONSTANTS ═══════════ */
-const SHEET_ID = '17bW1LAfb4QxzGa7cNG_qsFjR6pdt5Q7D34IKBSRH-Lg';
-const CSV = 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:csv&sheet=';
+/* ═══════ CONSTANTS ═══════ */
+const SID='17bW1LAfb4QxzGa7cNG_qsFjR6pdt5Q7D34IKBSRH-Lg';
+const CSV='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=';
 
-let customers=[], orders=[], allMonths=[];
-let selMonth='All', navStack=['dashboard'];
-
+let customers=[],orders=[],allMonths=[];
+let selMonth='All',navStack=['dashboard'];
 const MMAP={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
 
-/* ═══════════ TIER CONFIG ═══════════ */
+/* ═══════ TIERS ═══════ */
 const TIERS=[
-  {name:'Diamond', full:'Diamond Partner', emoji:'💎', min:100000, color:'#1D4ED8', bg:'#EFF6FF', border:'#93C5FD', text:'#1E40AF'},
-  {name:'Platinum',full:'Platinum Partner',emoji:'🌟', min:70000,  color:'#7C3AED', bg:'#F5F3FF', border:'#C4B5FD', text:'#5B21B6'},
-  {name:'Gold',    full:'Gold Partner',    emoji:'🥇', min:50000,  color:'#B45309', bg:'#FFFBEB', border:'#FCD34D', text:'#78350F'},
-  {name:'Silver',  full:'Silver Partner',  emoji:'🥈', min:20000,  color:'#475569', bg:'#F1F5F9', border:'#CBD5E1', text:'#334155'},
-  {name:'Bronze',  full:'Bronze Partner',  emoji:'🥉', min:10000,  color:'#92400E', bg:'#FFF7ED', border:'#FCA172', text:'#7C2D12'},
+  {name:'DIAMOND',full:'Diamond Partner',emoji:'💎',min:100000,color:'#38BDF8',glow:'rgba(56,189,248,.35)',bg:'rgba(56,189,248,.08)',border:'rgba(56,189,248,.3)',text:'#7DD3FC'},
+  {name:'PLATINUM',full:'Platinum Partner',emoji:'🌟',min:70000,color:'#C084FC',glow:'rgba(192,132,252,.3)',bg:'rgba(192,132,252,.08)',border:'rgba(192,132,252,.3)',text:'#D8B4FE'},
+  {name:'GOLD',full:'Gold Partner',emoji:'🥇',min:50000,color:'#FFB800',glow:'rgba(255,184,0,.35)',bg:'rgba(255,184,0,.08)',border:'rgba(255,184,0,.3)',text:'#FDE68A'},
+  {name:'SILVER',full:'Silver Partner',emoji:'🥈',min:20000,color:'#94A3B8',glow:'rgba(148,163,184,.2)',bg:'rgba(148,163,184,.08)',border:'rgba(148,163,184,.25)',text:'#CBD5E1'},
+  {name:'BRONZE',full:'Bronze Partner',emoji:'🥉',min:10000,color:'#FB923C',glow:'rgba(251,146,60,.3)',bg:'rgba(251,146,60,.08)',border:'rgba(251,146,60,.3)',text:'#FDBA74'},
 ];
-const UNRANKED={name:'Unranked',full:'Unranked',emoji:'◦',min:0,color:'#94A3B8',bg:'#F8FAFC',border:'#E2E8F0',text:'#64748B'};
+const UNRANKED={name:'UNRANKED',full:'Unranked',emoji:'◦',min:0,color:'#3A5068',glow:'none',bg:'rgba(58,80,104,.08)',border:'rgba(58,80,104,.25)',text:'#64748B'};
 
-function getTier(amt){ for(const t of TIERS) if(amt>=t.min) return t; return UNRANKED; }
-function tRank(t){ const i=TIERS.findIndex(x=>x.name===t.name); return i===-1?-1:TIERS.length-1-i; }
+function getTier(a){for(const t of TIERS)if(a>=t.min)return t;return UNRANKED;}
+function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:TIERS.length-1-i;}
 
-/* ═══════════ UTILS ═══════════ */
-function fmtINR(n){ return '₹'+Math.round(n).toLocaleString('en-IN'); }
-function moVal(m){ const p=m.split('-'); return parseInt(p[1]||0)*12+(MMAP[p[0]]||0); }
-function ini(name){ return (name||'').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?'; }
+/* ═══════ UTILS ═══════ */
+function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
+function moVal(m){const p=m.split('-');return parseInt(p[1]||0)*12+(MMAP[p[0]]||0);}
+function ini(name){return (name||'').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?';}
 
-/* ═══════════ CSV PARSER ═══════════ */
+/* ═══════ CSV ═══════ */
 function parseCSV(txt){
-  const rows=[]; let cur='',inQ=false,row=[];
+  const rows=[];let cur='',inQ=false,row=[];
   for(let i=0;i<txt.length;i++){
     const c=txt[i];
     if(c==='"'){if(inQ&&txt[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
@@ -422,444 +684,388 @@ function parseCSV(txt){
     else if((c==='\n'||c==='\r')&&!inQ){
       if(c==='\r'&&txt[i+1]==='\n')i++;
       row.push(cur.trim());cur='';
-      if(row.some(x=>x!==''))rows.push(row);
-      row=[];
-    } else cur+=c;
+      if(row.some(x=>x!==''))rows.push(row);row=[];
+    }else cur+=c;
   }
   if(row.length){row.push(cur.trim());if(row.some(x=>x!==''))rows.push(row);}
   return rows;
 }
 async function fetchSheet(name){
   const r=await fetch(CSV+encodeURIComponent(name));
-  if(!r.ok) throw new Error('Cannot read "'+name+'"');
+  if(!r.ok)throw new Error('Cannot read "'+name+'"');
   return parseCSV(await r.text());
 }
 
-/* ═══════════ LOAD ═══════════ */
+/* ═══════ LOAD ═══════ */
 async function loadData(){
-  document.getElementById('loading-screen').style.display='flex';
-  document.getElementById('err-box').style.display='none';
+  document.getElementById('loading-scr').style.display='flex';
+  document.getElementById('err-bar').style.display='none';
   ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
   try{
-    const [cr,or]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS')]);
+    const[cr,or]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS')]);
     customers=[];
     for(let i=1;i<cr.length;i++){
-      const r=cr[i]; if(!r[0]||!r[1]) continue;
+      const r=cr[i];if(!r[0]||!r[1])continue;
       customers.push({id:r[0],name:r[1],owner:r[2]||'',mobile:r[3]||'',address:r[5]||'',city:r[6]||'',district:r[7]||'',license:r[9]||''});
     }
     orders=[];
     for(let i=1;i<or.length;i++){
-      const r=or[i]; if(!r[0]) continue;
+      const r=or[i];if(!r[0])continue;
       const amt=parseFloat((r[6]||'').replace(/[₹,\s]/g,''))||0;
       orders.push({id:r[0],custId:r[1]||'',bizName:r[2]||'',date:r[3]||'',month:r[4]||'',amount:amt});
     }
     allMonths=[...new Set(orders.map(o=>o.month).filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
-    buildPills(); renderDash(); buildBizList();
-    document.getElementById('loading-screen').style.display='none';
-    document.getElementById('data-status').textContent='Live · '+customers.length+' partners · '+orders.length+' orders';
+    buildPills();renderDash();buildBizList();
+    document.getElementById('loading-scr').style.display='none';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' TRANSACTIONS';
     showPage('dashboard');
   }catch(e){
-    document.getElementById('loading-screen').style.display='none';
-    const el=document.getElementById('err-box');
+    document.getElementById('loading-scr').style.display='none';
+    const el=document.getElementById('err-bar');
     el.style.display='block';
-    el.innerHTML='<strong>Could not load data:</strong> '+e.message+' — Make sure the sheet is public (Anyone with the link → Viewer).';
+    el.innerHTML='<strong>[ERROR]</strong> '+e.message+' — Ensure sheet is public (Anyone with the link → Viewer).';
   }
 }
 
-/* ═══════════ PERIOD PILLS ═══════════ */
+/* ═══════ PILLS ═══════ */
 function buildPills(){
-  const c=document.getElementById('period-pills'); c.innerHTML='';
+  const c=document.getElementById('period-pills');c.innerHTML='';
   ['All',...allMonths].forEach(m=>{
     const b=document.createElement('button');
     b.className='pill'+(m===selMonth?' on':'');
-    b.textContent=m;
+    b.textContent=m==='All'?'ALL TIME':m;
     b.onclick=()=>{selMonth=m;buildPills();renderDash();};
     c.appendChild(b);
   });
 }
 
-/* ═══════════ AGGREGATION ═══════════ */
-function filtOrd(){ return selMonth==='All'?orders:orders.filter(o=>o.month===selMonth); }
+/* ═══════ AGGREGATION ═══════ */
+function filtOrd(){return selMonth==='All'?orders:orders.filter(o=>o.month===selMonth);}
 function totalsFrom(ords){
   const t={};
-  ords.forEach(o=>{if(!o.custId||o.custId.toLowerCase()==='unknown')return; t[o.custId]=(t[o.custId]||0)+o.amount;});
+  ords.forEach(o=>{if(!o.custId||o.custId.toLowerCase()==='unknown')return;t[o.custId]=(t[o.custId]||0)+o.amount;});
   return t;
 }
-function nameMapFrom(ords){
-  const m={};
-  ords.forEach(o=>{if(o.custId&&o.bizName)m[o.custId]=o.bizName;});
-  return m;
-}
-
-/* per-customer tier change between two months */
-function buildChangeMap(curMo,prevMo){
-  const cm=curMo ?totalsFrom(orders.filter(o=>o.month===curMo)) :{};
+function nameMap(ords){const m={};ords.forEach(o=>{if(o.custId&&o.bizName)m[o.custId]=o.bizName;});return m;}
+function buildChgMap(curMo,prevMo){
+  const cm=curMo?totalsFrom(orders.filter(o=>o.month===curMo)):{};
   const pm=prevMo?totalsFrom(orders.filter(o=>o.month===prevMo)):{};
   const map={};
   [...new Set([...Object.keys(cm),...Object.keys(pm)])].forEach(id=>{
-    const ca=cm[id]||0,pa=pm[id]||0;
-    const ct=getTier(ca),pt=getTier(pa);
-    if(tRank(ct)!==tRank(pt))
-      map[id]={curAmt:ca,prevAmt:pa,curTier:ct,prevTier:pt,change:tRank(ct)>tRank(pt)?'up':'dn'};
+    const ca=cm[id]||0,pa=pm[id]||0,ct=getTier(ca),pt=getTier(pa);
+    if(tRank(ct)!==tRank(pt))map[id]={curAmt:ca,prevAmt:pa,curTier:ct,prevTier:pt,change:tRank(ct)>tRank(pt)?'up':'dn'};
   });
   return map;
 }
 
-/* ═══════════ DASHBOARD ═══════════ */
+/* ═══════ DASHBOARD ═══════ */
 function renderDash(){
-  const ords=filtOrd();
-  const totals=totalsFrom(ords);
-  const ids=Object.keys(totals);
+  const ords=filtOrd(),totals=totalsFrom(ords),ids=Object.keys(totals);
   const rev=ords.reduce((s,o)=>s+o.amount,0);
-
-  const curMo =selMonth!=='All'?selMonth:(allMonths[0]||'');
+  const curMo=selMonth!=='All'?selMonth:(allMonths[0]||'');
   const prevMo=selMonth!=='All'?allMonths[allMonths.indexOf(selMonth)+1]||'':(allMonths[1]||'');
-  const chgMap=buildChangeMap(curMo,prevMo);
+  const chgMap=buildChgMap(curMo,prevMo);
 
-  /* — Metrics — */
+  /* metrics */
   document.getElementById('metrics-area').innerHTML=`
-    <div class="mc hero">
-      <div class="mc-icon" style="background:rgba(245,158,11,.15)">💰</div>
-      <div class="mc-lbl">Total Revenue</div>
+    <div class="mc hero hud-box hud-box-b">
+      <div class="mc-ico">💊</div>
+      <div class="mc-lbl">MISSION REVENUE</div>
       <div class="mc-val">${fmtINR(rev)}</div>
-      <div class="mc-sub">${selMonth==='All'?'All time':selMonth}</div>
+      <div class="mc-sub">${selMonth==='All'?'ALL CYCLES':selMonth}</div>
     </div>
     <div class="mc">
-      <div class="mc-icon" style="background:#EFF6FF">🤝</div>
-      <div class="mc-lbl">Active Partners</div>
-      <div class="mc-val">${ids.length}</div>
+      <div class="mc-ico">🎯</div>
+      <div class="mc-lbl">ACTIVE AGENTS</div>
+      <div class="mc-val" style="color:var(--cyan)">${ids.length}</div>
       <div class="mc-sub">with orders placed</div>
     </div>
     <div class="mc">
-      <div class="mc-icon" style="background:#F0FDF4">📋</div>
-      <div class="mc-lbl">Total Orders</div>
-      <div class="mc-val">${ords.length}</div>
-      <div class="mc-sub">transactions</div>
+      <div class="mc-ico">📡</div>
+      <div class="mc-lbl">TRANSACTIONS</div>
+      <div class="mc-val" style="color:var(--green)">${ords.length}</div>
+      <div class="mc-sub">total orders</div>
     </div>`;
 
-  /* — Tier grid — */
-  document.getElementById('tier-sub-lbl').textContent=selMonth==='All'?'All time':selMonth;
-  document.getElementById('tier-grid-area').innerHTML=TIERS.map((t,i)=>{
-    const nextMin=i>0?TIERS[i-1].min:Infinity;
+  /* tier grid */
+  document.getElementById('tier-cycle-lbl').textContent=selMonth==='All'?'ALL TIME':selMonth;
+  document.getElementById('tier-grid-area').innerHTML=TIERS.map(t=>{
+    const nextMin=TIERS[TIERS.indexOf(t)-1]?.min||Infinity;
     const cnt=ids.filter(id=>totals[id]>=t.min&&totals[id]<nextMin).length;
-    return `<div class="tier-cell" style="border-top-color:${t.color}">
-      <span class="tier-emoji-lg">${t.emoji}</span>
-      <div class="tier-name-sm" style="color:${t.color}">${t.name}</div>
-      <div class="tier-count-lg" style="color:${t.text}">${cnt}</div>
-      <div class="tier-min-lbl">≥ ${fmtINR(t.min)}</div>
+    return `<div class="tc">
+      <div class="tc-glow" style="background:linear-gradient(90deg,transparent,${t.color},transparent);opacity:.4"></div>
+      <span class="tc-emoji">${t.emoji}</span>
+      <div class="tc-nm" style="color:${t.color}">${t.name}</div>
+      <div class="tc-ct" style="color:${t.text};text-shadow:0 0 12px ${t.color}40">${cnt}</div>
+      <div class="tc-mn">≥ ${fmtINR(t.min)}</div>
     </div>`;
   }).join('');
 
-  /* — Top 5 — */
-  const names=nameMapFrom(ords);
+  /* top 5 */
+  const nm=nameMap(ords);
   const top5=ids.sort((a,b)=>totals[b]-totals[a]).slice(0,5);
   const medals=[
-    {bg:'#FEF3C7',c:'#D97706',lbl:'#1 🥇'},
-    {bg:'#F1F5F9',c:'#64748B',lbl:'#2 🥈'},
-    {bg:'#FFF7ED',c:'#B45309',lbl:'#3 🥉'},
-    {bg:'#F3F4F6',c:'#9CA3AF',lbl:'#4'},
-    {bg:'#F3F4F6',c:'#9CA3AF',lbl:'#5'},
+    {bg:'rgba(255,184,0,.15)',c:'#FFB800',border:'rgba(255,184,0,.4)',lbl:'01',glow:'0 0 8px rgba(255,184,0,.4)'},
+    {bg:'rgba(148,163,184,.12)',c:'#94A3B8',border:'rgba(148,163,184,.3)',lbl:'02',glow:'none'},
+    {bg:'rgba(251,146,60,.12)',c:'#FB923C',border:'rgba(251,146,60,.3)',lbl:'03',glow:'none'},
+    {bg:'rgba(58,80,104,.2)',c:'#3A5068',border:'rgba(58,80,104,.3)',lbl:'04',glow:'none'},
+    {bg:'rgba(58,80,104,.2)',c:'#3A5068',border:'rgba(58,80,104,.3)',lbl:'05',glow:'none'},
   ];
   document.getElementById('top-list-area').innerHTML=top5.length===0
-    ?'<div class="empty-note">No orders in this period</div>'
+    ?'<div class="empty-note">[ NO DATA FOR THIS CYCLE ]</div>'
     :top5.map((id,i)=>{
-      const m=medals[i]; const tier=getTier(totals[id]); const chg=chgMap[id];
+      const m=medals[i],tier=getTier(totals[id]),chg=chgMap[id];
       const badge=chg?`<span class="ibadge ${chg.change}">${chg.change==='up'?'▲':'▼'} ${chg.curTier.name}</span>`:'';
       return `<div class="top-row" onclick="showDetailById('${id}')">
-        <div class="rank-bubble" style="background:${m.bg};color:${m.c}">${m.lbl}</div>
-        <div class="top-info">
-          <div class="top-name">${names[id]||id}</div>
-          <div class="top-meta">${tier.emoji} ${tier.full}</div>
+        <div class="rank-orb" style="background:${m.bg};color:${m.c};border-color:${m.border};box-shadow:${m.glow}">${m.lbl}</div>
+        <div class="tr-info">
+          <div class="tr-name">${nm[id]||id}</div>
+          <div class="tr-meta">${tier.emoji} <span style="color:${tier.color}">${tier.full}</span></div>
         </div>
-        <div class="top-right">
-          <div class="top-amount">${fmtINR(totals[id])} ${badge}</div>
-          <div class="top-tier-pill" style="background:${tier.bg};color:${tier.color}">${tier.full}</div>
+        <div class="tr-right">
+          <div class="tr-amt" style="color:${tier.color};text-shadow:0 0 10px ${tier.color}50">${fmtINR(totals[id])} ${badge}</div>
+          <div class="tr-badge" style="background:${tier.bg};color:${tier.color};border:1px solid ${tier.border}">${tier.full}</div>
         </div>
-        <div class="chev-icon">›</div>
+        <div class="tr-chev">›</div>
       </div>`;
     }).join('');
 
-  /* — Tier change section — */
-  renderTierChangeSection(chgMap,curMo,prevMo,names);
+  renderTierChanges(chgMap,curMo,prevMo,nm);
 }
 
-function renderTierChangeSection(chgMap,curMo,prevMo,names){
+function renderTierChanges(chgMap,curMo,prevMo,nm){
   const sec=document.getElementById('tc-section');
   if(!curMo||!prevMo){sec.innerHTML='';return;}
   const promoted=Object.entries(chgMap).filter(([,v])=>v.change==='up');
-  const demoted =Object.entries(chgMap).filter(([,v])=>v.change==='dn');
+  const demoted=Object.entries(chgMap).filter(([,v])=>v.change==='dn');
   if(!promoted.length&&!demoted.length){
-    sec.innerHTML=`<div class="section"><div class="section-head"><div class="section-title"><span>⇄</span> Tier Changes</div><div class="section-badge">${prevMo} → ${curMo}</div></div><div class="no-change-note">No tier changes between ${prevMo} and ${curMo}</div></div>`;
-    return;
+    sec.innerHTML=`<div class="panel"><div class="panel-hd"><div class="panel-title">◈ RANK SHIFTS</div><div class="panel-tag">${prevMo} → ${curMo}</div></div><div class="no-chg">[ NO RANK CHANGES THIS CYCLE ]</div></div>`;return;
   }
-  const mkRows=(list,type)=>list.sort((a,b)=>b[1].curAmt-a[1].curAmt).map(([id,v])=>{
-    const arrow=type==='up'?`<span style="color:var(--green);font-size:20px">▲</span>`:`<span style="color:var(--red);font-size:20px">▼</span>`;
-    const amtColor=type==='up'?'var(--green)':'var(--red)';
-    return `<div class="tc-row" onclick="showDetailById('${id}')">
-      <div class="tc-arrow">${arrow}</div>
-      <div class="tc-info">
-        <div class="tc-name">${names[id]||id}</div>
-        <div class="tc-tiers">${v.prevTier.emoji}<span style="color:var(--muted)">${v.prevTier.full}</span><span style="color:var(--faint)">→</span><span style="color:${v.curTier.color};font-weight:700">${v.curTier.emoji} ${v.curTier.full}</span></div>
+  const mkRow=(list,type)=>list.sort((a,b)=>b[1].curAmt-a[1].curAmt).map(([id,v])=>{
+    const ac=type==='up'?'var(--green)':'var(--red)';
+    return `<div class="tch-row" onclick="showDetailById('${id}')">
+      <div class="tch-arr" style="color:${ac}">${type==='up'?'▲':'▼'}</div>
+      <div class="tch-info">
+        <div class="tch-name">${nm[id]||id}</div>
+        <div class="tch-tiers">${v.prevTier.emoji}<span style="color:${v.prevTier.color}">${v.prevTier.full}</span><span style="color:var(--text3)">→</span><span style="color:${v.curTier.color};font-weight:700">${v.curTier.emoji} ${v.curTier.full}</span></div>
       </div>
-      <div class="tc-right">
-        <div class="tc-amt" style="color:${amtColor}">${fmtINR(v.curAmt)}</div>
-        <div class="tc-prev">prev: ${fmtINR(v.prevAmt)}</div>
+      <div class="tch-right">
+        <div class="tch-amt" style="color:${ac}">${fmtINR(v.curAmt)}</div>
+        <div class="tch-prev">prev ${fmtINR(v.prevAmt)}</div>
       </div>
-      <div class="chev-icon">›</div>
+      <div class="tr-chev">›</div>
     </div>`;
   }).join('');
-
-  const promoCount=promoted.length,demoCount=demoted.length;
-  sec.innerHTML=`<div class="section">
-    <div class="section-head">
-      <div class="section-title"><span>⇄</span> Tier Changes</div>
-      <div style="display:flex;gap:8px">
-        ${promoCount?`<span class="ibadge up">▲ ${promoCount} Promoted</span>`:''}
-        ${demoCount ?`<span class="ibadge dn">▼ ${demoCount} Demoted</span>`:''}
+  const pc=promoted.length,dc=demoted.length;
+  sec.innerHTML=`<div class="panel">
+    <div class="panel-hd">
+      <div class="panel-title">◈ RANK SHIFTS</div>
+      <div style="display:flex;gap:7px">
+        ${pc?`<span class="ibadge up">▲ ${pc} PROMOTED</span>`:''}
+        ${dc?`<span class="ibadge dn">▼ ${dc} DEMOTED</span>`:''}
       </div>
     </div>
-    <div style="padding:8px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;color:var(--faint)">Comparing <strong style="color:var(--ink2)">${prevMo}</strong> vs <strong style="color:var(--ink2)">${curMo}</strong></div>
-    ${promoted.length?`<div class="tc-head-promo">▲ Promotions (${promoCount})</div>${mkRows(promoted,'up')}`:''}
-    ${demoted.length ?`<div class="tc-head-demo">▼ Demotions (${demoCount})</div>${mkRows(demoted,'dn')}`:''}
+    <div style="padding:7px 18px;background:rgba(0,0,0,.2);border-bottom:1px solid var(--border2);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3)">
+      CYCLE COMPARISON: ${prevMo} ──── ${curMo}
+    </div>
+    ${pc?`<div class="tc-head-up">▲ RANK UP (${pc})</div>${mkRow(promoted,'up')}`:''}
+    ${dc?`<div class="tc-head-dn">▼ RANK DOWN (${dc})</div>${mkRow(demoted,'dn')}`:''}
   </div>`;
 }
 
-/* ═══════════ PARTNERS LIST ═══════════ */
+/* ═══════ BIZ LIST ═══════ */
 function buildBizList(){
   const t=totalsFrom(orders);
   window._AT=t;
-  const cm=allMonths[0]||'', pm=allMonths[1]||'';
-  window._BizChg=buildChangeMap(cm,pm);
+  window._BChg=buildChgMap(allMonths[0]||'',allMonths[1]||'');
   const sorted=[...customers].sort((a,b)=>(t[b.id]||0)-(t[a.id]||0));
-  window._SC=sorted;
-  renderPList(sorted);
+  window._SC=sorted;renderPList(sorted);
 }
 function renderPList(list){
-  const t=window._AT||{}, chg=window._BizChg||{};
-  if(!list.length){document.getElementById('plist-area').innerHTML='<div class="empty-note">No partners found</div>';return;}
+  const t=window._AT||{},chg=window._BChg||{};
+  if(!list.length){document.getElementById('plist-area').innerHTML='<div class="empty-note">[ NO AGENTS FOUND ]</div>';return;}
   document.getElementById('plist-area').innerHTML=list.slice(0,200).map(c=>{
-    const amt=t[c.id]||0, tier=getTier(amt), av=ini(c.name);
-    const ch=chg[c.id];
-    const badge=ch?`<span class="ibadge ${ch.change}" style="margin-left:5px">${ch.change==='up'?'▲':'▼'} ${ch.curTier.name}</span>`:'';
-    return `<div class="plist-item" onclick="showDetailById('${c.id}')"
-      onmouseenter="this.style.borderLeftColor='${tier.color}'" onmouseleave="this.style.borderLeftColor='transparent'">
-      <div class="p-avatar" style="background:${tier.bg};color:${tier.color}">${av}</div>
-      <div class="p-info">
-        <div class="p-name">${c.name}</div>
-        <div class="p-loc">${[c.city,c.district].filter(Boolean).join(' · ')||'Location not set'}</div>
+    const amt=t[c.id]||0,tier=getTier(amt),av=ini(c.name),ch=chg[c.id];
+    const badge=ch?`<span class="ibadge ${ch.change}" style="margin-left:4px">${ch.change==='up'?'▲':'▼'} ${ch.curTier.name}</span>`:'';
+    return `<div class="pl-item" onclick="showDetailById('${c.id}')"
+      onmouseenter="this.style.borderLeftColor='${tier.color}';this.style.background='rgba(0,229,255,.02)'"
+      onmouseleave="this.style.borderLeftColor='transparent';this.style.background=''">
+      <div class="pl-av" style="background:${tier.bg};color:${tier.color};border-color:${tier.border}">${av}</div>
+      <div class="pl-info">
+        <div class="pl-name">${c.name}</div>
+        <div class="pl-loc">${[c.city,c.district].filter(Boolean).join(' · ')||'LOCATION UNKNOWN'}</div>
       </div>
-      <div class="p-right">
-        ${amt>0?`<div class="p-amt">${fmtINR(amt)}${badge}</div>`:'<div style="font-size:12px;color:var(--faint)">No orders</div>'}
-        <div class="p-tier-tag" style="background:${tier.bg};color:${tier.color}">${tier.emoji} ${tier.full}</div>
+      <div class="pl-right">
+        ${amt>0?`<div class="pl-amt" style="color:${tier.color}">${fmtINR(amt)}${badge}</div>`:'<div style="font-size:11px;color:var(--text3)">NO DATA</div>'}
+        <div class="pl-tier" style="background:${tier.bg};color:${tier.color};border:1px solid ${tier.border}">${tier.emoji} ${tier.name}</div>
       </div>
-      <div class="chev-icon">›</div>
+      <div class="tr-chev">›</div>
     </div>`;
   }).join('');
 }
 function filterBiz(){
-  const q=document.getElementById('search-input').value.toLowerCase();
+  const q=document.getElementById('search-inp').value.toLowerCase();
   renderPList((window._SC||[]).filter(c=>c.name.toLowerCase().includes(q)||c.city.toLowerCase().includes(q)||c.district.toLowerCase().includes(q)));
 }
 
-/* ═══════════ QUEST ENGINE ═══════════ */
+/* ═══════ QUESTS ═══════ */
 function computeQuests(custId,curMo,prevMo){
-  const cOrds=orders.filter(o=>o.custId===custId&&o.month===curMo);
-  const pOrds=orders.filter(o=>o.custId===custId&&o.month===prevMo);
-  const cnt=cOrds.length;
-  const tot=cOrds.reduce((s,o)=>s+o.amount,0);
-  const ptot=pOrds.reduce((s,o)=>s+o.amount,0);
-  const ct=getTier(tot), pt=getTier(ptot);
-  const sameLeague=curMo&&prevMo&&tRank(ct)===tRank(pt)&&tRank(ct)>tRank(UNRANKED);
-
-  /* Q1 */
-  const q1t=2,q1v=Math.min(cnt,q1t),q1d=cnt>=q1t,q1p=Math.min(100,Math.round(q1v/q1t*100));
-  /* Q2 */
-  const q2t=20000,q2v=Math.min(tot,q2t),q2d=tot>=q2t,q2p=Math.min(100,Math.round(q2v/q2t*100));
-  /* Q3 */
-  const q3d=sameLeague,q3p=q3d?100:(prevMo&&ptot>0&&tot>0?50:(tot>0?25:0));
-
+  const cO=orders.filter(o=>o.custId===custId&&o.month===curMo);
+  const pO=orders.filter(o=>o.custId===custId&&o.month===prevMo);
+  const cnt=cO.length,tot=cO.reduce((s,o)=>s+o.amount,0);
+  const ptot=pO.reduce((s,o)=>s+o.amount,0);
+  const ct=getTier(tot),pt=getTier(ptot);
+  const q3d=curMo&&prevMo&&tRank(ct)===tRank(pt)&&tRank(ct)>tRank(UNRANKED);
+  const q1d=cnt>=2,q2d=tot>=20000;
   return [
-    {icon:'📦',name:'Frequent Buyer',desc:'Place at least 2 orders this month',
-     pct:q1p,done:q1d,color:'#6366F1',
-     progLbl:`${cnt} / 2 orders`,
-     tip:q1d?'Quest complete! 🎉':`${q1t-cnt} more order${q1t-cnt>1?'s':''} needed`},
-    {icon:'💰',name:'High Spender',desc:'Purchase ₹20,000 or more this month',
-     pct:q2p,done:q2d,color:'#D97706',
-     progLbl:`${fmtINR(tot)} / ${fmtINR(q2t)}`,
-     tip:q2d?'Quest complete! 🎉':`${fmtINR(q2t-tot)} more to go`},
-    {icon:'🏆',name:'League Loyalist',desc:'Stay in the same tier for two consecutive months',
-     pct:q3p,done:q3d,color:'#0EA5E9',
-     progLbl:q3d?`${prevMo} + ${curMo} — ${ct.full}`
-       :(prevMo&&ptot>0?`${pt.emoji} ${pt.name} → ${ct.emoji} ${ct.name}`
-         :`Active in ${curMo||'current month'}`),
-     tip:q3d?'Quest complete! 🎉'
-       :(prevMo&&ptot>0&&tot>0?`Tiers differ — hold ${ct.name} next month`
-         :'Need activity in both months')},
+    {icon:'📦',name:'FREQUENT BUYER',desc:'Place at least 2 orders this cycle',
+     pct:Math.min(100,Math.round(Math.min(cnt,2)/2*100)),done:q1d,color:'#818CF8',
+     progLbl:`${cnt} / 2 ORDERS`,tip:q1d?'MISSION COMPLETE ✓':`${2-cnt} ORDER${2-cnt>1?'S':''} REMAINING`},
+    {icon:'💊',name:'HIGH DOSAGE',desc:'Dispense ₹20,000 or more this cycle',
+     pct:Math.min(100,Math.round(Math.min(tot,20000)/20000*100)),done:q2d,color:'#FFB800',
+     progLbl:`${fmtINR(tot)} / ₹20,000`,tip:q2d?'MISSION COMPLETE ✓':`${fmtINR(20000-tot)} REMAINING`},
+    {icon:'🏰',name:'LEAGUE LOYALIST',desc:'Hold the same rank for two consecutive cycles',
+     pct:q3d?100:(prevMo&&ptot>0&&tot>0?50:(tot>0?25:0)),done:q3d,color:'#00E5FF',
+     progLbl:q3d?`${prevMo} + ${curMo} — ${ct.full}`:(prevMo&&ptot>0?`${pt.emoji}${pt.name} → ${ct.emoji}${ct.name}`:`ACTIVE IN ${curMo||'CURRENT'}`),
+     tip:q3d?'MISSION COMPLETE ✓':(prevMo&&ptot>0&&tot>0?`RANKS DIFFER — HOLD ${ct.name}`:'NEED DATA IN BOTH CYCLES')},
   ];
 }
 
 function questHTML(quests,curMo){
   const done=quests.filter(q=>q.done).length;
   const avg=Math.round(quests.reduce((s,q)=>s+q.pct,0)/quests.length);
-  /* SVG ring */
-  const R=20,C=2*Math.PI*R,fill=Math.round(avg/100*C);
-  const ringHTML=`<div class="ring-wrap">
-    <svg width="52" height="52" viewBox="0 0 52 52">
-      <circle cx="26" cy="26" r="${R}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="5"/>
-      <circle cx="26" cy="26" r="${R}" fill="none" stroke="${avg===100?'#22C55E':'#F59E0B'}" stroke-width="5"
-        stroke-dasharray="${fill} ${C}" stroke-linecap="round"/>
+  const R=22,C=2*Math.PI*R,fill=Math.round(avg/100*C);
+  const ringCol=avg===100?'#00FF88':'#FFB800';
+  const ring=`<div class="qring-wrap">
+    <svg width="54" height="54" viewBox="0 0 54 54">
+      <circle cx="27" cy="27" r="${R}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="5"/>
+      <circle cx="27" cy="27" r="${R}" fill="none" stroke="${ringCol}" stroke-width="5"
+        stroke-dasharray="${fill} ${C}" stroke-linecap="round"
+        style="filter:drop-shadow(0 0 4px ${ringCol})"/>
     </svg>
-    <div class="ring-val">${avg}%</div>
+    <div class="qring-val">${avg}%</div>
   </div>`;
 
   const items=quests.map(q=>{
     const rc=q.done?'done':q.pct>=50?'mid':'low';
     const ic=q.done?'✓':q.pct>=50?'◑':'○';
-    const bc=q.done?'#22C55E':q.pct>=50?q.color:'#CBD5E1';
-    const pc=q.done?'var(--green)':q.pct>=50?q.color:'var(--faint)';
-    return `<div class="quest-item">
-      <div class="q-icon-box" style="background:${q.color}15;border:1px solid ${q.color}25">${q.icon}</div>
-      <div class="q-body">
-        <div class="q-name">${q.name}</div>
-        <div class="q-desc">${q.desc}</div>
-        <div class="q-bar-track"><div class="q-bar-fill" style="width:${q.pct}%;background:${bc}"></div></div>
-        <div class="q-prog-row">
-          <span class="q-prog-val" style="color:${pc}">${q.progLbl}</span>
-          <span class="q-tip">${q.tip}</span>
+    const bc=q.done?'#00FF88':q.pct>=50?q.color:'rgba(255,255,255,.1)';
+    const pc=q.done?'var(--green)':q.pct>=50?q.color:'var(--text3)';
+    return `<div class="qi">
+      <div class="qi-pill" style="background:${q.color}12;border-color:${q.color}30">${q.icon}</div>
+      <div class="qi-body">
+        <div class="qi-name" style="color:${q.done?'var(--green)':q.color}">${q.name}</div>
+        <div class="qi-desc">${q.desc}</div>
+        <div class="xp-track">
+          <div class="xp-fill" style="width:${q.pct}%;background:linear-gradient(90deg,${bc}88,${bc})"></div>
+        </div>
+        <div class="xp-row">
+          <span class="xp-prog" style="color:${pc}">${q.progLbl}</span>
+          <span class="xp-tip">${q.tip}</span>
         </div>
       </div>
-      <div class="q-status-col">
-        <div class="q-ring ${rc}">${ic}</div>
+      <div class="q-stat">
+        <div class="q-orb ${rc}">${ic}</div>
         <div class="q-pct" style="color:${pc}">${q.pct}%</div>
       </div>
     </div>`;
   }).join('');
 
-  return `<div class="quest-wrap">
-    <div class="quest-hd">
-      <div class="quest-hd-left">
-        <div class="quest-hd-icon">⚔️</div>
-        <div class="quest-hd-text">
-          <div class="quest-hd-title">Monthly Quests</div>
-          <div class="quest-hd-sub">${curMo||'Current Month'}</div>
-        </div>
+  return `<div class="quest-panel">
+    <div class="qhd">
+      <div class="qhd-left">
+        <div class="qhd-icon">⚔️</div>
+        <div><div class="qhd-ttl">ACTIVE MISSIONS</div><div class="qhd-sub">${curMo||'CURRENT CYCLE'} · ${done}/${quests.length} COMPLETE</div></div>
       </div>
-      <div class="quest-hd-right">
-        ${ringHTML}
-        <div class="quest-score">
-          <div class="quest-score-num">${done}/${quests.length}</div>
-          <div class="quest-score-lbl">Done</div>
-        </div>
-      </div>
+      <div class="qhd-right">${ring}<div class="qscore"><div class="qscore-num">${done}/${quests.length}</div><div class="qscore-lbl">DONE</div></div></div>
     </div>
-    <div class="quest-list">${items}</div>
+    <div>${items}</div>
   </div>`;
 }
 
-/* ═══════════ PARTNER DETAIL ═══════════ */
+/* ═══════ DETAIL ═══════ */
 function showDetailById(custId){
-  const c=customers.find(x=>x.id===custId); if(!c) return;
-  const curMo=allMonths[0]||'', prevMo=allMonths[1]||'';
+  const c=customers.find(x=>x.id===custId);if(!c)return;
+  const curMo=allMonths[0]||'',prevMo=allMonths[1]||'';
   const cOrds=orders.filter(o=>o.custId===custId);
-  const mOrds=cOrds.filter(o=>o.month===curMo);
-  const pOrds=cOrds.filter(o=>o.month===prevMo);
-  const mAmt=mOrds.reduce((s,o)=>s+o.amount,0);
-  const pAmt=pOrds.reduce((s,o)=>s+o.amount,0);
-  const mCnt=mOrds.length;
-  const aAmt=cOrds.reduce((s,o)=>s+o.amount,0);
-  const aCnt=cOrds.length;
-  const tier=getTier(mAmt);
-  const av=ini(c.name);
-
-  /* tier change */
+  const mOrds=cOrds.filter(o=>o.month===curMo),pOrds=cOrds.filter(o=>o.month===prevMo);
+  const mAmt=mOrds.reduce((s,o)=>s+o.amount,0),pAmt=pOrds.reduce((s,o)=>s+o.amount,0);
+  const mCnt=mOrds.length,aAmt=cOrds.reduce((s,o)=>s+o.amount,0),aCnt=cOrds.length;
+  const tier=getTier(mAmt),av=ini(c.name);
   const ct=getTier(mAmt),pt=getTier(pAmt);
   const tierChg=tRank(ct)!==tRank(pt)?(tRank(ct)>tRank(pt)?'up':'dn'):null;
-  const chgBadge=tierChg?`<span class="chg-pill ${tierChg}">${tierChg==='up'?'▲ Promoted':'▼ Demoted'}</span>`:'';
-  const chgBanner=tierChg?`<div class="tier-banner ${tierChg}">
-    <div class="tb-icon">${tierChg==='up'?'🚀':'📉'}</div>
+  const chgBadge=tierChg?`<span class="chg-pill ${tierChg}">${tierChg==='up'?'▲ RANK UP':'▼ RANK DOWN'}</span>`:'';
+  const chgBanner=tierChg?`<div class="chg-banner ${tierChg}" style="margin:16px 20px 0">
+    <div class="chg-banner-icon">${tierChg==='up'?'🚀':'⚠️'}</div>
     <div>
-      <div class="tb-label ${tierChg}">${tierChg==='up'?'Tier Promoted!':'Tier Demoted'} — ${prevMo} → ${curMo}</div>
-      <div class="tb-tiers">${pt.emoji} <strong>${pt.full}</strong> <span style="color:var(--faint)">→</span> <strong style="color:${ct.color}">${ct.emoji} ${ct.full}</strong></div>
+      <div class="chg-banner-lbl ${tierChg}">${tierChg==='up'?'RANK PROMOTION!':'RANK DEMOTION'} — ${prevMo} → ${curMo}</div>
+      <div class="chg-banner-tiers">${pt.emoji}<strong style="color:${pt.color}">${pt.full}</strong><span style="color:var(--text3)">──►</span><strong style="color:${ct.color}">${ct.emoji} ${ct.full}</strong></div>
     </div>
   </div>`:'';
-
-  /* MoM diff */
-  const diff=mAmt-pAmt, dSign=diff>=0?'+':'', dColor=diff>=0?'var(--green)':'var(--red)';
-
-  /* sort orders */
+  const diff=mAmt-pAmt,dS=diff>=0?'+':'',dC=diff>=0?'var(--green)':'var(--red)';
   const parseDt=d=>{const p=d.split('-');return p.length===3?new Date(2000+parseInt(p[2]),MMAP[p[1]]||1,parseInt(p[0])):new Date(0);};
   const sOrds=cOrds.slice().sort((a,b)=>parseDt(b.date)-parseDt(a.date));
-
-  /* quests */
   const quests=computeQuests(custId,curMo,prevMo);
 
+  const waNum=c.mobile.replace(/\D/g,'');
+  const mobileHtml=c.mobile?`
+    <div class="inf-val mono" style="margin-bottom:8px">${c.mobile}</div>
+    <div class="cbtns">
+      <a href="tel:${c.mobile}" class="cbtn cbtn-call">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6.29 6.29l.98-.98a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        CALL
+      </a>
+      <a href="https://wa.me/91${waNum}" target="_blank" class="cbtn cbtn-wa">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+        WHATSAPP
+      </a>
+    </div>`:'<div class="inf-val" style="color:var(--text3)">—</div>';
+
   document.getElementById('page-detail').innerHTML=`
-    <div class="det-hero" style="border-left-color:${tier.color}">
-      <div class="det-top">
-        <div class="det-avatar" style="background:${tier.bg};color:${tier.color}">${av}</div>
+    <div class="det-panel" style="border-left-color:${tier.color}">
+      <div class="det-top-bar">
+        <div class="det-avatar" style="background:${tier.bg};color:${tier.color};border-color:${tier.border}">${av}<style>.det-avatar::after{border-color:${tier.color}}</style></div>
         <div style="flex:1;min-width:0">
-          <div class="det-name">${c.name}</div>
-          <div class="det-pills">
-            <span class="det-tier-pill" style="background:${tier.bg};color:${tier.color}">${tier.emoji} ${tier.full}</span>
+          <div class="det-name" style="color:${tier.text};text-shadow:0 0 16px ${tier.color}40">${c.name}</div>
+          <div class="det-pills-row">
+            <span class="det-tier-pill" style="background:${tier.bg};color:${tier.color};border:1px solid ${tier.border}">${tier.emoji} ${tier.full}</span>
             ${chgBadge}
           </div>
         </div>
       </div>
       ${chgBanner}
-      <div class="info-grid">
-        <div class="info-field">
-          <div class="info-lbl">Customer ID</div>
-          <div class="info-val mono">${c.id}</div>
+      <div class="info-grid" style="margin-top:${tierChg?'16px':'0'}">
+        <div class="inf"><div class="inf-lbl">AGENT ID</div><div class="inf-val mono">${c.id}</div></div>
+        <div class="inf"><div class="inf-lbl">COMMANDER</div><div class="inf-val">${c.owner||'—'}</div></div>
+        <div class="inf s2">
+          <div class="inf-lbl">COMM CHANNEL</div>
+          ${mobileHtml}
         </div>
-        <div class="info-field">
-          <div class="info-lbl">Owner Name</div>
-          <div class="info-val">${c.owner||'—'}</div>
-        </div>
-        <div class="info-field span2">
-          <div class="info-lbl">Mobile / WhatsApp</div>
-          ${c.mobile?`<div class="info-val" style="margin-bottom:9px">${c.mobile}</div>
-          <div class="contact-btns">
-            <a href="tel:${c.mobile}" class="cb cb-call">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6.29 6.29l.98-.98a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              Call
-            </a>
-            <a href="https://wa.me/91${c.mobile.replace(/\D/g,'')}" target="_blank" class="cb cb-wa">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-              WhatsApp
-            </a>
-          </div>`:'<div class="info-val">—</div>'}
-        </div>
-        <div class="info-field">
-          <div class="info-lbl">City · District</div>
-          <div class="info-val">${[c.city,c.district].filter(Boolean).join(' · ')||'—'}</div>
-        </div>
-        <div class="info-field">
-          <div class="info-lbl">Drug Licence No.</div>
-          <div class="info-val mono">${c.license||'—'}</div>
-        </div>
-        <div class="info-field span2">
-          <div class="info-lbl">Address</div>
-          <div class="info-val">${c.address||'—'}</div>
-        </div>
+        <div class="inf"><div class="inf-lbl">SECTOR</div><div class="inf-val">${[c.city,c.district].filter(Boolean).join(' · ')||'—'}</div></div>
+        <div class="inf"><div class="inf-lbl">RX LICENCE</div><div class="inf-val mono">${c.license||'—'}</div></div>
+        <div class="inf s2"><div class="inf-lbl">COORDINATES</div><div class="inf-val">${c.address||'—'}</div></div>
       </div>
       <div class="stats-strip">
-        <div class="stat-cell" style="--c:${tier.color}">
-          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${tier.color}"></div>
-          <div class="stat-num" style="color:${tier.color}">${fmtINR(mAmt)}</div>
-          <div class="stat-lbl">${curMo||'This month'}</div>
-          ${pAmt>0?`<div class="stat-diff" style="color:${dColor}">${dSign}${fmtINR(diff)}</div>`:''}
+        <div class="st">
+          <div class="st-bar" style="background:${tier.color};box-shadow:0 0 8px ${tier.color}"></div>
+          <div class="st-num" style="color:${tier.color};text-shadow:0 0 10px ${tier.color}60">${fmtINR(mAmt)}</div>
+          <div class="st-lbl">${curMo||'THIS CYCLE'}</div>
+          ${pAmt>0?`<div class="st-diff" style="color:${dC}">${dS}${fmtINR(diff)}</div>`:''}
         </div>
-        <div class="stat-cell">
-          <div class="stat-num" style="color:${tier.color}">${mCnt}</div>
-          <div class="stat-lbl">Orders · ${curMo}</div>
+        <div class="st">
+          <div class="st-bar" style="background:${tier.color}"></div>
+          <div class="st-num" style="color:${tier.color}">${mCnt}</div>
+          <div class="st-lbl">ORDERS · ${curMo}</div>
         </div>
-        <div class="stat-cell">
-          <div class="stat-num" style="color:var(--muted)">${fmtINR(pAmt)}</div>
-          <div class="stat-lbl">${prevMo||'Prev month'}</div>
+        <div class="st">
+          <div class="st-bar" style="background:var(--text3)"></div>
+          <div class="st-num" style="color:var(--text2)">${fmtINR(pAmt)}</div>
+          <div class="st-lbl">${prevMo||'PREV CYCLE'}</div>
         </div>
-        <div class="stat-cell">
-          <div class="stat-num" style="color:var(--navy)">${fmtINR(aAmt)}</div>
-          <div class="stat-lbl">All-time</div>
+        <div class="st">
+          <div class="st-bar" style="background:var(--cyan)"></div>
+          <div class="st-num" style="color:var(--cyan)">${fmtINR(aAmt)}</div>
+          <div class="st-lbl">ALL-TIME</div>
         </div>
       </div>
     </div>
@@ -867,28 +1073,28 @@ function showDetailById(custId){
     ${questHTML(quests,curMo)}
 
     ${sOrds.length>0?`
-    <div class="orders-wrap">
-      <div class="orders-hd">
-        <span>Order History</span>
-        <span>${aCnt} orders</span>
+    <div class="ord-panel">
+      <div class="ord-hd">
+        <div class="ord-hd-title">◈ TRANSACTION LOG</div>
+        <div class="ord-hd-cnt">${aCnt} RECORDS</div>
       </div>
-      <table class="orders-tbl">
-        <thead><tr><th>Order ID</th><th>Date</th><th>Month</th><th style="text-align:right">Amount</th></tr></thead>
+      <table class="ord-tbl">
+        <thead><tr><th>ORDER ID</th><th>DATE</th><th>CYCLE</th><th style="text-align:right">AMOUNT</th></tr></thead>
         <tbody>${sOrds.slice(0,25).map(o=>`<tr>
           <td><span class="oid">${o.id}</span></td>
-          <td style="color:var(--ink2)">${o.date}</td>
+          <td style="font-family:'Share Tech Mono',monospace;font-size:12px">${o.date}</td>
           <td><span class="mo-chip">${o.month}</span></td>
-          <td class="amt-cell">${fmtINR(o.amount)}</td>
+          <td class="ord-amt">${fmtINR(o.amount)}</td>
         </tr>`).join('')}</tbody>
       </table>
-      ${aCnt>25?`<div class="tbl-more">Showing 25 of ${aCnt} orders</div>`:''}
+      ${aCnt>25?`<div class="tbl-more">[ SHOWING 25 OF ${aCnt} RECORDS ]</div>`:''}
     </div>`
-    :`<div class="empty-note" style="background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);padding:40px">No orders found for this partner</div>`}
+    :`<div class="empty-note" style="background:var(--panel);border-radius:var(--r);border:1px solid var(--border)">[ NO TRANSACTION RECORDS ]</div>`}
   `;
   showPage('detail');
 }
 
-/* ═══════════ NAVIGATION ═══════════ */
+/* ═══════ NAVIGATION ═══════ */
 function showPage(page){
   ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
   document.getElementById('page-'+page).classList.add('on');
@@ -896,13 +1102,13 @@ function showPage(page){
   document.getElementById('main-tabs').style.display=isD?'none':'flex';
   document.getElementById('nav-back').style.display=isD?'block':'none';
   document.getElementById('nav-home').style.display=isD?'block':'none';
-  if(navStack[navStack.length-1]!==page) navStack.push(page);
-  if(!isD) document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('on',(page==='dashboard'&&i===0)||(page==='details'&&i===1)));
+  if(navStack[navStack.length-1]!==page)navStack.push(page);
+  if(!isD)document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('on',(page==='dashboard'&&i===0)||(page==='details'&&i===1)));
   window.scrollTo(0,0);
 }
 function switchTab(page,el){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on'); navStack=[page]; showPage(page);
+  el.classList.add('on');navStack=[page];showPage(page);
 }
 function goHome(){navStack=['dashboard'];showPage('dashboard');}
 function goBack(){navStack.pop();showPage(navStack[navStack.length-1]||'dashboard');}
