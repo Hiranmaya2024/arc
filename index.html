@@ -275,6 +275,59 @@ body {
 /* ── EMPTY ── */
 .empty-state { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 13px; }
 
+/* ── TIER CHANGE INDICATORS ── */
+.promo-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700; padding: 2px 7px 2px 5px;
+  border-radius: 10px; vertical-align: middle; margin-left: 5px;
+  background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0;
+  white-space: nowrap;
+}
+.demo-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700; padding: 2px 7px 2px 5px;
+  border-radius: 10px; vertical-align: middle; margin-left: 5px;
+  background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA;
+  white-space: nowrap;
+}
+.tier-change-row {
+  display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap;
+}
+.prev-tier-lbl {
+  font-size: 10px; color: var(--muted); font-weight: 500;
+}
+.tier-change-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 0 0 4px;
+  margin-bottom: 16px;
+}
+.tier-change-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 10px;
+}
+.promo-count { font-size: 13px; font-weight: 600; color: #15803D; }
+.demo-count  { font-size: 13px; font-weight: 600; color: #DC2626; }
+.change-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 18px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.12s;
+}
+.change-item:last-child { border-bottom: none; }
+.change-item:hover { background: var(--canvas); }
+.change-arrow { font-size: 18px; flex-shrink: 0; }
+.change-info { flex: 1; min-width: 0; }
+.change-nm { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.change-tiers { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.change-amt { font-size: 13px; font-weight: 700; text-align: right; flex-shrink: 0; }
+.stat-change-box {
+  position: relative;
+}
+.stat-change-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 9px; font-weight: 700; padding: 1px 5px;
+  border-radius: 8px;
+}
+
 /* ── UTILITIES ── */
 .fw7 { font-weight: 700; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -340,12 +393,13 @@ body {
         <div class="section-hd"><h2>Partners by tier</h2></div>
         <div class="tier-row" id="tier-row-area"></div>
       </div>
-      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:0 0 4px">
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:0 0 4px;margin-bottom:16px">
         <div style="padding:18px 20px 4px">
           <div class="section-hd"><h2>Top purchasers</h2></div>
         </div>
         <div class="top-list" id="top-list-area"></div>
       </div>
+      <div id="tier-change-section"></div>
     </div>
 
     <!-- ══ PARTNERS LIST PAGE ══ -->
@@ -375,20 +429,61 @@ let navStack = ['dashboard'];
 /* ─── TIER CONFIG ─── */
 const TIERS = [
   { name:'Diamond Partner', emoji:'💎', min:100000, color:'#1D4ED8', bg:'#EFF6FF', text:'#1E40AF', borderTop:'#1D4ED8' },
-  { name:'Platinum Partner', emoji:'🌟', min:70000,  color:'#7C3AED', bg:'#F5F3FF', text:'#5B21B6', borderTop:'#7C3AED' },
+  { name:'Platinum Partner',emoji:'🌟', min:70000,  color:'#7C3AED', bg:'#F5F3FF', text:'#5B21B6', borderTop:'#7C3AED' },
   { name:'Gold Partner',    emoji:'🥇', min:50000,  color:'#D97706', bg:'#FFFBEB', text:'#92400E', borderTop:'#D97706' },
   { name:'Silver Partner',  emoji:'🥈', min:20000,  color:'#64748B', bg:'#F8FAFC', text:'#475569', borderTop:'#94A3B8' },
-  { name:'Bronze Partner',  emoji:'🥉', min:10000,  color:'#B45309', bg:'#FFFBEB', text:'#92400E', borderTop:'#CD7F32' },
+  { name:'Bronze Partner',  emoji:'🥉', min:10000,  color:'#B45309', bg:'#FFF7ED', text:'#92400E', borderTop:'#CD7F32' },
 ];
-const UNRANKED = { name:'Unranked', emoji:'—', min:0, color:'#CBD5E1', bg:'#F8FAFC', text:'#94A3B8', borderTop:'#CBD5E1' };
+const UNRANKED = { name:'Unranked', emoji:'◦',  min:0, color:'#CBD5E1', bg:'#F8FAFC', text:'#94A3B8', borderTop:'#CBD5E1' };
+const ALL_TIERS = [...TIERS, UNRANKED];
 
 function getTier(amt) {
   for (const t of TIERS) if (amt >= t.min) return t;
   return UNRANKED;
 }
+function tierRank(tier) {
+  const idx = ALL_TIERS.findIndex(t => t.name === tier.name);
+  return ALL_TIERS.length - 1 - idx; /* higher = better */
+}
 
 /* ─── FORMATTING ─── */
 function fmtINR(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+/* ─── MONTH SORTING ─── */
+const MMAP = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+function monthVal(m) {
+  const p = m.split('-');
+  return parseInt(p[1]||0) * 12 + (MMAP[p[0]]||0);
+}
+
+/* ─── TIER CHANGE LOGIC ─── */
+/* Returns { custId, name, curAmt, prevAmt, curTier, prevTier, change:'promoted'|'demoted'|'same' }
+   for every customer that has data in both current & previous month */
+function computeTierChanges(curMonth, prevMonth) {
+  const curTotals  = custTotalsFrom(orders.filter(o => o.month === curMonth));
+  const prevTotals = custTotalsFrom(orders.filter(o => o.month === prevMonth));
+  const custNameMap = {};
+  orders.forEach(o => { if (o.custId && o.bizName) custNameMap[o.custId] = o.bizName; });
+
+  /* all customers that appeared in either month */
+  const ids = new Set([...Object.keys(curTotals), ...Object.keys(prevTotals)]);
+  const results = [];
+  ids.forEach(id => {
+    const curAmt  = curTotals[id]  || 0;
+    const prevAmt = prevTotals[id] || 0;
+    const curTier  = getTier(curAmt);
+    const prevTier = getTier(prevAmt);
+    const cr = tierRank(curTier), pr = tierRank(prevTier);
+    if (cr === pr) return; /* no change */
+    results.push({
+      custId: id,
+      name: custNameMap[id] || id,
+      curAmt, prevAmt, curTier, prevTier,
+      change: cr > pr ? 'promoted' : 'demoted'
+    });
+  });
+  return results;
+}
 
 /* ─── CSV PARSER ─── */
 function parseCSV(txt) {
@@ -441,14 +536,7 @@ async function loadData() {
       orders.push({ id:r[0], custId:r[1]||'', bizName:r[2]||'', date:r[3]||'', month:r[4]||'', amount:amt });
     }
 
-    /* sort months chronologically */
-    const MMAP = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
-    allMonths = [...new Set(orders.map(o=>o.month).filter(Boolean))].sort((a,b) => {
-      const pa = a.split('-'), pb = b.split('-');
-      const ya = parseInt(pa[1]||0), yb = parseInt(pb[1]||0);
-      if (ya !== yb) return yb - ya;
-      return (MMAP[pb[0]]||0) - (MMAP[pa[0]]||0);
-    });
+    allMonths = [...new Set(orders.map(o=>o.month).filter(Boolean))].sort((a,b) => monthVal(b) - monthVal(a));
 
     buildFilters();
     renderDash();
@@ -491,12 +579,61 @@ function custTotalsFrom(ords) {
   return t;
 }
 
+/* ─── TIER CHANGE BADGE HTML ─── */
+function changeBadge(change, curTier, prevTier) {
+  if (change === 'promoted') {
+    return `<span class="promo-badge">▲ Promoted to ${curTier.name.replace(' Partner','')}</span>`;
+  } else if (change === 'demoted') {
+    return `<span class="demo-badge">▼ Dropped to ${curTier.name.replace(' Partner','')}</span>`;
+  }
+  return '';
+}
+
+/* per-customer change indicator for inline use (just arrow + label) */
+function inlineBadge(change, curTier) {
+  if (change === 'promoted') return `<span class="promo-badge">▲ ${curTier.name.replace(' Partner','')}</span>`;
+  if (change === 'demoted')  return `<span class="demo-badge">▼ ${curTier.name.replace(' Partner','')}</span>`;
+  return '';
+}
+
+/* ─── PER-CUSTOMER CHANGE FOR CURRENT CONTEXT ─── */
+/* Returns change object or null */
+function getChangeForCustomer(custId, curMonth, prevMonth) {
+  if (!curMonth || !prevMonth) return null;
+  const curAmt  = custTotalsFrom(orders.filter(o=>o.month===curMonth))[custId]  || 0;
+  const prevAmt = custTotalsFrom(orders.filter(o=>o.month===prevMonth))[custId] || 0;
+  const curTier = getTier(curAmt), prevTier = getTier(prevAmt);
+  const cr = tierRank(curTier), pr = tierRank(prevTier);
+  if (cr === pr) return null;
+  return { curAmt, prevAmt, curTier, prevTier, change: cr > pr ? 'promoted' : 'demoted' };
+}
+
 /* ─── DASHBOARD ─── */
 function renderDash() {
   const ords = filteredOrders();
   const totals = custTotalsFrom(ords);
   const ids = Object.keys(totals);
   const revenue = ords.reduce((s,o)=>s+o.amount,0);
+
+  /* ── Determine compare months ──
+     If a specific month is selected: compare that month vs the one before it.
+     If "All": compare the two most recent months. */
+  const curMonth  = selectedMonth !== 'All' ? selectedMonth : (allMonths[0] || '');
+  const prevMonth = selectedMonth !== 'All'
+    ? allMonths[allMonths.indexOf(selectedMonth) + 1] || ''
+    : (allMonths[1] || '');
+
+  /* Build per-customer change map for current context */
+  const curMonthTotals  = curMonth  ? custTotalsFrom(orders.filter(o=>o.month===curMonth))  : {};
+  const prevMonthTotals = prevMonth ? custTotalsFrom(orders.filter(o=>o.month===prevMonth)) : {};
+  const changeMap = {};
+  const allIds = new Set([...Object.keys(curMonthTotals), ...Object.keys(prevMonthTotals)]);
+  allIds.forEach(id => {
+    const ca = curMonthTotals[id]||0, pa = prevMonthTotals[id]||0;
+    const ct = getTier(ca), pt = getTier(pa);
+    const cr = tierRank(ct), pr2 = tierRank(pt);
+    if (cr !== pr2) changeMap[id] = { curTier:ct, prevTier:pt, change: cr > pr2 ? 'promoted':'demoted', curAmt:ca, prevAmt:pa };
+  });
 
   /* metrics */
   document.getElementById('metrics-area').innerHTML = `
@@ -517,7 +654,7 @@ function renderDash() {
     </div>`;
 
   /* tiers */
-  const tierCards = TIERS.map((t, i) => {
+  document.getElementById('tier-row-area').innerHTML = TIERS.map((t, i) => {
     const nextMin = i > 0 ? TIERS[i-1].min : Infinity;
     const cnt = ids.filter(id => totals[id] >= t.min && totals[id] < nextMin).length;
     return `<div class="tier-card" style="border-top-color:${t.borderTop}">
@@ -527,9 +664,8 @@ function renderDash() {
       <div class="tier-mn">≥ ${fmtINR(t.min)}</div>
     </div>`;
   }).join('');
-  document.getElementById('tier-row-area').innerHTML = tierCards;
 
-  /* top 5 */
+  /* top 5 with change badges */
   const sorted = ids.sort((a,b) => totals[b]-totals[a]).slice(0,5);
   const custNameMap = {};
   ords.forEach(o => { if(o.custId && o.bizName) custNameMap[o.custId] = o.bizName; });
@@ -548,6 +684,8 @@ function renderDash() {
       const m = medals[i];
       const tier = getTier(totals[id]);
       const nm = custNameMap[id] || id;
+      const chg = changeMap[id];
+      const badge = chg ? inlineBadge(chg.change, chg.curTier) : '';
       return `<div class="top-item" onclick="showDetailById('${id}')">
         <div class="rank-num" style="background:${m.bg};color:${m.color}">${m.label}</div>
         <div class="top-info">
@@ -555,18 +693,104 @@ function renderDash() {
           <div class="top-sub">${tier.emoji} ${tier.name}</div>
         </div>
         <div class="top-right">
-          <div class="top-amt">${fmtINR(totals[id])}</div>
+          <div class="top-amt">${fmtINR(totals[id])} ${badge}</div>
           <div class="top-badge" style="background:${tier.bg};color:${tier.color}">${tier.name}</div>
         </div>
         <span class="chev">›</span>
       </div>`;
     }).join('');
+
+  /* ── Tier Change Summary section ── */
+  renderTierChangeSection(changeMap, curMonth, prevMonth, custNameMap, curMonthTotals);
+}
+
+function renderTierChangeSection(changeMap, curMonth, prevMonth, custNameMap, curMonthTotals) {
+  const sec = document.getElementById('tier-change-section');
+  if (!curMonth || !prevMonth) { sec.innerHTML = ''; return; }
+
+  const promoted = Object.entries(changeMap).filter(([,v])=>v.change==='promoted');
+  const demoted  = Object.entries(changeMap).filter(([,v])=>v.change==='demoted');
+
+  if (!promoted.length && !demoted.length) {
+    sec.innerHTML = `<div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px 22px;text-align:center;color:var(--muted);font-size:13px">
+      No tier changes between <strong>${prevMonth}</strong> and <strong>${curMonth}</strong>
+    </div>`;
+    return;
+  }
+
+  const makeRows = (list, type) => list
+    .sort((a,b) => (b[1].curAmt||0)-(a[1].curAmt||0))
+    .map(([id,v]) => {
+      const nm = custNameMap[id] || id;
+      const arrow = type==='promoted'
+        ? `<span style="font-size:20px;color:#16A34A">▲</span>`
+        : `<span style="font-size:20px;color:#DC2626">▼</span>`;
+      const badge = type==='promoted'
+        ? `<span class="promo-badge">▲ Promoted</span>`
+        : `<span class="demo-badge">▼ Demoted</span>`;
+      return `<div class="change-item" onclick="showDetailById('${id}')">
+        <div class="change-arrow">${arrow}</div>
+        <div class="change-info">
+          <div class="change-nm">${nm}</div>
+          <div class="change-tiers">
+            <span style="color:var(--muted)">${v.prevTier.emoji} ${v.prevTier.name}</span>
+            <span style="margin:0 6px;color:var(--muted)">→</span>
+            <span style="color:${v.curTier.color};font-weight:600">${v.curTier.emoji} ${v.curTier.name}</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="change-amt" style="color:${type==='promoted'?'#16A34A':'#DC2626'}">${fmtINR(v.curAmt)}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">prev: ${fmtINR(v.prevAmt)}</div>
+        </div>
+        <span class="chev">›</span>
+      </div>`;
+    }).join('');
+
+  sec.innerHTML = `
+    <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:0">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em">Tier Changes</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${prevMonth} → ${curMonth}</div>
+        </div>
+        <div style="display:flex;gap:12px">
+          ${promoted.length ? `<span class="promo-badge">▲ ${promoted.length} Promoted</span>` : ''}
+          ${demoted.length  ? `<span class="demo-badge">▼ ${demoted.length} Demoted</span>` : ''}
+        </div>
+      </div>
+      ${promoted.length ? `
+        <div style="padding:10px 18px 4px;font-size:11px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:0.05em;background:#F0FDF4">
+          ▲ Promotions (${promoted.length})
+        </div>
+        ${makeRows(promoted,'promoted')}` : ''}
+      ${demoted.length ? `
+        <div style="padding:10px 18px 4px;font-size:11px;font-weight:700;color:#DC2626;text-transform:uppercase;letter-spacing:0.05em;background:#FEF2F2;${promoted.length?'border-top:1px solid var(--border)':''}">
+          ▼ Demotions (${demoted.length})
+        </div>
+        ${makeRows(demoted,'demoted')}` : ''}
+    </div>`;
 }
 
 /* ─── BIZ LIST ─── */
 function buildBizList() {
   const allTotals = custTotalsFrom(orders);
   window._allTotals = allTotals;
+
+  /* build per-customer change map using two most recent months */
+  const curMo  = allMonths[0] || '';
+  const prevMo = allMonths[1] || '';
+  const curT  = curMo  ? custTotalsFrom(orders.filter(o=>o.month===curMo))  : {};
+  const prevT = prevMo ? custTotalsFrom(orders.filter(o=>o.month===prevMo)) : {};
+  const bizChangeMap = {};
+  const allIds = new Set([...Object.keys(curT),...Object.keys(prevT)]);
+  allIds.forEach(id => {
+    const ca=curT[id]||0, pa=prevT[id]||0;
+    const ct=getTier(ca), pt=getTier(pa);
+    if (tierRank(ct) !== tierRank(pt))
+      bizChangeMap[id] = { curTier:ct, prevTier:pt, change: tierRank(ct)>tierRank(pt)?'promoted':'demoted', curAmt:ca, prevAmt:pa };
+  });
+  window._bizChangeMap = bizChangeMap;
+
   const sorted = [...customers].sort((a,b)=>(allTotals[b.id]||0)-(allTotals[a.id]||0));
   window._sortedCust = sorted;
   renderBizCards(sorted);
@@ -576,19 +800,25 @@ function initials(name) { return name.split(/\s+/).map(w=>w[0]||'').join('').sli
 
 function renderBizCards(list) {
   const t = window._allTotals || {};
+  const chgMap = window._bizChangeMap || {};
   if (!list.length) { document.getElementById('biz-list-area').innerHTML = '<div class="empty-state">No partners found</div>'; return; }
   document.getElementById('biz-list-area').innerHTML = list.slice(0,200).map(c => {
     const amt = t[c.id]||0;
     const tier = getTier(amt);
     const ini = initials(c.name);
-    return `<div class="biz-item" style="border-left-color:transparent" onmouseenter="this.style.borderLeftColor='${tier.color}'" onmouseleave="this.style.borderLeftColor='transparent'" onclick="showDetailById('${c.id}')">
+    const chg = chgMap[c.id];
+    const badge = chg ? inlineBadge(chg.change, chg.curTier) : '';
+    return `<div class="biz-item" style="border-left-color:transparent"
+      onmouseenter="this.style.borderLeftColor='${tier.color}'"
+      onmouseleave="this.style.borderLeftColor='transparent'"
+      onclick="showDetailById('${c.id}')">
       <div class="biz-avatar" style="background:${tier.bg};color:${tier.color}">${ini}</div>
       <div class="biz-info">
         <div class="biz-nm">${c.name}</div>
         <div class="biz-meta">${[c.city,c.district].filter(Boolean).join(' · ') || 'Location not set'}</div>
       </div>
       <div class="biz-right">
-        ${amt > 0 ? `<div class="biz-amt">${fmtINR(amt)}</div>` : '<div style="font-size:12px;color:var(--muted)">No orders</div>'}
+        ${amt > 0 ? `<div class="biz-amt">${fmtINR(amt)} ${badge}</div>` : '<div style="font-size:12px;color:var(--muted)">No orders</div>'}
         <div class="biz-tier-tag" style="background:${tier.bg};color:${tier.color}">${tier.emoji} ${tier.name}</div>
       </div>
       <span style="color:var(--slate-light);font-size:18px;margin-left:4px">›</span>
@@ -612,22 +842,54 @@ function showDetailById(custId) {
   if (!c) return;
 
   const custOrds = orders.filter(o=>o.custId===custId);
-  const latestMo = allMonths[0]||'';
-  const moOrds = custOrds.filter(o=>o.month===latestMo);
-  const moPurchase = moOrds.reduce((s,o)=>s+o.amount,0);
-  const moCount = moOrds.length;
+  const curMo  = allMonths[0]||'';
+  const prevMo = allMonths[1]||'';
+  const moOrds = custOrds.filter(o=>o.month===curMo);
+  const prevOrds = custOrds.filter(o=>o.month===prevMo);
+  const moPurchase   = moOrds.reduce((s,o)=>s+o.amount,0);
+  const prevPurchase = prevOrds.reduce((s,o)=>s+o.amount,0);
+  const moCount   = moOrds.length;
   const allPurchase = custOrds.reduce((s,o)=>s+o.amount,0);
-  const allCount = custOrds.length;
-  const tier = getTier(moPurchase > 0 ? moPurchase : allPurchase / Math.max(allMonths.length,1));
+  const allCount  = custOrds.length;
+  const tier = getTier(moPurchase);
   const ini = initials(c.name);
 
-  /* sort orders newest first */
-  const MMAP = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+  /* tier change for this customer */
+  const curTier  = getTier(moPurchase);
+  const prevTier = getTier(prevPurchase);
+  const tierChanged = tierRank(curTier) !== tierRank(prevTier);
+  const chgType  = tierChanged ? (tierRank(curTier) > tierRank(prevTier) ? 'promoted' : 'demoted') : null;
+  const chgBadge = chgType ? changeBadge(chgType, curTier, prevTier) : '';
+
+  /* month-over-month purchase diff */
+  const diff = moPurchase - prevPurchase;
+  const diffSign = diff >= 0 ? '+' : '';
+  const diffColor = diff >= 0 ? '#15803D' : '#DC2626';
+  const diffLabel = prevPurchase > 0
+    ? `<span style="font-size:11px;color:${diffColor};font-weight:600;margin-left:8px">${diffSign}${fmtINR(diff)} vs ${prevMo}</span>`
+    : '';
+
   const parseDateStr = d => {
     const p = d.split('-');
     return p.length===3 ? new Date(2000+parseInt(p[2]||0), MMAP[p[1]]||1, parseInt(p[0])||1) : new Date(0);
   };
   const sorted = custOrds.slice().sort((a,b) => parseDateStr(b.date)-parseDateStr(a.date));
+
+  /* tier change history banner */
+  const tierChangeBanner = tierChanged ? `
+    <div style="border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;${chgType==='promoted'?'background:#F0FDF4;border:1px solid #BBF7D0':'background:#FEF2F2;border:1px solid #FECACA'}">
+      <span style="font-size:24px">${chgType==='promoted'?'▲':'▼'}</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:${chgType==='promoted'?'#15803D':'#DC2626'}">
+          ${chgType==='promoted'?'Tier Promoted':'Tier Demoted'} — ${prevMo} → ${curMo}
+        </div>
+        <div style="font-size:12px;margin-top:3px;color:var(--slate)">
+          ${prevTier.emoji} <strong>${prevTier.name}</strong>
+          <span style="margin:0 8px;color:var(--muted)">→</span>
+          ${curTier.emoji} <strong style="color:${curTier.color}">${curTier.name}</strong>
+        </div>
+      </div>
+    </div>` : '';
 
   document.getElementById('page-detail').innerHTML = `
     <div class="detail-hero" style="border-left-color:${tier.color}">
@@ -635,9 +897,13 @@ function showDetailById(custId) {
         <div class="detail-avatar" style="background:${tier.bg};color:${tier.color}">${ini}</div>
         <div style="flex:1">
           <div class="detail-name">${c.name}</div>
-          <div class="tier-pill" style="background:${tier.bg};color:${tier.color}">${tier.emoji} ${tier.name}</div>
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:5px">
+            <div class="tier-pill" style="background:${tier.bg};color:${tier.color}">${tier.emoji} ${tier.name}</div>
+            ${chgBadge}
+          </div>
         </div>
       </div>
+      ${tierChangeBanner}
       <div class="detail-fields">
         <div class="det-field">
           <div class="det-lbl">Customer ID</div>
@@ -649,7 +915,7 @@ function showDetailById(custId) {
         </div>
         <div class="det-field">
           <div class="det-lbl">Mobile (WhatsApp)</div>
-          <div class="det-val">${c.mobile ? `<a href="tel:${c.mobile}" style="color:var(--navy);text-decoration:none">${c.mobile}</a>` : '—'}</div>
+          <div class="det-val">${c.mobile?`<a href="tel:${c.mobile}" style="color:var(--navy);text-decoration:none">${c.mobile}</a>`:'—'}</div>
         </div>
         <div class="det-field">
           <div class="det-lbl">City · District</div>
@@ -665,21 +931,22 @@ function showDetailById(custId) {
         </div>
       </div>
       <div class="stats-row">
-        <div class="stat-box">
+        <div class="stat-box stat-change-box">
           <div class="stat-n" style="color:${tier.color}">${fmtINR(moPurchase)}</div>
-          <div class="stat-l">This month</div>
+          <div class="stat-l">${curMo||'This month'}</div>
+          ${prevPurchase>0?`<div style="font-size:10px;margin-top:5px;font-weight:600;color:${diffColor}">${diffSign}${fmtINR(diff)}</div>`:''}
         </div>
         <div class="stat-box">
           <div class="stat-n" style="color:${tier.color}">${moCount}</div>
-          <div class="stat-l">Orders · ${latestMo}</div>
+          <div class="stat-l">Orders · ${curMo}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-n">${fmtINR(prevPurchase)}</div>
+          <div class="stat-l">${prevMo||'Prev month'}</div>
         </div>
         <div class="stat-box">
           <div class="stat-n">${fmtINR(allPurchase)}</div>
-          <div class="stat-l">All-time value</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-n">${allCount}</div>
-          <div class="stat-l">All-time orders</div>
+          <div class="stat-l">All-time</div>
         </div>
       </div>
     </div>
@@ -700,7 +967,7 @@ function showDetailById(custId) {
           </tr>`).join('')}
         </tbody>
       </table>
-      ${allCount > 25 ? `<div style="text-align:center;padding:12px;font-size:12px;color:var(--muted)">Showing 25 of ${allCount} orders</div>` : ''}
+      ${allCount>25?`<div style="text-align:center;padding:12px;font-size:12px;color:var(--muted)">Showing 25 of ${allCount} orders</div>`:''}
     </div>` : '<div class="empty-state" style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:32px">No orders found for this partner</div>'}
   `;
   showPage('detail');
@@ -716,7 +983,7 @@ function showPage(page) {
   document.getElementById('nav-home-wrap').style.display = isDetail ? 'block' : 'none';
   if (navStack[navStack.length-1] !== page) navStack.push(page);
   if (!isDetail) {
-    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (page==='dashboard'&&i===0)||(page==='details'&&i===1)));
+    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active',(page==='dashboard'&&i===0)||(page==='details'&&i===1)));
   }
   window.scrollTo(0,0);
 }
@@ -728,11 +995,8 @@ function switchTab(page, el) {
   showPage(page);
 }
 
-function goHome() { navStack = ['dashboard']; showPage('dashboard'); }
-function goBack() {
-  navStack.pop();
-  showPage(navStack[navStack.length-1]||'dashboard');
-}
+function goHome() { navStack=['dashboard']; showPage('dashboard'); }
+function goBack() { navStack.pop(); showPage(navStack[navStack.length-1]||'dashboard'); }
 
 loadData();
 </script>
