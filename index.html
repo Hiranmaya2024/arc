@@ -395,6 +395,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tbl-more{text-align:center;padding:10px;font-size:11px;color:var(--text3);border-top:1px solid var(--border2)}
 .empty-note{text-align:center;padding:40px 20px;font-size:13px;color:var(--text3)}
 
+/* ═══════════ RECEIPTS PANEL ═══════════ */
+.rcpt-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border2)}
+.rcpt-sum-cell{padding:14px 16px;text-align:center;border-right:1px solid var(--border2)}
+.rcpt-sum-cell:last-child{border-right:none}
+.rcpt-sum-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.rcpt-sum-val{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:.01em}
+.rcpt-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border2)}
+.rcpt-row:last-child{border-bottom:none}
+.rcpt-date{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;min-width:86px}
+.rcpt-name{font-size:12px;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcpt-mo{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;padding:2px 7px;border-radius:2px;background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2);flex-shrink:0}
+.rcpt-amt{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0;min-width:80px}
+/* outstanding badge */
+.outstanding-pill{display:inline-flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;background:rgba(255,45,120,.1);color:var(--red);border:1px solid rgba(255,45,120,.3)}
+.clear-pill{display:inline-flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+/* 4-col metrics on wider screens */
+@media(min-width:700px){.metrics-grid-4{grid-template-columns:1.3fr 1fr 1fr 1fr}}
+
 /* ═══════════════════════════════════════
    MOBILE BOTTOM NAV BAR
 ═══════════════════════════════════════ */
@@ -631,6 +649,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     </div>
     <!-- tier changes -->
     <div id="tc-section"></div>
+    <!-- receipts summary -->
+    <div id="rcpt-section"></div>
   </div>
 
   <!-- ── AGENTS LIST ── -->
@@ -652,7 +672,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 const SID='17bW1LAfb4QxzGa7cNG_qsFjR6pdt5Q7D34IKBSRH-Lg';
 const CSV='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=';
 
-let customers=[],orders=[],allMonths=[];
+let customers=[],orders=[],receipts=[],allMonths=[];
 let selMonth='All',navStack=['dashboard'];
 const MMAP={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
 
@@ -673,6 +693,39 @@ function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:T
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 function moVal(m){const p=m.split('-');return parseInt(p[1]||0)*12+(MMAP[p[0]]||0);}
 function ini(name){return (name||'').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?';}
+
+/* Convert various date formats (dd-mm-yyyy or dd-Mon-yyyy) → "Mon-YY" */
+function dateToMonth(d){
+  if(!d)return '';
+  const parts=d.split('-');
+  if(parts.length<3)return '';
+  const day=parts[0],mid=parts[1],yr=parts[2];
+  /* Try named month first (dd-Apr-2026) */
+  if(isNaN(parseInt(mid))){
+    return mid+'-'+yr.slice(-2);
+  }
+  /* Numeric month (dd-04-2026) */
+  const moNames=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mIdx=parseInt(mid);
+  return (moNames[mIdx]||mid)+'-'+yr.slice(-2);
+}
+
+/* ── Receipt aggregation ── */
+function rcptTotalsFrom(rcpts){
+  const t={};
+  rcpts.forEach(r=>{
+    if(!r.custId||r.custId.toLowerCase()==='unknown')return;
+    t[r.custId]=(t[r.custId]||0)+r.amount;
+  });
+  return t;
+}
+function filtRcpt(){return selMonth==='All'?receipts:receipts.filter(r=>r.month===selMonth);}
+function outstandingFor(custId){
+  /* Outstanding = total orders billed − total receipts collected */
+  const billed=orders.filter(o=>o.custId===custId).reduce((s,o)=>s+o.amount,0);
+  const collected=receipts.filter(r=>r.custId===custId).reduce((s,r)=>s+r.amount,0);
+  return Math.max(0,billed-collected);
+}
 
 /* ═══════ CSV ═══════ */
 function parseCSV(txt){
@@ -702,7 +755,7 @@ async function loadData(){
   document.getElementById('err-bar').style.display='none';
   ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
   try{
-    const[cr,or]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS')]);
+    const[cr,or,rr]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS'),fetchSheet('12_RECEIPTS')]);
     customers=[];
     for(let i=1;i<cr.length;i++){
       const r=cr[i];if(!r[0]||!r[1])continue;
@@ -714,10 +767,19 @@ async function loadData(){
       const amt=parseFloat((r[6]||'').replace(/[₹,\s]/g,''))||0;
       orders.push({id:r[0],custId:r[1]||'',bizName:r[2]||'',date:r[3]||'',month:r[4]||'',amount:amt});
     }
-    allMonths=[...new Set(orders.map(o=>o.month).filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
+    /* ── 12_RECEIPTS: col1=custId, col2=bizName, col3=rcptDate, col5=amount ── */
+    receipts=[];
+    for(let i=1;i<rr.length;i++){
+      const r=rr[i];if(!r[0]&&!r[1])continue;
+      const amt=parseFloat((r[4]||'').replace(/[₹,\s]/g,''))||0;
+      /* derive month from date dd-mm-yyyy or dd-Month-yyyy */
+      const mo=dateToMonth(r[2]||'');
+      receipts.push({custId:r[0]||'Unknown',bizName:r[1]||'',date:r[2]||'',month:mo,amount:amt});
+    }
+    allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
-    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' TRANSACTIONS';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS';
     showPage('dashboard');
   }catch(e){
     document.getElementById('loading-scr').style.display='none';
@@ -766,13 +828,24 @@ function renderDash(){
   const prevMo=selMonth!=='All'?allMonths[allMonths.indexOf(selMonth)+1]||'':(allMonths[1]||'');
   const chgMap=buildChgMap(curMo,prevMo);
 
-  /* metrics */
+  /* receipts for selected period */
+  const fRcpts=filtRcpt();
+  const rcptTotal=fRcpts.reduce((s,r)=>s+r.amount,0);
+  const rcptCount=fRcpts.length;
+  /* outstanding = all-time billed − all-time collected (global, not period-filtered) */
+  const allBilled=orders.reduce((s,o)=>s+o.amount,0);
+  const allCollected=receipts.reduce((s,r)=>s+r.amount,0);
+  const totalOutstanding=Math.max(0,allBilled-allCollected);
+  const collectionPct=allBilled>0?Math.min(100,Math.round(allCollected/allBilled*100)):0;
+
+  /* metrics — 4 cards */
+  document.getElementById('metrics-area').className='metrics-grid metrics-grid-4';
   document.getElementById('metrics-area').innerHTML=`
     <div class="mc hero hud-box hud-box-b">
       <div class="mc-ico">💊</div>
       <div class="mc-lbl">MISSION REVENUE</div>
       <div class="mc-val">${fmtINR(rev)}</div>
-      <div class="mc-sub">${selMonth==='All'?'ALL CYCLES':selMonth}</div>
+      <div class="mc-sub">${selMonth==='All'?'ALL CYCLES':selMonth} · ${ords.length} ORDERS</div>
     </div>
     <div class="mc">
       <div class="mc-ico">🎯</div>
@@ -781,10 +854,16 @@ function renderDash(){
       <div class="mc-sub">with orders placed</div>
     </div>
     <div class="mc">
-      <div class="mc-ico">📡</div>
-      <div class="mc-lbl">TRANSACTIONS</div>
-      <div class="mc-val" style="color:var(--green)">${ords.length}</div>
-      <div class="mc-sub">total orders</div>
+      <div class="mc-ico">💳</div>
+      <div class="mc-lbl">COLLECTED</div>
+      <div class="mc-val" style="color:var(--green)">${fmtINR(rcptTotal)}</div>
+      <div class="mc-sub">${rcptCount} RECEIPTS · ${selMonth==='All'?'ALL TIME':selMonth}</div>
+    </div>
+    <div class="mc">
+      <div class="mc-ico">⚠️</div>
+      <div class="mc-lbl">OUTSTANDING</div>
+      <div class="mc-val" style="color:${totalOutstanding>0?'var(--red)':'var(--green)'}">${fmtINR(totalOutstanding)}</div>
+      <div class="mc-sub" style="color:${collectionPct>=80?'var(--green)':collectionPct>=50?'var(--amber)':'var(--red)'}">${collectionPct}% COLLECTED OVERALL</div>
     </div>`;
 
   /* tier grid */
@@ -816,11 +895,16 @@ function renderDash(){
     :top5.map((id,i)=>{
       const m=medals[i],tier=getTier(totals[id]),chg=chgMap[id];
       const badge=chg?`<span class="ibadge ${chg.change}">${chg.change==='up'?'▲':'▼'} ${chg.curTier.name}</span>`:'';
+      /* per-partner collection info */
+      const pBilled=orders.filter(o=>o.custId===id).reduce((s,o)=>s+o.amount,0);
+      const pCollected=receipts.filter(r=>r.custId===id).reduce((s,r)=>s+r.amount,0);
+      const pOut=Math.max(0,pBilled-pCollected);
+      const outTag=pOut>0?`<span style="font-size:10px;color:var(--red);margin-left:6px">⚠ ${fmtINR(pOut)} DUE</span>`:'<span style="font-size:10px;color:var(--green);margin-left:6px">✓ CLEAR</span>';
       return `<div class="top-row" onclick="showDetailById('${id}')">
         <div class="rank-orb" style="background:${m.bg};color:${m.c};border-color:${m.border};box-shadow:${m.glow}">${m.lbl}</div>
         <div class="tr-info">
           <div class="tr-name">${nm[id]||id}</div>
-          <div class="tr-meta">${tier.emoji} <span style="color:${tier.color}">${tier.full}</span></div>
+          <div class="tr-meta">${tier.emoji} <span style="color:${tier.color}">${tier.full}</span>${outTag}</div>
         </div>
         <div class="tr-right">
           <div class="tr-amt" style="color:${tier.color};text-shadow:0 0 10px ${tier.color}50">${fmtINR(totals[id])} ${badge}</div>
@@ -831,6 +915,7 @@ function renderDash(){
     }).join('');
 
   renderTierChanges(chgMap,curMo,prevMo,nm);
+  renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo);
 }
 
 function renderTierChanges(chgMap,curMo,prevMo,nm){
@@ -873,6 +958,78 @@ function renderTierChanges(chgMap,curMo,prevMo,nm){
   </div>`;
 }
 
+/* ═══════ RECEIPTS DASHBOARD PANEL ═══════ */
+function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
+  const sec=document.getElementById('rcpt-section');
+  if(!fRcpts.length){
+    sec.innerHTML=`<div class="panel"><div class="panel-hd"><div class="panel-title">◈ PAYMENT RECEIPTS</div><div class="panel-tag">${selMonth==='All'?'ALL TIME':selMonth}</div></div><div class="no-chg">[ NO RECEIPTS IN THIS PERIOD ]</div></div>`;
+    return;
+  }
+  /* top collectors by receipt amount in period */
+  const byAgent={};
+  fRcpts.forEach(r=>{if(r.custId&&r.custId!=='Unknown')byAgent[r.custId]=(byAgent[r.custId]||0)+r.amount;});
+  const topAgents=Object.entries(byAgent).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  /* name map from receipts+orders */
+  const nm={};receipts.forEach(r=>{if(r.custId&&r.bizName)nm[r.custId]=r.bizName;});
+  orders.forEach(o=>{if(o.custId&&o.bizName)nm[o.custId]=o.bizName;});
+
+  /* recent 20 receipts sorted newest first */
+  const parseDt=d=>{
+    if(!d)return new Date(0);
+    const p=d.split('-');
+    if(p.length<3)return new Date(0);
+    if(isNaN(parseInt(p[1]))){
+      return new Date(`${p[1]} ${p[0]} ${p[2]}`);
+    }
+    return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
+  };
+  const sorted=[...fRcpts].sort((a,b)=>parseDt(b.date)-parseDt(a.date)).slice(0,20);
+
+  sec.innerHTML=`<div class="panel">
+    <div class="panel-hd">
+      <div class="panel-title">◈ PAYMENT RECEIPTS</div>
+      <div class="panel-tag">${selMonth==='All'?'ALL TIME':selMonth}</div>
+    </div>
+    <div class="rcpt-summary-grid">
+      <div class="rcpt-sum-cell">
+        <div class="rcpt-sum-lbl">TOTAL COLLECTED</div>
+        <div class="rcpt-sum-val" style="color:var(--green)">${fmtINR(rcptTotal)}</div>
+      </div>
+      <div class="rcpt-sum-cell">
+        <div class="rcpt-sum-lbl">RECEIPT COUNT</div>
+        <div class="rcpt-sum-val" style="color:var(--cyan)">${rcptCount}</div>
+      </div>
+      <div class="rcpt-sum-cell">
+        <div class="rcpt-sum-lbl">AVG PER RECEIPT</div>
+        <div class="rcpt-sum-val" style="color:var(--amber)">${rcptCount>0?fmtINR(rcptTotal/rcptCount):'—'}</div>
+      </div>
+    </div>
+    ${topAgents.length?`
+    <div style="padding:8px 16px 4px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);background:rgba(0,0,0,.15);border-bottom:1px solid var(--border2)">
+      TOP PAYERS THIS PERIOD
+    </div>
+    ${topAgents.map(([id,amt],i)=>{
+      const cols=['#FFB800','#94A3B8','#FB923C','#3A5068','#3A5068'];
+      return `<div class="rcpt-row" style="cursor:pointer" onclick="showDetailById('${id}')">
+        <div class="rcpt-date" style="color:${cols[i]};min-width:24px;font-weight:700">#${i+1}</div>
+        <div class="rcpt-name">${nm[id]||id}</div>
+        <div class="rcpt-amt">${fmtINR(amt)}</div>
+        <div class="tr-chev">›</div>
+      </div>`;
+    }).join('')}`:''}
+    <div style="padding:8px 16px 4px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);background:rgba(0,0,0,.15);border-bottom:1px solid var(--border2);border-top:1px solid var(--border2)">
+      RECENT RECEIPTS
+    </div>
+    ${sorted.map(r=>`<div class="rcpt-row">
+      <div class="rcpt-date">${r.date||'—'}</div>
+      <div class="rcpt-name">${r.bizName||nm[r.custId]||r.custId}</div>
+      <div class="rcpt-mo">${r.month||'—'}</div>
+      <div class="rcpt-amt">${fmtINR(r.amount)}</div>
+    </div>`).join('')}
+    ${fRcpts.length>20?`<div class="tbl-more">[ SHOWING 20 OF ${fRcpts.length} RECEIPTS ]</div>`:''}
+  </div>`;
+}
+
 /* ═══════ BIZ LIST ═══════ */
 function buildBizList(){
   const t=totalsFrom(orders);
@@ -887,6 +1044,8 @@ function renderPList(list){
   document.getElementById('plist-area').innerHTML=list.slice(0,200).map(c=>{
     const amt=t[c.id]||0,tier=getTier(amt),av=ini(c.name),ch=chg[c.id];
     const badge=ch?`<span class="ibadge ${ch.change}" style="margin-left:4px">${ch.change==='up'?'▲':'▼'} ${ch.curTier.name}</span>`:'';
+    const out=outstandingFor(c.id);
+    const outTag=out>0?`<span style="font-size:10px;color:var(--red);margin-left:4px">⚠ ${fmtINR(out)}</span>`:amt>0?`<span style="font-size:10px;color:var(--green);margin-left:4px">✓</span>`:'';
     return `<div class="pl-item" onclick="showDetailById('${c.id}')"
       onmouseenter="this.style.borderLeftColor='${tier.color}';this.style.background='rgba(0,229,255,.02)'"
       onmouseleave="this.style.borderLeftColor='transparent';this.style.background=''">
@@ -897,7 +1056,10 @@ function renderPList(list){
       </div>
       <div class="pl-right">
         ${amt>0?`<div class="pl-amt" style="color:${tier.color}">${fmtINR(amt)}${badge}</div>`:'<div style="font-size:11px;color:var(--text3)">NO DATA</div>'}
-        <div class="pl-tier" style="background:${tier.bg};color:${tier.color};border:1px solid ${tier.border}">${tier.emoji} ${tier.name}</div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:3px">
+          <div class="pl-tier" style="background:${tier.bg};color:${tier.color};border:1px solid ${tier.border}">${tier.emoji} ${tier.name}</div>
+          ${outTag}
+        </div>
       </div>
       <div class="tr-chev">›</div>
     </div>`;
@@ -1007,6 +1169,23 @@ function showDetailById(custId){
   const sOrds=cOrds.slice().sort((a,b)=>parseDt(b.date)-parseDt(a.date));
   const quests=computeQuests(custId,curMo,prevMo);
 
+  /* ── Receipt data for this customer ── */
+  const cRcpts=receipts.filter(r=>r.custId===custId);
+  const parseDtR=d=>{
+    if(!d)return new Date(0);
+    const p=d.split('-');
+    if(p.length<3)return new Date(0);
+    if(isNaN(parseInt(p[1])))return new Date(`${p[1]} ${p[0]} ${p[2]}`);
+    return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
+  };
+  const sRcpts=cRcpts.slice().sort((a,b)=>parseDtR(b.date)-parseDtR(a.date));
+  const mRcpts=cRcpts.filter(r=>r.month===curMo);
+  const mCollected=mRcpts.reduce((s,r)=>s+r.amount,0);
+  const aCollected=cRcpts.reduce((s,r)=>s+r.amount,0);
+  const outstanding=outstandingFor(custId);
+  const collPct=aAmt>0?Math.min(100,Math.round(aCollected/aAmt*100)):0;
+  const outColor=outstanding>0?'var(--red)':'var(--green)';
+
   const waNum=c.mobile.replace(/\D/g,'');
   const mobileHtml=c.mobile?`
     <div class="inf-val mono" style="margin-bottom:8px">${c.mobile}</div>
@@ -1045,12 +1224,23 @@ function showDetailById(custId){
         <div class="inf"><div class="inf-lbl">RX LICENCE</div><div class="inf-val mono">${c.license||'—'}</div></div>
         <div class="inf s2"><div class="inf-lbl">COORDINATES</div><div class="inf-val">${c.address||'—'}</div></div>
       </div>
-      <div class="stats-strip">
+      <div class="stats-strip" style="grid-template-columns:repeat(3,1fr)">
         <div class="st">
           <div class="st-bar" style="background:${tier.color};box-shadow:0 0 8px ${tier.color}"></div>
           <div class="st-num" style="color:${tier.color};text-shadow:0 0 10px ${tier.color}60">${fmtINR(mAmt)}</div>
-          <div class="st-lbl">${curMo||'THIS CYCLE'}</div>
+          <div class="st-lbl">ORDERED · ${curMo||'THIS CYCLE'}</div>
           ${pAmt>0?`<div class="st-diff" style="color:${dC}">${dS}${fmtINR(diff)}</div>`:''}
+        </div>
+        <div class="st">
+          <div class="st-bar" style="background:var(--green)"></div>
+          <div class="st-num" style="color:var(--green)">${fmtINR(mCollected)}</div>
+          <div class="st-lbl">COLLECTED · ${curMo||'THIS CYCLE'}</div>
+        </div>
+        <div class="st">
+          <div class="st-bar" style="background:${outColor}"></div>
+          <div class="st-num" style="color:${outColor}">${fmtINR(outstanding)}</div>
+          <div class="st-lbl">OUTSTANDING</div>
+          <div class="st-diff" style="color:${collPct>=80?'var(--green)':collPct>=50?'var(--amber)':'var(--red)'}">${collPct}% PAID</div>
         </div>
         <div class="st">
           <div class="st-bar" style="background:${tier.color}"></div>
@@ -1065,12 +1255,49 @@ function showDetailById(custId){
         <div class="st">
           <div class="st-bar" style="background:var(--cyan)"></div>
           <div class="st-num" style="color:var(--cyan)">${fmtINR(aAmt)}</div>
-          <div class="st-lbl">ALL-TIME</div>
+          <div class="st-lbl">ALL-TIME BILLED</div>
         </div>
       </div>
     </div>
 
     ${questHTML(quests,curMo)}
+
+    <div class="ord-panel" style="margin-bottom:12px">
+      <div class="ord-hd">
+        <div class="ord-hd-title">◈ PAYMENT RECEIPTS</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${outstanding>0
+            ?`<span class="outstanding-pill">⚠ ${fmtINR(outstanding)} DUE</span>`
+            :`<span class="clear-pill">✓ ACCOUNT CLEAR</span>`}
+          <div class="ord-hd-cnt">${cRcpts.length} RECORDS</div>
+        </div>
+      </div>
+      ${sRcpts.length>0?`
+      <div class="rcpt-summary-grid">
+        <div class="rcpt-sum-cell">
+          <div class="rcpt-sum-lbl">TOTAL COLLECTED</div>
+          <div class="rcpt-sum-val" style="color:var(--green)">${fmtINR(aCollected)}</div>
+        </div>
+        <div class="rcpt-sum-cell">
+          <div class="rcpt-sum-lbl">TOTAL BILLED</div>
+          <div class="rcpt-sum-val" style="color:var(--cyan)">${fmtINR(aAmt)}</div>
+        </div>
+        <div class="rcpt-sum-cell">
+          <div class="rcpt-sum-lbl">OUTSTANDING</div>
+          <div class="rcpt-sum-val" style="color:${outColor}">${fmtINR(outstanding)}</div>
+        </div>
+      </div>
+      <table class="ord-tbl">
+        <thead><tr><th>DATE</th><th>CYCLE</th><th style="text-align:right">AMOUNT</th></tr></thead>
+        <tbody>${sRcpts.slice(0,20).map(r=>`<tr>
+          <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${r.date||'—'}</td>
+          <td><span class="rcpt-mo">${r.month||'—'}</span></td>
+          <td class="ord-amt" style="color:var(--green)">${fmtINR(r.amount)}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      ${cRcpts.length>20?`<div class="tbl-more">[ SHOWING 20 OF ${cRcpts.length} RECEIPTS ]</div>`:''}`
+      :`<div class="no-chg">[ NO PAYMENT RECEIPTS ON RECORD ]</div>`}
+    </div>
 
     ${sOrds.length>0?`
     <div class="ord-panel">
