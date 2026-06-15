@@ -691,6 +691,20 @@ function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:T
 
 /* ═══════ UTILS ═══════ */
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
+
+/* Format dd-mm-yyyy or dd-Mon-yyyy → "01 Apr 2026" */
+function fmtDate(d){
+  if(!d||d==='—')return '—';
+  const p=d.split('-');
+  if(p.length<3)return d;
+  const day=p[0].padStart(2,'0');
+  const yr=p[2];
+  const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  /* named month: dd-Apr-2026 */
+  if(isNaN(parseInt(p[1])))return `${day} ${p[1]} ${yr}`;
+  /* numeric: dd-04-2026 */
+  return `${day} ${MON[parseInt(p[1])]||p[1]} ${yr}`;
+}
 function moVal(m){
   /* handles both "Apr-2026" and "Apr-26" */
   const p=m.split('-');
@@ -1342,7 +1356,7 @@ function showDetailById(custId){
         <tbody>
           ${sRcpts.map((r,i)=>`<tr>
             <td style="color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:11px">${String(sRcpts.length-i).padStart(2,'0')}</td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${r.date||'—'}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDate(r.date)}</td>
             <td class="ord-amt" style="color:var(--green);font-size:15px">${fmtINR(r.amount)}</td>
           </tr>`).join('')}
         </tbody>
@@ -1368,7 +1382,7 @@ function showDetailById(custId){
         <tbody>
           ${sOrds.map(o=>`<tr>
             <td><span class="oid">${o.id}</span></td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${o.date||'—'}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDate(o.date)}</td>
             <td class="ord-amt">${fmtINR(o.amount)}</td>
           </tr>`).join('')}
         </tbody>
