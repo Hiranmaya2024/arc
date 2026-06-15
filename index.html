@@ -739,10 +739,11 @@ function rcptTotalsFrom(rcpts){
 }
 function filtRcpt(){return selMonth==='All'?receipts:receipts.filter(r=>r.month===selMonth);}
 function outstandingFor(custId){
-  /* Outstanding = total orders billed − total receipts collected */
-  const billed=orders.filter(o=>o.custId===custId).reduce((s,o)=>s+o.amount,0);
-  const collected=receipts.filter(r=>r.custId===custId).reduce((s,r)=>s+r.amount,0);
-  return Math.max(0,billed-collected);
+  const cust=customers.find(c=>c.id===custId);
+  const initOut=(cust&&cust.initOutstanding)||0;
+  const totalOrders=orders.filter(o=>o.custId===custId).reduce((s,o)=>s+o.amount,0);
+  const totalCollected=receipts.filter(r=>r.custId===custId).reduce((s,r)=>s+r.amount,0);
+  return Math.max(0, initOut + totalOrders - totalCollected);
 }
 
 /* ═══════ CSV ═══════ */
@@ -777,7 +778,8 @@ async function loadData(){
     customers=[];
     for(let i=1;i<cr.length;i++){
       const r=cr[i];if(!r[0]||!r[1])continue;
-      customers.push({id:r[0],name:r[1],owner:r[2]||'',mobile:r[3]||'',address:r[5]||'',city:r[6]||'',district:r[7]||'',license:r[9]||''});
+      const initOut=parseFloat((r[4]||'').replace(/[₹,\s]/g,''))||0;
+      customers.push({id:r[0],name:r[1],owner:r[2]||'',mobile:r[3]||'',initOutstanding:initOut,address:r[5]||'',city:r[6]||'',district:r[7]||'',license:r[9]||''});
     }
     orders=[];
     for(let i=1;i<or.length;i++){
@@ -855,11 +857,13 @@ function renderDash(){
   const fRcpts=filtRcpt();
   const rcptTotal=fRcpts.reduce((s,r)=>s+r.amount,0);
   const rcptCount=fRcpts.length;
-  /* outstanding = all-time billed − all-time collected (global, not period-filtered) */
+  /* outstanding = sum of (initOutstanding + orders - receipts) per customer */
   const allBilled=orders.reduce((s,o)=>s+o.amount,0);
+  const allInitOut=customers.reduce((s,c)=>s+(c.initOutstanding||0),0);
   const allCollected=receipts.reduce((s,r)=>s+r.amount,0);
-  const totalOutstanding=Math.max(0,allBilled-allCollected);
-  const collectionPct=allBilled>0?Math.min(100,Math.round(allCollected/allBilled*100)):0;
+  const totalOutstanding=Math.max(0,allInitOut+allBilled-allCollected);
+  const totalBase=allInitOut+allBilled;
+  const collectionPct=totalBase>0?Math.min(100,Math.round(allCollected/totalBase*100)):0;
 
   /* metrics — 4 cards */
   document.getElementById('metrics-area').className='metrics-grid metrics-grid-4';
@@ -1206,7 +1210,9 @@ function showDetailById(custId){
   const mCollected=mRcpts.reduce((s,r)=>s+r.amount,0);
   const aCollected=cRcpts.reduce((s,r)=>s+r.amount,0);
   const outstanding=outstandingFor(custId);
-  const collPct=aAmt>0?Math.min(100,Math.round(aCollected/aAmt*100)):0;
+  const initOut=(customers.find(c=>c.id===custId)||{}).initOutstanding||0;
+  const totalBase=initOut+aAmt; /* initial + all orders */
+  const collPct=totalBase>0?Math.min(100,Math.round(aCollected/totalBase*100)):0;
   const outColor=outstanding>0?'var(--red)':'var(--green)';
 
   const waNum=c.mobile.replace(/\D/g,'');
@@ -1296,14 +1302,18 @@ function showDetailById(custId){
         </div>
       </div>
       ${sRcpts.length>0?`
-      <div class="rcpt-summary-grid">
+      <div class="rcpt-summary-grid" style="grid-template-columns:repeat(4,1fr)">
         <div class="rcpt-sum-cell">
-          <div class="rcpt-sum-lbl">TOTAL COLLECTED</div>
-          <div class="rcpt-sum-val" style="color:var(--green)">${fmtINR(aCollected)}</div>
+          <div class="rcpt-sum-lbl">OPENING BALANCE</div>
+          <div class="rcpt-sum-val" style="color:var(--amber)">${fmtINR(initOut)}</div>
         </div>
         <div class="rcpt-sum-cell">
           <div class="rcpt-sum-lbl">TOTAL BILLED</div>
           <div class="rcpt-sum-val" style="color:var(--cyan)">${fmtINR(aAmt)}</div>
+        </div>
+        <div class="rcpt-sum-cell">
+          <div class="rcpt-sum-lbl">TOTAL COLLECTED</div>
+          <div class="rcpt-sum-val" style="color:var(--green)">${fmtINR(aCollected)}</div>
         </div>
         <div class="rcpt-sum-cell">
           <div class="rcpt-sum-lbl">OUTSTANDING</div>
