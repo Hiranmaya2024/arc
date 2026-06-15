@@ -1192,26 +1192,37 @@ function showDetailById(custId){
     </div>
   </div>`:'';
   const diff=mAmt-pAmt,dS=diff>=0?'+':'',dC=diff>=0?'var(--green)':'var(--red)';
-  const parseDt=d=>{const p=d.split('-');return p.length===3?new Date(2000+parseInt(p[2]),MMAP[p[1]]||1,parseInt(p[0])):new Date(0);};
-  const sOrds=cOrds.slice().sort((a,b)=>parseDt(b.date)-parseDt(a.date));
   const quests=computeQuests(custId,curMo,prevMo);
 
   /* ── Receipt data for this customer ── */
   const cRcpts=receipts.filter(r=>r.custId===custId);
-  const parseDtR=d=>{
+
+  /* Date parser: handles dd-mm-yyyy (numeric month) and dd-Mon-yyyy (named month) */
+  const parseDtFull=d=>{
     if(!d)return new Date(0);
     const p=d.split('-');
     if(p.length<3)return new Date(0);
-    if(isNaN(parseInt(p[1])))return new Date(`${p[1]} ${p[0]} ${p[2]}`);
-    return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
+    const day=parseInt(p[0]),yr=parseInt(p[2]);
+    /* named month: dd-Apr-2026 */
+    if(isNaN(parseInt(p[1]))){
+      return new Date(`${p[1]} ${day} ${yr}`);
+    }
+    /* numeric: dd-mm-yyyy */
+    return new Date(yr, parseInt(p[1])-1, day);
   };
-  const sRcpts=cRcpts.slice().sort((a,b)=>parseDtR(b.date)-parseDtR(a.date));
+
+  /* Sort receipts newest → oldest */
+  const sRcpts=cRcpts.slice().sort((a,b)=>parseDtFull(b.date)-parseDtFull(a.date));
+
+  /* Sort orders newest → oldest (same robust parser) */
+  const sOrds=cOrds.slice().sort((a,b)=>parseDtFull(b.date)-parseDtFull(a.date));
+
   const mRcpts=cRcpts.filter(r=>r.month===curMo);
   const mCollected=mRcpts.reduce((s,r)=>s+r.amount,0);
   const aCollected=cRcpts.reduce((s,r)=>s+r.amount,0);
   const outstanding=outstandingFor(custId);
   const initOut=(customers.find(c=>c.id===custId)||{}).initOutstanding||0;
-  const totalBase=initOut+aAmt; /* initial + all orders */
+  const totalBase=initOut+aAmt;
   const collPct=totalBase>0?Math.min(100,Math.round(aCollected/totalBase*100)):0;
   const outColor=outstanding>0?'var(--red)':'var(--green)';
 
@@ -1301,7 +1312,6 @@ function showDetailById(custId){
           <div class="ord-hd-cnt">${cRcpts.length} RECORDS</div>
         </div>
       </div>
-      ${sRcpts.length>0?`
       <div class="rcpt-summary-grid" style="grid-template-columns:repeat(4,1fr)">
         <div class="rcpt-sum-cell">
           <div class="rcpt-sum-lbl">OPENING BALANCE</div>
@@ -1320,15 +1330,24 @@ function showDetailById(custId){
           <div class="rcpt-sum-val" style="color:${outColor}">${fmtINR(outstanding)}</div>
         </div>
       </div>
+      ${sRcpts.length>0?`
       <table class="ord-tbl">
-        <thead><tr><th>DATE</th><th>CYCLE</th><th style="text-align:right">AMOUNT</th></tr></thead>
-        <tbody>${sRcpts.slice(0,20).map(r=>`<tr>
-          <td style="font-family:'Share Tech Mono',monospace;font-size:11px">${r.date||'—'}</td>
-          <td><span class="rcpt-mo">${r.month||'—'}</span></td>
-          <td class="ord-amt" style="color:var(--green)">${fmtINR(r.amount)}</td>
-        </tr>`).join('')}</tbody>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>RECEIPT DATE</th>
+            <th style="text-align:right">AMOUNT RECEIVED</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sRcpts.map((r,i)=>`<tr>
+            <td style="color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:11px">${String(sRcpts.length-i).padStart(2,'0')}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${r.date||'—'}</td>
+            <td class="ord-amt" style="color:var(--green);font-size:15px">${fmtINR(r.amount)}</td>
+          </tr>`).join('')}
+        </tbody>
       </table>
-      ${cRcpts.length>20?`<div class="tbl-more">[ SHOWING 20 OF ${cRcpts.length} RECEIPTS ]</div>`:''}`
+      ${cRcpts.length>sRcpts.length?`<div class="tbl-more">[ ${cRcpts.length} TOTAL RECEIPTS ]</div>`:''}`
       :`<div class="no-chg">[ NO PAYMENT RECEIPTS ON RECORD ]</div>`}
     </div>
 
@@ -1336,18 +1355,24 @@ function showDetailById(custId){
     <div class="ord-panel">
       <div class="ord-hd">
         <div class="ord-hd-title">◈ TRANSACTION LOG</div>
-        <div class="ord-hd-cnt">${aCnt} RECORDS</div>
+        <div class="ord-hd-cnt">${aCnt} RECORDS · ${fmtINR(aAmt)} TOTAL</div>
       </div>
       <table class="ord-tbl">
-        <thead><tr><th>ORDER ID</th><th>DATE</th><th>CYCLE</th><th style="text-align:right">AMOUNT</th></tr></thead>
-        <tbody>${sOrds.slice(0,25).map(o=>`<tr>
-          <td><span class="oid">${o.id}</span></td>
-          <td style="font-family:'Share Tech Mono',monospace;font-size:12px">${o.date}</td>
-          <td><span class="mo-chip">${o.month}</span></td>
-          <td class="ord-amt">${fmtINR(o.amount)}</td>
-        </tr>`).join('')}</tbody>
+        <thead>
+          <tr>
+            <th>BILL NO.</th>
+            <th>DATE</th>
+            <th style="text-align:right">AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sOrds.map(o=>`<tr>
+            <td><span class="oid">${o.id}</span></td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${o.date||'—'}</td>
+            <td class="ord-amt">${fmtINR(o.amount)}</td>
+          </tr>`).join('')}
+        </tbody>
       </table>
-      ${aCnt>25?`<div class="tbl-more">[ SHOWING 25 OF ${aCnt} RECORDS ]</div>`:''}
     </div>`
     :`<div class="empty-note" style="background:var(--panel);border-radius:var(--r);border:1px solid var(--border)">[ NO TRANSACTION RECORDS ]</div>`}
   `;
