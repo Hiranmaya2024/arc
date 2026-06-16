@@ -410,6 +410,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 /* outstanding badge */
 .outstanding-pill{display:inline-flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;background:rgba(255,45,120,.1);color:var(--red);border:1px solid rgba(255,45,120,.3)}
 .clear-pill{display:inline-flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+
+/* ═══════════ PREDICTION CARD ═══════════ */
+.predict-panel{background:var(--panel);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:12px;position:relative}
+.predict-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent);opacity:.5}
+.predict-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.predict-cell{padding:16px 18px;border-right:1px solid var(--border2);position:relative}
+.predict-cell:last-child{border-right:none}
+.predict-cell-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.predict-icon{font-size:18px;line-height:1}
+.predict-label{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)}
+.predict-date{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:.01em;margin-bottom:4px}
+.predict-sub{font-size:11px;color:var(--text3)}
+.predict-countdown{display:inline-flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:600;padding:3px 9px;border-radius:3px;margin-top:8px}
+.predict-countdown.soon{background:rgba(255,184,0,.1);color:var(--amber);border:1px solid rgba(255,184,0,.3)}
+.predict-countdown.overdue{background:rgba(255,45,120,.1);color:var(--red);border:1px solid rgba(255,45,120,.3)}
+.predict-countdown.normal{background:rgba(0,229,255,.08);color:var(--cyan2);border:1px solid var(--border2)}
+.predict-insufficient{padding:16px 18px;text-align:center;color:var(--text3);font-size:12px;grid-column:1/-1}
+.cadence-stat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);margin-top:6px}
 /* 4-col metrics on wider screens */
 @media(min-width:700px){.metrics-grid-4{grid-template-columns:1.3fr 1fr 1fr 1fr}}
 
@@ -551,6 +569,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
   /* ibadge on mobile — shorter text */
   .ibadge{font-size:9px;padding:2px 5px}
+
+  /* Prediction panel — stack on mobile */
+  .predict-grid{grid-template-columns:1fr}
+  .predict-cell{border-right:none;border-bottom:1px solid var(--border2)}
+  .predict-cell:last-child{border-bottom:none}
+  .predict-date{font-size:18px}
 }
 
 /* ═══════════════════════════════════════
@@ -695,41 +719,169 @@ function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
             extra whitespace, 2-digit years. Never silently mangles —
             falls back to the raw trimmed string if truly unparseable. */
 function fmtDate(d){
-  if(!d) return '—';
+  if(d===null||d===undefined)return '—';
+  d=String(d).trim();
+  if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return '—';
 
-  d = String(d).trim();
+  const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONLC=MON.map(m=>m.toLowerCase());
 
-  const MONTHS = [
-    'JAN','FEB','MAR','APR','MAY','JUN',
-    'JUL','AUG','SEP','OCT','NOV','DEC'
-  ];
+  /* normalise separators to '-' so dd-mm-yyyy / dd/mm/yyyy / dd.mm.yyyy all match */
+  const norm=d.replace(/[\/\.]/g,'-');
+  const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
 
-  const parts = d.split('-');
+  if(parts.length===3){
+    let [a,b,c]=parts;
 
-  if(parts.length !== 3) return d;
+    /* Case: yyyy-mm-dd (ISO — first part is 4-digit year) */
+    if(/^\d{4}$/.test(a)){
+      const yr=a, mi=parseInt(b), day=c.padStart(2,'0');
+      if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
+    }
 
-  const day = parts[0].padStart(2,'0');
-  const month = parseInt(parts[1],10);
-  const year = parts[2].slice(-2);
+    /* Case: dd-Mon-yyyy (named month in middle) */
+    if(isNaN(parseInt(b))){
+      const mLC=b.toLowerCase().slice(0,3);
+      const mIdx=MONLC.indexOf(mLC);
+      const day=a.padStart(2,'0');
+      const yr=c.length===2?'20'+c:c;
+      if(mIdx>0) return `${day} ${MON[mIdx]} ${yr}`;
+      return `${day} ${b} ${yr}`; /* unknown month name, show as-is */
+    }
 
-  if(month < 1 || month > 12) return d;
+    /* Case: dd-mm-yyyy (standard, numeric month) */
+    const day=a.padStart(2,'0');
+    const mi=parseInt(b);
+    const yr=c.length===2?'20'+c:c;
+    if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
 
-  return `${day}-${MONTHS[month-1]}-${year}`;
+    /* mi out of range (>12) — likely mm-dd-yyyy order, swap and retry */
+    const ai=parseInt(a);
+    if(!isNaN(ai)&&ai>=1&&ai<=12&&parseInt(b)<=31){
+      return `${b.padStart(2,'0')} ${MON[ai]} ${yr}`;
+    }
+  }
+
+  /* Last resort: let the JS Date parser try (handles "Apr 3, 2026" etc.) */
+  const parsed=new Date(d);
+  if(!isNaN(parsed.getTime())){
+    return `${String(parsed.getDate()).padStart(2,'0')} ${MON[parsed.getMonth()+1]} ${parsed.getFullYear()}`;
+  }
+
+  /* Truly unrecognised — show the raw value rather than hiding it */
+  return d;
 }
+
 /* Parse ANY reasonable date string → JS Date object (for sorting).
    Mirrors fmtDate's format detection so sort order and display always agree. */
 function parseAnyDate(d){
-  if(!d) return new Date(0);
+  if(d===null||d===undefined)return new Date(0);
+  d=String(d).trim();
+  if(!d||d==='—')return new Date(0);
 
-  const p = String(d).trim().split('-');
+  const MONLC=['','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const norm=d.replace(/[\/\.]/g,'-');
+  const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
 
-  if(p.length !== 3) return new Date(0);
+  if(parts.length===3){
+    let [a,b,c]=parts;
 
-  const day = parseInt(p[0],10);
-  const month = parseInt(p[1],10);
-  const year = parseInt(p[2],10);
+    /* yyyy-mm-dd (ISO) */
+    if(/^\d{4}$/.test(a)){
+      const mi=parseInt(b),day=parseInt(c);
+      if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(parseInt(a),mi-1,day);
+    }
 
-  return new Date(year, month - 1, day);
+    /* dd-Mon-yyyy */
+    if(isNaN(parseInt(b))){
+      const mIdx=MONLC.indexOf(b.toLowerCase().slice(0,3));
+      const yr=c.length===2?2000+parseInt(c):parseInt(c);
+      if(mIdx>0) return new Date(yr,mIdx-1,parseInt(a));
+    }
+
+    /* dd-mm-yyyy */
+    const day=parseInt(a),mi=parseInt(b);
+    const yr=c.length===2?2000+parseInt(c):parseInt(c);
+    if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(yr,mi-1,day);
+
+    /* fallback: mm-dd-yyyy (month-first) */
+    if(!isNaN(day)&&day>=1&&day<=12&&mi<=31) return new Date(yr,day-1,mi);
+  }
+
+  const fallback=new Date(d);
+  return isNaN(fallback.getTime())?new Date(0):fallback;
+}
+
+/* ═══════ PREDICTION ENGINE ═══════
+   Computes average gap between consecutive orders/receipts for a customer,
+   then projects the next likely order/payment date from the most recent one. */
+function computeCadence(dateList){
+  /* dateList: array of raw date strings (any format) for one customer, any order */
+  const valid=dateList.map(parseAnyDate).filter(d=>d.getTime()>0);
+  if(valid.length<2) return {avgDays:null,lastDate:valid.length===1?valid[0]:null,nextDate:null,sampleSize:valid.length};
+  const sorted=valid.slice().sort((a,b)=>a-b); /* oldest → newest */
+  const gaps=[];
+  for(let i=1;i<sorted.length;i++){
+    const gapDays=Math.round((sorted[i]-sorted[i-1])/(1000*60*60*24));
+    if(gapDays>0) gaps.push(gapDays); /* ignore same-day duplicate entries */
+  }
+  if(!gaps.length) return {avgDays:null,lastDate:sorted[sorted.length-1],nextDate:null,sampleSize:valid.length};
+  const avgDays=Math.round(gaps.reduce((s,g)=>s+g,0)/gaps.length);
+  const lastDate=sorted[sorted.length-1];
+  const nextDate=new Date(lastDate.getTime()+avgDays*24*60*60*1000);
+  return {avgDays,lastDate,nextDate,sampleSize:valid.length};
+}
+
+function fmtDateObj(d){
+  if(!d||isNaN(d.getTime()))return '—';
+  const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${String(d.getDate()).padStart(2,'0')} ${MON[d.getMonth()+1]} ${d.getFullYear()}`;
+}
+
+/* Days from today until a predicted date — negative means overdue */
+function daysFromToday(d){
+  if(!d||isNaN(d.getTime()))return null;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const target=new Date(d); target.setHours(0,0,0,0);
+  return Math.round((target-today)/(1000*60*60*24));
+}
+
+/* Build the HUD prediction panel HTML for order + payment cadence */
+function buildPredictionHTML(orderCad,rcptCad){
+  const orderCell=buildPredictCell('📦','NEXT ORDER',orderCad,'#818CF8');
+  const rcptCell=buildPredictCell('💳','NEXT PAYMENT',rcptCad,'#00FF88');
+  return `<div class="predict-panel">
+    <div class="panel-hd">
+      <div class="panel-title">◈ ORDER &amp; PAYMENT FORECAST</div>
+      <div class="panel-tag">AI PREDICTED</div>
+    </div>
+    <div class="predict-grid">
+      ${orderCell}
+      ${rcptCell}
+    </div>
+  </div>`;
+}
+
+function buildPredictCell(icon,label,cad,color){
+  if(cad.sampleSize<2||!cad.nextDate){
+    const reason=cad.sampleSize===0?'NO HISTORY ON RECORD':cad.sampleSize===1?'NEED 2+ RECORDS TO PREDICT':'IRREGULAR PATTERN — CANNOT PREDICT';
+    return `<div class="predict-cell">
+      <div class="predict-cell-hd"><span class="predict-icon">${icon}</span><span class="predict-label">${label}</span></div>
+      <div style="color:var(--text3);font-size:13px;padding:8px 0">[ ${reason} ]</div>
+      ${cad.lastDate?`<div class="predict-sub">Last: ${fmtDateObj(cad.lastDate)}</div>`:''}
+    </div>`;
+  }
+  const daysOut=daysFromToday(cad.nextDate);
+  let cdClass='normal',cdText=`IN ${daysOut} DAYS`;
+  if(daysOut<0){cdClass='overdue';cdText=`${Math.abs(daysOut)} DAYS OVERDUE`;}
+  else if(daysOut<=2){cdClass='soon';cdText=daysOut===0?'DUE TODAY':`DUE IN ${daysOut} DAY${daysOut>1?'S':''}`;}
+  return `<div class="predict-cell">
+    <div class="predict-cell-hd"><span class="predict-icon">${icon}</span><span class="predict-label">${label}</span></div>
+    <div class="predict-date" style="color:${color};text-shadow:0 0 10px ${color}40">${fmtDateObj(cad.nextDate)}</div>
+    <div class="predict-sub">Based on ${cad.sampleSize} records · avg ${cad.avgDays}-day cycle</div>
+    <div class="predict-countdown ${cdClass}">${cdClass==='overdue'?'⚠':'⏱'} ${cdText}</div>
+    <div class="cadence-stat">LAST: ${fmtDateObj(cad.lastDate)}</div>
+  </div>`;
 }
 function moVal(m){
   /* handles both "Apr-2026" and "Apr-26" */
@@ -808,6 +960,19 @@ async function fetchSheet(name){
   return parseCSV(await r.text());
 }
 
+/* Find a column index by matching header text against candidate keywords.
+   Immune to column reordering or extra/missing columns — far more robust
+   than hardcoded indices. Matches case/whitespace/punctuation-insensitively. */
+function findCol(headerRow,...candidates){
+  const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  for(const cand of candidates){
+    const cN=norm(cand);
+    const idx=headerRow.findIndex(h=>norm(h).includes(cN));
+    if(idx!==-1)return idx;
+  }
+  return -1;
+}
+
 /* ═══════ LOAD ═══════ */
 async function loadData(){
   document.getElementById('loading-scr').style.display='flex';
@@ -815,32 +980,66 @@ async function loadData(){
   ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
   try{
     const[cr,or,rr]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS'),fetchSheet('12_RECEIPTS')]);
+
+    /* ── 1_CUSTOMERS: resolve columns by header, fallback to known index ── */
+    const cH=cr[0]||[];
+    const cIdId=findCol(cH,'customerid','custid'); const cIdIdx=cIdId!==-1?cIdId:0;
+    const cIdName=findCol(cH,'businessname','partnername'); const cIdNameIdx=cIdName!==-1?cIdName:1;
+    const cIdOwner=findCol(cH,'ownername'); const cIdOwnerIdx=cIdOwner!==-1?cIdOwner:2;
+    const cIdMobile=findCol(cH,'mobile','whatsapp','phone'); const cIdMobileIdx=cIdMobile!==-1?cIdMobile:3;
+    const cIdOut=findCol(cH,'outstanding'); const cIdOutIdx=cIdOut!==-1?cIdOut:4;
+    const cIdAddr=findCol(cH,'address'); const cIdAddrIdx=cIdAddr!==-1?cIdAddr:5;
+    const cIdCity=findCol(cH,'city'); const cIdCityIdx=cIdCity!==-1?cIdCity:6;
+    const cIdDist=findCol(cH,'district'); const cIdDistIdx=cIdDist!==-1?cIdDist:7;
+    const cIdLic=findCol(cH,'druglicense','license','licence'); const cIdLicIdx=cIdLic!==-1?cIdLic:9;
+
     customers=[];
     for(let i=1;i<cr.length;i++){
-      const r=cr[i];if(!r[0]||!r[1])continue;
-      const initOut=parseFloat((r[4]||'').replace(/[₹,\s]/g,''))||0;
-      customers.push({id:r[0],name:r[1],owner:r[2]||'',mobile:r[3]||'',initOutstanding:initOut,address:r[5]||'',city:r[6]||'',district:r[7]||'',license:r[9]||''});
+      const r=cr[i];if(!r[cIdIdx]||!r[cIdNameIdx])continue;
+      const initOut=parseFloat((r[cIdOutIdx]||'').replace(/[₹,\s]/g,''))||0;
+      customers.push({
+        id:r[cIdIdx],name:r[cIdNameIdx],owner:r[cIdOwnerIdx]||'',mobile:r[cIdMobileIdx]||'',
+        initOutstanding:initOut,address:r[cIdAddrIdx]||'',city:r[cIdCityIdx]||'',
+        district:r[cIdDistIdx]||'',license:r[cIdLicIdx]||''
+      });
     }
+
+    /* ── 2_ORDERS: resolve columns by header, fallback to known index ── */
+    const oH=or[0]||[];
+    const oIdOrder=findCol(oH,'orderid'); const oIdOrderIdx=oIdOrder!==-1?oIdOrder:0;
+    const oIdCust=findCol(oH,'customerid','custid'); const oIdCustIdx=oIdCust!==-1?oIdCust:1;
+    const oIdBiz=findCol(oH,'businessname'); const oIdBizIdx=oIdBiz!==-1?oIdBiz:2;
+    const oIdDate=findCol(oH,'orderdate','date'); const oIdDateIdx=oIdDate!==-1?oIdDate:3;
+    const oIdMonth=findCol(oH,'ordermonth','month'); const oIdMonthIdx=oIdMonth!==-1?oIdMonth:4;
+    const oIdNet=findCol(oH,'netamount'); const oIdGross=findCol(oH,'grossamount');
+    const oIdAmtIdx=oIdNet!==-1?oIdNet:(oIdGross!==-1?oIdGross:8);
+
     orders=[];
     for(let i=1;i<or.length;i++){
-      const r=or[i];if(!r[0])continue;
-      /* 2_ORDERS columns: 0=OrderID, 1=CustID, 2=BizName, 3=OrderDate, 4=Month, 5=FY, 6=Gross, 7=Discount, 8=NetAmount */
-      const rawAmt=(r[8]||r[6]||'').replace(/[₹,\s]/g,'');
+      const r=or[i];if(!r[oIdOrderIdx])continue;
+      const rawAmt=(r[oIdAmtIdx]||r[6]||'').replace(/[₹,\s]/g,'');
       const amt=parseFloat(rawAmt)||0;
-      const dateVal = r[3] ? String(r[3]).trim() : '';
-      orders.push({id:r[0],custId:r[1]||'',bizName:r[2]||'',date:dateVal,month:r[4]||'',amount:amt});
+      const dateVal=(r[oIdDateIdx]||'').trim();
+      orders.push({id:r[oIdOrderIdx],custId:r[oIdCustIdx]||'',bizName:r[oIdBizIdx]||'',date:dateVal,month:r[oIdMonthIdx]||'',amount:amt});
     }
-    /* ── 12_RECEIPTS: col1=custId(0), col2=bizName(1), col3=date(2), col4=month(3), col5=FY(4), col6=amount(5) ── */
+
+    /* ── 12_RECEIPTS: resolve columns by header, fallback to known index ── */
+    const rH=rr[0]||[];
+    const rIdCust=findCol(rH,'customerid','custid'); const rIdCustIdx=rIdCust!==-1?rIdCust:0;
+    const rIdBiz=findCol(rH,'businessname'); const rIdBizIdx=rIdBiz!==-1?rIdBiz:1;
+    const rIdDate=findCol(rH,'rcptdate','receiptdate','date'); const rIdDateIdx=rIdDate!==-1?rIdDate:2;
+    const rIdMonth=findCol(rH,'month'); const rIdMonthIdx=rIdMonth!==-1?rIdMonth:3;
+    const rIdAmt=findCol(rH,'amount'); const rIdAmtIdx=rIdAmt!==-1?rIdAmt:5;
+
     receipts=[];
     for(let i=1;i<rr.length;i++){
-      const r=rr[i];if(!r[0]&&!r[1])continue;
-      const amt=parseFloat((r[5]||'').replace(/[₹,\s]/g,''))||0;
-      /* month is already in col4 (index 3) as "Apr-2026" — normalise to "Apr-26" */
-      const rawMo=r[3]||'';
-      const mo=normMonth(rawMo)||dateToMonth(r[2]||'');
-      if(amt===0)continue; /* skip zero-amount rows */
-      const rcptDate = r[2] ? String(r[2]).trim() : '';
-      receipts.push({custId:r[0]||'Unknown',bizName:r[1]||'',date:rcptDate,month:mo,amount:amt});
+      const r=rr[i];if(!r[rIdCustIdx]&&!r[rIdBizIdx])continue;
+      const amt=parseFloat((r[rIdAmtIdx]||'').replace(/[₹,\s]/g,''))||0;
+      if(amt===0)continue;
+      const rawMo=r[rIdMonthIdx]||'';
+      const rcptDate=(r[rIdDateIdx]||'').trim();
+      const mo=normMonth(rawMo)||dateToMonth(rcptDate);
+      receipts.push({custId:r[rIdCustIdx]||'Unknown',bizName:r[rIdBizIdx]||'',date:rcptDate,month:mo,amount:amt});
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
     buildPills();renderDash();buildBizList();
@@ -1235,6 +1434,11 @@ function showDetailById(custId){
   /* Sort orders newest → oldest (same robust parser) */
   const sOrds=cOrds.slice().sort((a,b)=>parseAnyDate(b.date)-parseAnyDate(a.date));
 
+  /* ── Order & payment cadence + predictions ── */
+  const orderCadence=computeCadence(cOrds.map(o=>o.date));
+  const rcptCadence=computeCadence(cRcpts.map(r=>r.date));
+  const predictHTML=buildPredictionHTML(orderCadence,rcptCadence);
+
   const mRcpts=cRcpts.filter(r=>r.month===curMo);
   const mCollected=mRcpts.reduce((s,r)=>s+r.amount,0);
   const aCollected=cRcpts.reduce((s,r)=>s+r.amount,0);
@@ -1319,6 +1523,8 @@ function showDetailById(custId){
     </div>
 
     ${questHTML(quests,curMo)}
+
+    ${predictHTML}
 
     <div class="ord-panel" style="margin-bottom:12px">
       <div class="ord-hd">
@@ -1420,4 +1626,3 @@ loadData();
 </script>
 </body>
 </html>
-
