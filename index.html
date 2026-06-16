@@ -689,21 +689,103 @@ function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:T
 /* ═══════ UTILS ═══════ */
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 
-/* Format date string → "03 Apr 2026"
-   Handles: dd-mm-yyyy (01-04-2026), dd-Mon-yyyy (01-Apr-2026), already formatted */
+/* Format ANY reasonable date string → "03 Apr 2026"
+   Handles: dd-mm-yyyy, dd/mm/yyyy, dd.mm.yyyy, dd-Mon-yyyy,
+            yyyy-mm-dd (ISO), mm/dd/yyyy, already-readable text,
+            extra whitespace, 2-digit years. Never silently mangles —
+            falls back to the raw trimmed string if truly unparseable. */
 function fmtDate(d){
-  if(!d||!d.trim()||d==='—'||d==='undefined')return '—';
-  d=d.trim();
-  const p=d.split('-');
-  if(p.length<3)return d; /* return as-is if unrecognised */
-  const day=p[0].padStart(2,'0');
-  const yr=p[2].length===2?'20'+p[2]:p[2]; /* handle 2-digit year */
+  if(d===null||d===undefined)return '—';
+  d=String(d).trim();
+  if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return '—';
+
   const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  /* named month in middle: 01-Apr-2026 */
-  if(isNaN(parseInt(p[1])))return `${day} ${p[1]} ${yr}`;
-  /* numeric month: 01-04-2026 */
-  const mi=parseInt(p[1]);
-  return `${day} ${MON[mi]||('M'+mi)} ${yr}`;
+  const MONLC=MON.map(m=>m.toLowerCase());
+
+  /* normalise separators to '-' so dd-mm-yyyy / dd/mm/yyyy / dd.mm.yyyy all match */
+  const norm=d.replace(/[\/\.]/g,'-');
+  const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
+
+  if(parts.length===3){
+    let [a,b,c]=parts;
+
+    /* Case: yyyy-mm-dd (ISO — first part is 4-digit year) */
+    if(/^\d{4}$/.test(a)){
+      const yr=a, mi=parseInt(b), day=c.padStart(2,'0');
+      if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
+    }
+
+    /* Case: dd-Mon-yyyy (named month in middle) */
+    if(isNaN(parseInt(b))){
+      const mLC=b.toLowerCase().slice(0,3);
+      const mIdx=MONLC.indexOf(mLC);
+      const day=a.padStart(2,'0');
+      const yr=c.length===2?'20'+c:c;
+      if(mIdx>0) return `${day} ${MON[mIdx]} ${yr}`;
+      return `${day} ${b} ${yr}`; /* unknown month name, show as-is */
+    }
+
+    /* Case: dd-mm-yyyy (standard, numeric month) */
+    const day=a.padStart(2,'0');
+    const mi=parseInt(b);
+    const yr=c.length===2?'20'+c:c;
+    if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
+
+    /* mi out of range (>12) — likely mm-dd-yyyy order, swap and retry */
+    const ai=parseInt(a);
+    if(!isNaN(ai)&&ai>=1&&ai<=12&&parseInt(b)<=31){
+      return `${b.padStart(2,'0')} ${MON[ai]} ${yr}`;
+    }
+  }
+
+  /* Last resort: let the JS Date parser try (handles "Apr 3, 2026" etc.) */
+  const parsed=new Date(d);
+  if(!isNaN(parsed.getTime())){
+    return `${String(parsed.getDate()).padStart(2,'0')} ${MON[parsed.getMonth()+1]} ${parsed.getFullYear()}`;
+  }
+
+  /* Truly unrecognised — show the raw value rather than hiding it */
+  return d;
+}
+
+/* Parse ANY reasonable date string → JS Date object (for sorting).
+   Mirrors fmtDate's format detection so sort order and display always agree. */
+function parseAnyDate(d){
+  if(d===null||d===undefined)return new Date(0);
+  d=String(d).trim();
+  if(!d||d==='—')return new Date(0);
+
+  const MONLC=['','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const norm=d.replace(/[\/\.]/g,'-');
+  const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
+
+  if(parts.length===3){
+    let [a,b,c]=parts;
+
+    /* yyyy-mm-dd (ISO) */
+    if(/^\d{4}$/.test(a)){
+      const mi=parseInt(b),day=parseInt(c);
+      if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(parseInt(a),mi-1,day);
+    }
+
+    /* dd-Mon-yyyy */
+    if(isNaN(parseInt(b))){
+      const mIdx=MONLC.indexOf(b.toLowerCase().slice(0,3));
+      const yr=c.length===2?2000+parseInt(c):parseInt(c);
+      if(mIdx>0) return new Date(yr,mIdx-1,parseInt(a));
+    }
+
+    /* dd-mm-yyyy */
+    const day=parseInt(a),mi=parseInt(b);
+    const yr=c.length===2?2000+parseInt(c):parseInt(c);
+    if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(yr,mi-1,day);
+
+    /* fallback: mm-dd-yyyy (month-first) */
+    if(!isNaN(day)&&day>=1&&day<=12&&mi<=31) return new Date(yr,day-1,mi);
+  }
+
+  const fallback=new Date(d);
+  return isNaN(fallback.getTime())?new Date(0):fallback;
 }
 function moVal(m){
   /* handles both "Apr-2026" and "Apr-26" */
@@ -1015,17 +1097,8 @@ function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
   const nm={};receipts.forEach(r=>{if(r.custId&&r.bizName)nm[r.custId]=r.bizName;});
   orders.forEach(o=>{if(o.custId&&o.bizName)nm[o.custId]=o.bizName;});
 
-  /* recent 20 receipts sorted newest first */
-  const parseDt=d=>{
-    if(!d)return new Date(0);
-    const p=d.split('-');
-    if(p.length<3)return new Date(0);
-    if(isNaN(parseInt(p[1]))){
-      return new Date(`${p[1]} ${p[0]} ${p[2]}`);
-    }
-    return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
-  };
-  const sorted=[...fRcpts].sort((a,b)=>parseDt(b.date)-parseDt(a.date)).slice(0,20);
+  /* recent 20 receipts sorted newest first (shared robust date parser) */
+  const sorted=[...fRcpts].sort((a,b)=>parseAnyDate(b.date)-parseAnyDate(a.date)).slice(0,20);
 
   sec.innerHTML=`<div class="panel">
     <div class="panel-hd">
@@ -1063,7 +1136,7 @@ function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
       RECENT RECEIPTS
     </div>
     ${sorted.map(r=>`<div class="rcpt-row">
-      <div class="rcpt-date">${r.date||'—'}</div>
+      <div class="rcpt-date">${r.date?fmtDate(r.date):'—'}</div>
       <div class="rcpt-name">${r.bizName||nm[r.custId]||r.custId}</div>
       <div class="rcpt-mo">${r.month||'—'}</div>
       <div class="rcpt-amt">${fmtINR(r.amount)}</div>
@@ -1212,25 +1285,11 @@ function showDetailById(custId){
   /* ── Receipt data for this customer ── */
   const cRcpts=receipts.filter(r=>r.custId===custId);
 
-  /* Date parser: handles dd-mm-yyyy (numeric month) and dd-Mon-yyyy (named month) */
-  const parseDtFull=d=>{
-    if(!d)return new Date(0);
-    const p=d.split('-');
-    if(p.length<3)return new Date(0);
-    const day=parseInt(p[0]),yr=parseInt(p[2]);
-    /* named month: dd-Apr-2026 */
-    if(isNaN(parseInt(p[1]))){
-      return new Date(`${p[1]} ${day} ${yr}`);
-    }
-    /* numeric: dd-mm-yyyy */
-    return new Date(yr, parseInt(p[1])-1, day);
-  };
-
-  /* Sort receipts newest → oldest */
-  const sRcpts=cRcpts.slice().sort((a,b)=>parseDtFull(b.date)-parseDtFull(a.date));
+  /* Sort receipts newest → oldest (shared robust date parser) */
+  const sRcpts=cRcpts.slice().sort((a,b)=>parseAnyDate(b.date)-parseAnyDate(a.date));
 
   /* Sort orders newest → oldest (same robust parser) */
-  const sOrds=cOrds.slice().sort((a,b)=>parseDtFull(b.date)-parseDtFull(a.date));
+  const sOrds=cOrds.slice().sort((a,b)=>parseAnyDate(b.date)-parseAnyDate(a.date));
 
   const mRcpts=cRcpts.filter(r=>r.month===curMo);
   const mCollected=mRcpts.reduce((s,r)=>s+r.amount,0);
