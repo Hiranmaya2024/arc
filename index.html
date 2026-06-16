@@ -692,18 +692,21 @@ function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:T
 /* ═══════ UTILS ═══════ */
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 
-/* Format dd-mm-yyyy or dd-Mon-yyyy → "01 Apr 2026" */
+/* Format date string → "03 Apr 2026"
+   Handles: dd-mm-yyyy (01-04-2026), dd-Mon-yyyy (01-Apr-2026), already formatted */
 function fmtDate(d){
-  if(!d||d==='—')return '—';
+  if(!d||!d.trim()||d==='—'||d==='undefined')return '—';
+  d=d.trim();
   const p=d.split('-');
-  if(p.length<3)return d;
+  if(p.length<3)return d; /* return as-is if unrecognised */
   const day=p[0].padStart(2,'0');
-  const yr=p[2];
+  const yr=p[2].length===2?'20'+p[2]:p[2]; /* handle 2-digit year */
   const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  /* named month: dd-Apr-2026 */
+  /* named month in middle: 01-Apr-2026 */
   if(isNaN(parseInt(p[1])))return `${day} ${p[1]} ${yr}`;
-  /* numeric: dd-04-2026 */
-  return `${day} ${MON[parseInt(p[1])]||p[1]} ${yr}`;
+  /* numeric month: 01-04-2026 */
+  const mi=parseInt(p[1]);
+  return `${day} ${MON[mi]||('M'+mi)} ${yr}`;
 }
 function moVal(m){
   /* handles both "Apr-2026" and "Apr-26" */
@@ -798,8 +801,12 @@ async function loadData(){
     orders=[];
     for(let i=1;i<or.length;i++){
       const r=or[i];if(!r[0])continue;
-      const amt=parseFloat((r[6]||'').replace(/[₹,\s]/g,''))||0;
-      orders.push({id:r[0],custId:r[1]||'',bizName:r[2]||'',date:r[3]||'',month:r[4]||'',amount:amt});
+      /* 2_ORDERS columns: 0=OrderID, 1=CustID, 2=BizName, 3=OrderDate, 4=Month, 5=FY, 6=Gross, 7=Discount, 8=NetAmount */
+      const rawAmt=(r[8]||r[6]||'').replace(/[₹,\s]/g,'');
+      const amt=parseFloat(rawAmt)||0;
+      const dateVal=(r[3]||'').trim();
+      if(i===1)console.log('[DEBUG] first order row:',r,'→ date:',dateVal,'amt:',amt);
+      orders.push({id:r[0],custId:r[1]||'',bizName:r[2]||'',date:dateVal,month:r[4]||'',amount:amt});
     }
     /* ── 12_RECEIPTS: col1=custId(0), col2=bizName(1), col3=date(2), col4=month(3), col5=FY(4), col6=amount(5) ── */
     receipts=[];
@@ -810,7 +817,9 @@ async function loadData(){
       const rawMo=r[3]||'';
       const mo=normMonth(rawMo)||dateToMonth(r[2]||'');
       if(amt===0)continue; /* skip zero-amount rows */
-      receipts.push({custId:r[0]||'Unknown',bizName:r[1]||'',date:r[2]||'',month:mo,amount:amt});
+      const rcptDate=(r[2]||'').trim();
+      if(receipts.length===0)console.log('[DEBUG] first receipt row:',r,'→ date:',rcptDate,'amt:',amt);
+      receipts.push({custId:r[0]||'Unknown',bizName:r[1]||'',date:rcptDate,month:mo,amount:amt});
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
     console.log('[DEBUG] customers:',customers.length,'orders:',orders.length,'receipts:',receipts.length);
@@ -1356,7 +1365,7 @@ function showDetailById(custId){
         <tbody>
           ${sRcpts.map((r,i)=>`<tr>
             <td style="color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:11px">${String(sRcpts.length-i).padStart(2,'0')}</td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDate(r.date)}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${r.date?fmtDate(r.date):'-'}</td>
             <td class="ord-amt" style="color:var(--green);font-size:15px">${fmtINR(r.amount)}</td>
           </tr>`).join('')}
         </tbody>
@@ -1382,7 +1391,7 @@ function showDetailById(custId){
         <tbody>
           ${sOrds.map(o=>`<tr>
             <td><span class="oid">${o.id}</span></td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDate(o.date)}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${o.date?fmtDate(o.date):'-'}</td>
             <td class="ord-amt">${fmtINR(o.amount)}</td>
           </tr>`).join('')}
         </tbody>
