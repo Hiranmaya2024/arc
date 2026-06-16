@@ -695,97 +695,138 @@ function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
             extra whitespace, 2-digit years. Never silently mangles —
             falls back to the raw trimmed string if truly unparseable. */
 function fmtDate(d){
-  if(d===null||d===undefined)return '—';
-  d=String(d).trim();
-  if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return '—';
+  if(d===null || d===undefined) return '—';
 
-  const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const MONLC=MON.map(m=>m.toLowerCase());
+  d = String(d).trim();
 
-  /* normalise separators to '-' so dd-mm-yyyy / dd/mm/yyyy / dd.mm.yyyy all match */
-  const norm=d.replace(/[\/\.]/g,'-');
-  const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
+  if(!d || d==='-' || d==='—') return '—';
+
+  const parsed = new Date(d);
+
+  if(!isNaN(parsed.getTime())){
+    return parsed.toLocaleDateString('en-GB',{
+      day:'2-digit',
+      month:'short',
+      year:'numeric'
+    });
+  }
+
+  const norm = d.replace(/[\/\.]/g,'-');
+  const parts = norm.split('-').map(s=>s.trim());
 
   if(parts.length===3){
-    let [a,b,c]=parts;
+    let [a,b,c] = parts;
 
-    /* Case: yyyy-mm-dd (ISO — first part is 4-digit year) */
     if(/^\d{4}$/.test(a)){
-      const yr=a, mi=parseInt(b), day=c.padStart(2,'0');
-      if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
+      const dt = new Date(
+        parseInt(a),
+        parseInt(b)-1,
+        parseInt(c)
+      );
+
+      if(!isNaN(dt.getTime())){
+        return dt.toLocaleDateString('en-GB',{
+          day:'2-digit',
+          month:'short',
+          year:'numeric'
+        });
+      }
     }
 
-    /* Case: dd-Mon-yyyy (named month in middle) */
+    const months={
+      jan:0,feb:1,mar:2,apr:3,may:4,jun:5,
+      jul:6,aug:7,sep:8,oct:9,nov:10,dec:11
+    };
+
     if(isNaN(parseInt(b))){
-      const mLC=b.toLowerCase().slice(0,3);
-      const mIdx=MONLC.indexOf(mLC);
-      const day=a.padStart(2,'0');
-      const yr=c.length===2?'20'+c:c;
-      if(mIdx>0) return `${day} ${MON[mIdx]} ${yr}`;
-      return `${day} ${b} ${yr}`; /* unknown month name, show as-is */
+      const m = months[b.toLowerCase().slice(0,3)];
+
+      if(m!==undefined){
+        const yr = c.length===2 ? 2000+parseInt(c) : parseInt(c);
+
+        const dt = new Date(yr,m,parseInt(a));
+
+        if(!isNaN(dt.getTime())){
+          return dt.toLocaleDateString('en-GB',{
+            day:'2-digit',
+            month:'short',
+            year:'numeric'
+          });
+        }
+      }
     }
 
-    /* Case: dd-mm-yyyy (standard, numeric month) */
-    const day=a.padStart(2,'0');
-    const mi=parseInt(b);
-    const yr=c.length===2?'20'+c:c;
-    if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
+    const dt = new Date(
+      parseInt(c.length===2 ? '20'+c : c),
+      parseInt(b)-1,
+      parseInt(a)
+    );
 
-    /* mi out of range (>12) — likely mm-dd-yyyy order, swap and retry */
-    const ai=parseInt(a);
-    if(!isNaN(ai)&&ai>=1&&ai<=12&&parseInt(b)<=31){
-      return `${b.padStart(2,'0')} ${MON[ai]} ${yr}`;
+    if(!isNaN(dt.getTime())){
+      return dt.toLocaleDateString('en-GB',{
+        day:'2-digit',
+        month:'short',
+        year:'numeric'
+      });
     }
   }
 
-  /* Last resort: let the JS Date parser try (handles "Apr 3, 2026" etc.) */
-  const parsed=new Date(d);
-  if(!isNaN(parsed.getTime())){
-    return `${String(parsed.getDate()).padStart(2,'0')} ${MON[parsed.getMonth()+1]} ${parsed.getFullYear()}`;
-  }
-
-  /* Truly unrecognised — show the raw value rather than hiding it */
   return d;
 }
-
 /* Parse ANY reasonable date string → JS Date object (for sorting).
    Mirrors fmtDate's format detection so sort order and display always agree. */
 function parseAnyDate(d){
-  if(d===null||d===undefined)return new Date(0);
-  d=String(d).trim();
-  if(!d||d==='—')return new Date(0);
+  if(!d) return new Date(0);
 
-  const MONLC=['','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  const norm=d.replace(/[\/\.]/g,'-');
-  const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
+  d = String(d).trim();
 
-  if(parts.length===3){
-    let [a,b,c]=parts;
+  if(!d) return new Date(0);
 
-    /* yyyy-mm-dd (ISO) */
-    if(/^\d{4}$/.test(a)){
-      const mi=parseInt(b),day=parseInt(c);
-      if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(parseInt(a),mi-1,day);
-    }
+  const parsed = new Date(d);
 
-    /* dd-Mon-yyyy */
-    if(isNaN(parseInt(b))){
-      const mIdx=MONLC.indexOf(b.toLowerCase().slice(0,3));
-      const yr=c.length===2?2000+parseInt(c):parseInt(c);
-      if(mIdx>0) return new Date(yr,mIdx-1,parseInt(a));
-    }
-
-    /* dd-mm-yyyy */
-    const day=parseInt(a),mi=parseInt(b);
-    const yr=c.length===2?2000+parseInt(c):parseInt(c);
-    if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(yr,mi-1,day);
-
-    /* fallback: mm-dd-yyyy (month-first) */
-    if(!isNaN(day)&&day>=1&&day<=12&&mi<=31) return new Date(yr,day-1,mi);
+  if(!isNaN(parsed.getTime())){
+    return parsed;
   }
 
-  const fallback=new Date(d);
-  return isNaN(fallback.getTime())?new Date(0):fallback;
+  const norm = d.replace(/[\/\.]/g,'-');
+  const parts = norm.split('-').map(s=>s.trim());
+
+  if(parts.length===3){
+
+    let [a,b,c] = parts;
+
+    if(/^\d{4}$/.test(a)){
+      return new Date(
+        parseInt(a),
+        parseInt(b)-1,
+        parseInt(c)
+      );
+    }
+
+    const months={
+      jan:0,feb:1,mar:2,apr:3,may:4,jun:5,
+      jul:6,aug:7,sep:8,oct:9,nov:10,dec:11
+    };
+
+    if(isNaN(parseInt(b))){
+      const m = months[b.toLowerCase().slice(0,3)];
+
+      if(m!==undefined){
+        const yr = c.length===2 ? 2000+parseInt(c) : parseInt(c);
+        return new Date(yr,m,parseInt(a));
+      }
+    }
+
+    const yr = c.length===2 ? 2000+parseInt(c) : parseInt(c);
+
+    return new Date(
+      yr,
+      parseInt(b)-1,
+      parseInt(a)
+    );
+  }
+
+  return new Date(0);
 }
 function moVal(m){
   /* handles both "Apr-2026" and "Apr-26" */
@@ -883,7 +924,7 @@ async function loadData(){
       /* 2_ORDERS columns: 0=OrderID, 1=CustID, 2=BizName, 3=OrderDate, 4=Month, 5=FY, 6=Gross, 7=Discount, 8=NetAmount */
       const rawAmt=(r[8]||r[6]||'').replace(/[₹,\s]/g,'');
       const amt=parseFloat(rawAmt)||0;
-      const dateVal=(r[3]||'').trim();
+      const dateVal = r[3] ? String(r[3]).trim() : '';
       orders.push({id:r[0],custId:r[1]||'',bizName:r[2]||'',date:dateVal,month:r[4]||'',amount:amt});
     }
     /* ── 12_RECEIPTS: col1=custId(0), col2=bizName(1), col3=date(2), col4=month(3), col5=FY(4), col6=amount(5) ── */
@@ -895,7 +936,7 @@ async function loadData(){
       const rawMo=r[3]||'';
       const mo=normMonth(rawMo)||dateToMonth(r[2]||'');
       if(amt===0)continue; /* skip zero-amount rows */
-      const rcptDate=(r[2]||'').trim();
+      const rcptDate = r[2] ? String(r[2]).trim() : '';
       receipts.push({custId:r[0]||'Unknown',bizName:r[1]||'',date:rcptDate,month:mo,amount:amt});
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
