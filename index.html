@@ -539,10 +539,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .q-stat{min-width:38px}
   .q-orb{width:32px;height:32px;font-size:13px}
 
-  /* Order table: hide date col, compact */
-  .ord-tbl .col-date{display:none}
-  .ord-tbl th:nth-child(2){display:none}
-  .ord-tbl td:nth-child(2){display:none}
+  /* Order/receipt table: compact on mobile, keep all columns visible */
   .ord-tbl th{padding:7px 10px;font-size:9px}
   .ord-tbl td{padding:9px 10px;font-size:12px}
   .oid{font-size:10px}
@@ -805,7 +802,6 @@ async function loadData(){
       const rawAmt=(r[8]||r[6]||'').replace(/[₹,\s]/g,'');
       const amt=parseFloat(rawAmt)||0;
       const dateVal=(r[3]||'').trim();
-      if(i===1)console.log('[DEBUG] first order row:',r,'→ date:',dateVal,'amt:',amt);
       orders.push({id:r[0],custId:r[1]||'',bizName:r[2]||'',date:dateVal,month:r[4]||'',amount:amt});
     }
     /* ── 12_RECEIPTS: col1=custId(0), col2=bizName(1), col3=date(2), col4=month(3), col5=FY(4), col6=amount(5) ── */
@@ -818,13 +814,9 @@ async function loadData(){
       const mo=normMonth(rawMo)||dateToMonth(r[2]||'');
       if(amt===0)continue; /* skip zero-amount rows */
       const rcptDate=(r[2]||'').trim();
-      if(receipts.length===0)console.log('[DEBUG] first receipt row:',r,'→ date:',rcptDate,'amt:',amt);
       receipts.push({custId:r[0]||'Unknown',bizName:r[1]||'',date:rcptDate,month:mo,amount:amt});
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
-    console.log('[DEBUG] customers:',customers.length,'orders:',orders.length,'receipts:',receipts.length);
-    console.log('[DEBUG] receipts sample:',receipts.slice(0,3));
-    console.log('[DEBUG] allMonths:',allMonths.slice(0,5));
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
     document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS';
