@@ -726,6 +726,13 @@ function fmtDate(d){
   const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const MONLC=MON.map(m=>m.toLowerCase());
 
+  /* Google gviz sometimes exports date cells as literal Date(yyyy,m,d) — m is 0-indexed */
+  const gvizMatch=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
+  if(gvizMatch){
+    const yr=gvizMatch[1], mi=parseInt(gvizMatch[2])+1, day=gvizMatch[3].padStart(2,'0');
+    return `${day} ${MON[mi]||mi} ${yr}`;
+  }
+
   /* normalise separators to '-' so dd-mm-yyyy / dd/mm/yyyy / dd.mm.yyyy all match */
   const norm=d.replace(/[\/\.]/g,'-');
   const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
@@ -778,6 +785,10 @@ function parseAnyDate(d){
   if(d===null||d===undefined)return new Date(0);
   d=String(d).trim();
   if(!d||d==='—')return new Date(0);
+
+  /* Google gviz literal Date(yyyy,m,d) — m is 0-indexed already */
+  const gvizMatch=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
+  if(gvizMatch)return new Date(parseInt(gvizMatch[1]),parseInt(gvizMatch[2]),parseInt(gvizMatch[3]));
 
   const MONLC=['','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
   const norm=d.replace(/[\/\.]/g,'-');
@@ -1042,6 +1053,43 @@ async function loadData(){
       receipts.push({custId:r[rIdCustIdx]||'Unknown',bizName:r[rIdBizIdx]||'',date:rcptDate,month:mo,amount:amt});
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
+
+    /* ── DIAGNOSTIC: trace Ayush Medicines records to find date display bug ── */
+    console.log('=== ORDERS HEADER ===',oH);
+    console.log('=== ORDERS COLUMN MAP ===',{oIdOrderIdx,oIdCustIdx,oIdBizIdx,oIdDateIdx,oIdMonthIdx,oIdAmtIdx});
+    console.log('=== RECEIPTS HEADER ===',rH);
+    console.log('=== RECEIPTS COLUMN MAP ===',{rIdCustIdx,rIdBizIdx,rIdDateIdx,rIdMonthIdx,rIdAmtIdx});
+
+    /* Row-length sanity check: a CSV parsing corruption (e.g. unbalanced quote
+       somewhere in the sheet) shows up as rows with inconsistent column counts. */
+    const oExpectedLen=oH.length;
+    const oBadRows=or.slice(1).map((r,i)=>({i:i+2,len:r.length})).filter(x=>x.len!==oExpectedLen);
+    if(oBadRows.length){
+      console.warn('=== ORDERS: ROW LENGTH MISMATCH (possible CSV corruption) ===',oExpectedLen,'expected. Bad rows:',oBadRows.slice(0,10));
+    }
+    const rExpectedLen=rH.length;
+    const rBadRows=rr.slice(1).map((r,i)=>({i:i+2,len:r.length})).filter(x=>x.len!==rExpectedLen);
+    if(rBadRows.length){
+      console.warn('=== RECEIPTS: ROW LENGTH MISMATCH (possible CSV corruption) ===',rExpectedLen,'expected. Bad rows:',rBadRows.slice(0,10));
+    }
+
+    const ayushOrders=orders.filter(o=>o.bizName&&o.bizName.toLowerCase().includes('ayush'));
+    const ayushReceipts=receipts.filter(r=>r.bizName&&r.bizName.toLowerCase().includes('ayush'));
+    console.log('=== AYUSH ORDERS (raw parsed) ===',ayushOrders);
+    console.log('=== AYUSH RECEIPTS (raw parsed) ===',ayushReceipts);
+    const target1=ayushOrders.find(o=>o.amount===3537);
+    const target2=ayushReceipts.find(r=>r.amount===2072);
+    console.log('=== TARGET ORDER (amt 3537) ===',target1,'| date raw:',JSON.stringify(target1&&target1.date),'| fmtDate:',target1?fmtDate(target1.date):'NOT FOUND');
+    console.log('=== TARGET RECEIPT (amt 2072) ===',target2,'| date raw:',JSON.stringify(target2&&target2.date),'| fmtDate:',target2?fmtDate(target2.date):'NOT FOUND');
+
+    /* Also dump the RAW unparsed row from the sheet for these two, by scanning
+       the original or/rr arrays directly (bypasses our orders/receipts mapping
+       entirely, so we can see if the source data itself is missing the date). */
+    const rawOrderRow=or.slice(1).find(r=>r[oIdAmtIdx]&&r[oIdAmtIdx].replace(/[₹,\s]/g,'')==='3537');
+    const rawRcptRow=rr.slice(1).find(r=>r[rIdAmtIdx]&&r[rIdAmtIdx].replace(/[₹,\s]/g,'')==='2072');
+    console.log('=== RAW ORDER ROW (amt 3537) ===',rawOrderRow);
+    console.log('=== RAW RECEIPT ROW (amt 2072) ===',rawRcptRow);
+
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
     document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS';
@@ -1279,7 +1327,7 @@ function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
       RECENT RECEIPTS
     </div>
     ${sorted.map(r=>`<div class="rcpt-row">
-      <div class="rcpt-date">${r.date?fmtDate(r.date):'—'}</div>
+      <div class="rcpt-date">${(r.date&&r.date.trim())?fmtDate(r.date):'—'}</div>
       <div class="rcpt-name">${r.bizName||nm[r.custId]||r.custId}</div>
       <div class="rcpt-mo">${r.month||'—'}</div>
       <div class="rcpt-amt">${fmtINR(r.amount)}</div>
@@ -1566,7 +1614,7 @@ function showDetailById(custId){
         <tbody>
           ${sRcpts.map((r,i)=>`<tr>
             <td style="color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:11px">${String(sRcpts.length-i).padStart(2,'0')}</td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${r.date?fmtDate(r.date):'-'}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${(r.date&&r.date.trim())?fmtDate(r.date):'-'}</td>
             <td class="ord-amt" style="color:var(--green);font-size:15px">${fmtINR(r.amount)}</td>
           </tr>`).join('')}
         </tbody>
@@ -1592,7 +1640,7 @@ function showDetailById(custId){
         <tbody>
           ${sOrds.map(o=>`<tr>
             <td><span class="oid">${o.id}</span></td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${o.date?fmtDate(o.date):'-'}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${(o.date&&o.date.trim())?fmtDate(o.date):'-'}</td>
             <td class="ord-amt">${fmtINR(o.amount)}</td>
           </tr>`).join('')}
         </tbody>
