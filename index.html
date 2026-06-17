@@ -713,122 +713,94 @@ function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:T
 /* ═══════ UTILS ═══════ */
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 
-/* Format ANY reasonable date string → "03 Apr 2026"
-   Handles: dd-mm-yyyy, dd/mm/yyyy, dd.mm.yyyy, dd-Mon-yyyy,
-            yyyy-mm-dd (ISO), mm/dd/yyyy, already-readable text,
-            extra whitespace, 2-digit years. Never silently mangles —
-            falls back to the raw trimmed string if truly unparseable. */
-function fmtDate(d){
-  if(d===null||d===undefined)return '—';
-  d=String(d).trim();
-  if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return '—';
+/* ═══════════════════════════════════════════════════════════
+   CANONICAL DATE ENGINE — single source of truth for all dates.
+   Every order/receipt row gets its date parsed ONCE at load time
+   into a real Date object (record._d). Every other date need in
+   the app (display, sorting, month derivation, predictions) reads
+   from that cached Date — nothing re-parses the raw string later.
+   This guarantees display, sort order, and month grouping can
+   never disagree with each other.
+═══════════════════════════════════════════════════════════ */
+const MON_NAMES=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
 
-  const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const MONLC=MON.map(m=>m.toLowerCase());
+/* Parse ANY reasonable date string/format → real JS Date object (or null).
+   Handles, in order of attempt:
+   - Google gviz literal  Date(2026,3,13)   (month already 0-indexed)
+   - dd-mm-yyyy / dd/mm/yyyy / dd.mm.yyyy   (numeric, day-first — sheet default)
+   - dd-Mon-yyyy / dd-Mon-yy                (named month, day-first)
+   - yyyy-mm-dd                             (ISO, year-first)
+   - mm-dd-yyyy fallback                    (month-first, if dd-mm fails range check)
+   - native Date() parse as last resort     ("Apr 3, 2026" etc.) */
+function parseDateSmart(raw){
+  if(raw===null||raw===undefined)return null;
+  const d=String(raw).trim();
+  if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
 
-  /* Google gviz sometimes exports date cells as literal Date(yyyy,m,d) — m is 0-indexed */
-  const gvizMatch=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
-  if(gvizMatch){
-    const yr=gvizMatch[1], mi=parseInt(gvizMatch[2])+1, day=gvizMatch[3].padStart(2,'0');
-    return `${day} ${MON[mi]||mi} ${yr}`;
-  }
+  /* Google Sheets gviz CSV export sometimes serialises a Date-typed cell as
+     the literal text "Date(2026,3,13)" — year, 0-indexed month, day. */
+  const gviz=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
+  if(gviz)return new Date(parseInt(gviz[1]),parseInt(gviz[2]),parseInt(gviz[3]));
 
-  /* normalise separators to '-' so dd-mm-yyyy / dd/mm/yyyy / dd.mm.yyyy all match */
   const norm=d.replace(/[\/\.]/g,'-');
   const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
 
   if(parts.length===3){
     let [a,b,c]=parts;
 
-    /* Case: yyyy-mm-dd (ISO — first part is 4-digit year) */
-    if(/^\d{4}$/.test(a)){
-      const yr=a, mi=parseInt(b), day=c.padStart(2,'0');
-      if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
-    }
-
-    /* Case: dd-Mon-yyyy (named month in middle) */
-    if(isNaN(parseInt(b))){
-      const mLC=b.toLowerCase().slice(0,3);
-      const mIdx=MONLC.indexOf(mLC);
-      const day=a.padStart(2,'0');
-      const yr=c.length===2?'20'+c:c;
-      if(mIdx>0) return `${day} ${MON[mIdx]} ${yr}`;
-      return `${day} ${b} ${yr}`; /* unknown month name, show as-is */
-    }
-
-    /* Case: dd-mm-yyyy (standard, numeric month) */
-    const day=a.padStart(2,'0');
-    const mi=parseInt(b);
-    const yr=c.length===2?'20'+c:c;
-    if(!isNaN(mi)&&mi>=1&&mi<=12) return `${day} ${MON[mi]} ${yr}`;
-
-    /* mi out of range (>12) — likely mm-dd-yyyy order, swap and retry */
-    const ai=parseInt(a);
-    if(!isNaN(ai)&&ai>=1&&ai<=12&&parseInt(b)<=31){
-      return `${b.padStart(2,'0')} ${MON[ai]} ${yr}`;
-    }
-  }
-
-  /* Last resort: let the JS Date parser try (handles "Apr 3, 2026" etc.) */
-  const parsed=new Date(d);
-  if(!isNaN(parsed.getTime())){
-    return `${String(parsed.getDate()).padStart(2,'0')} ${MON[parsed.getMonth()+1]} ${parsed.getFullYear()}`;
-  }
-
-  /* Truly unrecognised — show the raw value rather than hiding it */
-  return d;
-}
-
-/* Parse ANY reasonable date string → JS Date object (for sorting).
-   Mirrors fmtDate's format detection so sort order and display always agree. */
-function parseAnyDate(d){
-  if(d===null||d===undefined)return new Date(0);
-  d=String(d).trim();
-  if(!d||d==='—')return new Date(0);
-
-  /* Google gviz literal Date(yyyy,m,d) — m is 0-indexed already */
-  const gvizMatch=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
-  if(gvizMatch)return new Date(parseInt(gvizMatch[1]),parseInt(gvizMatch[2]),parseInt(gvizMatch[3]));
-
-  const MONLC=['','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  const norm=d.replace(/[\/\.]/g,'-');
-  const parts=norm.split('-').map(s=>s.trim()).filter(s=>s!=='');
-
-  if(parts.length===3){
-    let [a,b,c]=parts;
-
-    /* yyyy-mm-dd (ISO) */
+    /* yyyy-mm-dd (ISO — first segment is a 4-digit year) */
     if(/^\d{4}$/.test(a)){
       const mi=parseInt(b),day=parseInt(c);
-      if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(parseInt(a),mi-1,day);
+      if(!isNaN(mi)&&mi>=1&&mi<=12&&!isNaN(day))return new Date(parseInt(a),mi-1,day);
     }
 
-    /* dd-Mon-yyyy */
+    /* dd-Mon-yyyy (named month in the middle segment) */
     if(isNaN(parseInt(b))){
-      const mIdx=MONLC.indexOf(b.toLowerCase().slice(0,3));
+      const mIdx=MON_NAMES_LC.indexOf(b.toLowerCase().slice(0,3));
       const yr=c.length===2?2000+parseInt(c):parseInt(c);
-      if(mIdx>0) return new Date(yr,mIdx-1,parseInt(a));
+      const day=parseInt(a);
+      if(mIdx>0&&!isNaN(day))return new Date(yr,mIdx-1,day);
     }
 
-    /* dd-mm-yyyy */
+    /* dd-mm-yyyy (the sheet's standard format) */
     const day=parseInt(a),mi=parseInt(b);
     const yr=c.length===2?2000+parseInt(c):parseInt(c);
-    if(!isNaN(mi)&&mi>=1&&mi<=12) return new Date(yr,mi-1,day);
+    if(!isNaN(mi)&&mi>=1&&mi<=12&&!isNaN(day))return new Date(yr,mi-1,day);
 
-    /* fallback: mm-dd-yyyy (month-first) */
-    if(!isNaN(day)&&day>=1&&day<=12&&mi<=31) return new Date(yr,day-1,mi);
+    /* mm-dd-yyyy fallback — only if first segment fits a month and second fits a day */
+    if(!isNaN(day)&&day>=1&&day<=12&&!isNaN(mi)&&mi<=31)return new Date(yr,day-1,mi);
   }
 
-  const fallback=new Date(d);
-  return isNaN(fallback.getTime())?new Date(0):fallback;
+  /* last resort: native parser handles things like "Apr 3, 2026" */
+  const native=new Date(d);
+  return isNaN(native.getTime())?null:native;
 }
 
-/* ═══════ PREDICTION ENGINE ═══════
+/* Display formatter — takes the CACHED Date object (never re-parses a string).
+   Returns "—" for missing/invalid dates, else "13 Apr 2026". */
+function fmtDateObj(dt){
+  if(!dt||isNaN(dt.getTime()))return '—';
+  return `${String(dt.getDate()).padStart(2,'0')} ${MON_NAMES[dt.getMonth()+1]} ${dt.getFullYear()}`;
+}
+
+/* Sort-key helper — takes the cached Date object, returns epoch ms (0 if null).
+   Used directly as a comparator value: array.sort((a,b)=>dateKey(b._d)-dateKey(a._d)) */
+function dateKey(dt){return dt&&!isNaN(dt.getTime())?dt.getTime():0;}
+
+/* Derive "Mon-YYYY" month bucket directly from a cached Date object —
+   guaranteed to match whatever date was actually parsed and displayed. */
+function monthFromDateObj(dt){
+  if(!dt||isNaN(dt.getTime()))return '';
+  return MON_NAMES[dt.getMonth()+1]+'-'+dt.getFullYear();
+}
+
+/* ═══════════ PREDICTION ENGINE ═══════════
    Computes average gap between consecutive orders/receipts for a customer,
-   then projects the next likely order/payment date from the most recent one. */
-function computeCadence(dateList){
-  /* dateList: array of raw date strings (any format) for one customer, any order */
-  const valid=dateList.map(parseAnyDate).filter(d=>d.getTime()>0);
+   then projects the next likely order/payment date from the most recent one.
+   Operates entirely on cached Date objects — no re-parsing. */
+function computeCadence(dateObjList){
+  const valid=dateObjList.filter(d=>d&&!isNaN(d.getTime()));
   if(valid.length<2) return {avgDays:null,lastDate:valid.length===1?valid[0]:null,nextDate:null,sampleSize:valid.length};
   const sorted=valid.slice().sort((a,b)=>a-b); /* oldest → newest */
   const gaps=[];
@@ -841,12 +813,6 @@ function computeCadence(dateList){
   const lastDate=sorted[sorted.length-1];
   const nextDate=new Date(lastDate.getTime()+avgDays*24*60*60*1000);
   return {avgDays,lastDate,nextDate,sampleSize:valid.length};
-}
-
-function fmtDateObj(d){
-  if(!d||isNaN(d.getTime()))return '—';
-  const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${String(d.getDate()).padStart(2,'0')} ${MON[d.getMonth()+1]} ${d.getFullYear()}`;
 }
 
 /* Days from today until a predicted date — negative means overdue */
@@ -903,29 +869,13 @@ function moVal(m){
 }
 function ini(name){return (name||'').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?';}
 
-/* Convert date strings (dd-mm-yyyy or dd-Mon-yyyy) → "Mon-YYYY" matching orders format */
-function dateToMonth(d){
-  if(!d)return '';
-  const parts=d.split('-');
-  if(parts.length<3)return '';
-  const mid=parts[1],yr=parts[2];
-  const moNames=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if(isNaN(parseInt(mid))){
-    /* named month: dd-Apr-2026 */
-    return mid+'-'+yr;
-  }
-  /* numeric: dd-04-2026 */
-  const mIdx=parseInt(mid);
-  return (moNames[mIdx]||mid)+'-'+yr;
-}
-
-/* Normalise month strings to "Mon-YYYY" format (e.g. "Apr-2026", "Apr-26" → "Apr-2026") */
+/* Normalise month strings to "Mon-YYYY" format (e.g. "Apr-2026", "Apr-26" → "Apr-2026").
+   Used only as a fallback when a sheet's pre-computed month column has a value
+   but a Date object isn't being used to derive the bucket. */
 function normMonth(s){
   if(!s)return '';
   s=s.trim();
-  /* Already full: Apr-2026 */
   if(/^[A-Za-z]{3}-\d{4}$/.test(s))return s;
-  /* Short year: Apr-26 → Apr-2026 */
   const m=s.match(/^([A-Za-z]{3})-(\d{2})$/);
   if(m)return m[1]+'-20'+m[2];
   return s;
@@ -1042,7 +992,11 @@ async function loadData(){
       const rawAmt=(r[oIdAmtIdx]||r[6]||'').replace(/[₹,\s]/g,'');
       const amt=parseFloat(rawAmt)||0;
       const dateVal=(r[oIdDateIdx]||'').trim();
-      orders.push({id:r[oIdOrderIdx],custId:r[oIdCustIdx]||'',bizName:r[oIdBizIdx]||'',date:dateVal,month:r[oIdMonthIdx]||'',amount:amt});
+      const dObj=parseDateSmart(dateVal);
+      const sheetMonth=(r[oIdMonthIdx]||'').trim();
+      /* Prefer the sheet's own month column when present; else derive from the parsed date */
+      const month=normMonth(sheetMonth)||monthFromDateObj(dObj);
+      orders.push({id:r[oIdOrderIdx],custId:r[oIdCustIdx]||'',bizName:r[oIdBizIdx]||'',date:dateVal,_d:dObj,month,amount:amt});
     }
 
     /* ── 12_RECEIPTS: resolve columns by header, fallback to known index ── */
@@ -1058,16 +1012,21 @@ async function loadData(){
       const r=rr[i];if(!r[rIdCustIdx]&&!r[rIdBizIdx])continue;
       const amt=parseFloat((r[rIdAmtIdx]||'').replace(/[₹,\s]/g,''))||0;
       if(amt===0)continue;
-      const rawMo=r[rIdMonthIdx]||'';
       const rcptDate=(r[rIdDateIdx]||'').trim();
-      const mo=normMonth(rawMo)||dateToMonth(rcptDate);
-      receipts.push({custId:r[rIdCustIdx]||'Unknown',bizName:r[rIdBizIdx]||'',date:rcptDate,month:mo,amount:amt});
+      const dObj=parseDateSmart(rcptDate);
+      const sheetMonth=(r[rIdMonthIdx]||'').trim();
+      const month=normMonth(sheetMonth)||monthFromDateObj(dObj);
+      receipts.push({custId:r[rIdCustIdx]||'Unknown',bizName:r[rIdBizIdx]||'',date:rcptDate,_d:dObj,month,amount:amt});
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
 
-    /* ── Column resolution health check (logs once per load, safe to keep permanently) ── */
+    /* ── Column resolution + date parse health check (logs once per load) ── */
     console.log('[Aaradhya] Orders columns → date: "'+oH[oIdDateIdx]+'" (idx '+oIdDateIdx+'), amount: "'+oH[oIdAmtIdx]+'" (idx '+oIdAmtIdx+')');
     console.log('[Aaradhya] Receipts columns → date: "'+rH[rIdDateIdx]+'" (idx '+rIdDateIdx+'), amount: "'+rH[rIdAmtIdx]+'" (idx '+rIdAmtIdx+')');
+    const oUnparsed=orders.filter(o=>o.date&&!o._d);
+    const rUnparsed=receipts.filter(r=>r.date&&!r._d);
+    if(oUnparsed.length)console.warn('[Aaradhya] '+oUnparsed.length+' order date(s) could not be parsed. Examples:',oUnparsed.slice(0,5).map(o=>({id:o.id,date:o.date})));
+    if(rUnparsed.length)console.warn('[Aaradhya] '+rUnparsed.length+' receipt date(s) could not be parsed. Examples:',rUnparsed.slice(0,5).map(r=>({custId:r.custId,date:r.date})));
 
     /* Row-length sanity check: a CSV parsing corruption (e.g. unbalanced quote
        somewhere in the sheet) shows up as rows with inconsistent column counts. */
@@ -1277,8 +1236,8 @@ function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
   const nm={};receipts.forEach(r=>{if(r.custId&&r.bizName)nm[r.custId]=r.bizName;});
   orders.forEach(o=>{if(o.custId&&o.bizName)nm[o.custId]=o.bizName;});
 
-  /* recent 20 receipts sorted newest first (shared robust date parser) */
-  const sorted=[...fRcpts].sort((a,b)=>parseAnyDate(b.date)-parseAnyDate(a.date)).slice(0,20);
+  /* recent 20 receipts sorted newest first, using cached parsed Date objects */
+  const sorted=[...fRcpts].sort((a,b)=>dateKey(b._d)-dateKey(a._d)).slice(0,20);
 
   sec.innerHTML=`<div class="panel">
     <div class="panel-hd">
@@ -1316,7 +1275,7 @@ function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
       RECENT RECEIPTS
     </div>
     ${sorted.map(r=>`<div class="rcpt-row">
-      <div class="rcpt-date">${(r.date&&r.date.trim())?fmtDate(r.date):'—'}</div>
+      <div class="rcpt-date">${fmtDateObj(r._d)}</div>
       <div class="rcpt-name">${r.bizName||nm[r.custId]||r.custId}</div>
       <div class="rcpt-mo">${r.month||'—'}</div>
       <div class="rcpt-amt">${fmtINR(r.amount)}</div>
@@ -1465,15 +1424,15 @@ function showDetailById(custId){
   /* ── Receipt data for this customer ── */
   const cRcpts=receipts.filter(r=>r.custId===custId);
 
-  /* Sort receipts newest → oldest (shared robust date parser) */
-  const sRcpts=cRcpts.slice().sort((a,b)=>parseAnyDate(b.date)-parseAnyDate(a.date));
+  /* Sort receipts newest → oldest using cached parsed Date objects */
+  const sRcpts=cRcpts.slice().sort((a,b)=>dateKey(b._d)-dateKey(a._d));
 
-  /* Sort orders newest → oldest (same robust parser) */
-  const sOrds=cOrds.slice().sort((a,b)=>parseAnyDate(b.date)-parseAnyDate(a.date));
+  /* Sort orders newest → oldest using cached parsed Date objects */
+  const sOrds=cOrds.slice().sort((a,b)=>dateKey(b._d)-dateKey(a._d));
 
-  /* ── Order & payment cadence + predictions ── */
-  const orderCadence=computeCadence(cOrds.map(o=>o.date));
-  const rcptCadence=computeCadence(cRcpts.map(r=>r.date));
+  /* ── Order & payment cadence + predictions (pass cached Date objects directly) ── */
+  const orderCadence=computeCadence(cOrds.map(o=>o._d));
+  const rcptCadence=computeCadence(cRcpts.map(r=>r._d));
   const predictHTML=buildPredictionHTML(orderCadence,rcptCadence);
 
   const mRcpts=cRcpts.filter(r=>r.month===curMo);
@@ -1603,7 +1562,7 @@ function showDetailById(custId){
         <tbody>
           ${sRcpts.map((r,i)=>`<tr>
             <td style="color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:11px">${String(sRcpts.length-i).padStart(2,'0')}</td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${(r.date&&r.date.trim())?fmtDate(r.date):'-'}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(r._d)}</td>
             <td class="ord-amt" style="color:var(--green);font-size:15px">${fmtINR(r.amount)}</td>
           </tr>`).join('')}
         </tbody>
@@ -1629,7 +1588,7 @@ function showDetailById(custId){
         <tbody>
           ${sOrds.map(o=>`<tr>
             <td><span class="oid">${o.id}</span></td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${(o.date&&o.date.trim())?fmtDate(o.date):'-'}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(o._d)}</td>
             <td class="ord-amt">${fmtINR(o.amount)}</td>
           </tr>`).join('')}
         </tbody>
