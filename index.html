@@ -972,13 +972,24 @@ async function fetchSheet(name){
 }
 
 /* Find a column index by matching header text against candidate keywords.
-   Immune to column reordering or extra/missing columns — far more robust
-   than hardcoded indices. Matches case/whitespace/punctuation-insensitively. */
+   Immune to column reordering, header renames, or extra/missing columns.
+   Matches case/whitespace/punctuation-insensitively. Prefers an EXACT
+   normalised match first (avoids e.g. "OrderDate" wrongly matching a
+   "Date" candidate meant for a different column), then falls back to
+   substring containment. */
 function findCol(headerRow,...candidates){
   const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const normHeaders=headerRow.map(norm);
+  /* pass 1: exact match */
   for(const cand of candidates){
     const cN=norm(cand);
-    const idx=headerRow.findIndex(h=>norm(h).includes(cN));
+    const idx=normHeaders.findIndex(h=>h===cN);
+    if(idx!==-1)return idx;
+  }
+  /* pass 2: substring containment (header contains candidate) */
+  for(const cand of candidates){
+    const cN=norm(cand);
+    const idx=normHeaders.findIndex(h=>h.includes(cN));
     if(idx!==-1)return idx;
   }
   return -1;
@@ -1020,7 +1031,7 @@ async function loadData(){
     const oIdOrder=findCol(oH,'orderid'); const oIdOrderIdx=oIdOrder!==-1?oIdOrder:0;
     const oIdCust=findCol(oH,'customerid','custid'); const oIdCustIdx=oIdCust!==-1?oIdCust:1;
     const oIdBiz=findCol(oH,'businessname'); const oIdBizIdx=oIdBiz!==-1?oIdBiz:2;
-    const oIdDate=findCol(oH,'orderdate','date'); const oIdDateIdx=oIdDate!==-1?oIdDate:3;
+    const oIdDate=findCol(oH,'orderdate','date','transactiondate'); const oIdDateIdx=oIdDate!==-1?oIdDate:3;
     const oIdMonth=findCol(oH,'ordermonth','month'); const oIdMonthIdx=oIdMonth!==-1?oIdMonth:4;
     const oIdNet=findCol(oH,'netamount'); const oIdGross=findCol(oH,'grossamount');
     const oIdAmtIdx=oIdNet!==-1?oIdNet:(oIdGross!==-1?oIdGross:8);
@@ -1054,41 +1065,19 @@ async function loadData(){
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
 
-    /* ── DIAGNOSTIC: trace Ayush Medicines records to find date display bug ── */
-    console.log('=== ORDERS HEADER ===',oH);
-    console.log('=== ORDERS COLUMN MAP ===',{oIdOrderIdx,oIdCustIdx,oIdBizIdx,oIdDateIdx,oIdMonthIdx,oIdAmtIdx});
-    console.log('=== RECEIPTS HEADER ===',rH);
-    console.log('=== RECEIPTS COLUMN MAP ===',{rIdCustIdx,rIdBizIdx,rIdDateIdx,rIdMonthIdx,rIdAmtIdx});
+    /* ── Column resolution health check (logs once per load, safe to keep permanently) ── */
+    console.log('[Aaradhya] Orders columns → date: "'+oH[oIdDateIdx]+'" (idx '+oIdDateIdx+'), amount: "'+oH[oIdAmtIdx]+'" (idx '+oIdAmtIdx+')');
+    console.log('[Aaradhya] Receipts columns → date: "'+rH[rIdDateIdx]+'" (idx '+rIdDateIdx+'), amount: "'+rH[rIdAmtIdx]+'" (idx '+rIdAmtIdx+')');
 
     /* Row-length sanity check: a CSV parsing corruption (e.g. unbalanced quote
        somewhere in the sheet) shows up as rows with inconsistent column counts. */
     const oExpectedLen=oH.length;
-    const oBadRows=or.slice(1).map((r,i)=>({i:i+2,len:r.length})).filter(x=>x.len!==oExpectedLen);
-    if(oBadRows.length){
-      console.warn('=== ORDERS: ROW LENGTH MISMATCH (possible CSV corruption) ===',oExpectedLen,'expected. Bad rows:',oBadRows.slice(0,10));
-    }
+    const oBadRows=or.slice(1).map((r,i)=>({row:i+2,len:r.length})).filter(x=>x.len!==oExpectedLen);
+    if(oBadRows.length)console.warn('[Aaradhya] Orders sheet: '+oBadRows.length+' row(s) with unexpected column count (expected '+oExpectedLen+'). First few:',oBadRows.slice(0,5));
+
     const rExpectedLen=rH.length;
-    const rBadRows=rr.slice(1).map((r,i)=>({i:i+2,len:r.length})).filter(x=>x.len!==rExpectedLen);
-    if(rBadRows.length){
-      console.warn('=== RECEIPTS: ROW LENGTH MISMATCH (possible CSV corruption) ===',rExpectedLen,'expected. Bad rows:',rBadRows.slice(0,10));
-    }
-
-    const ayushOrders=orders.filter(o=>o.bizName&&o.bizName.toLowerCase().includes('ayush'));
-    const ayushReceipts=receipts.filter(r=>r.bizName&&r.bizName.toLowerCase().includes('ayush'));
-    console.log('=== AYUSH ORDERS (raw parsed) ===',ayushOrders);
-    console.log('=== AYUSH RECEIPTS (raw parsed) ===',ayushReceipts);
-    const target1=ayushOrders.find(o=>o.amount===3537);
-    const target2=ayushReceipts.find(r=>r.amount===2072);
-    console.log('=== TARGET ORDER (amt 3537) ===',target1,'| date raw:',JSON.stringify(target1&&target1.date),'| fmtDate:',target1?fmtDate(target1.date):'NOT FOUND');
-    console.log('=== TARGET RECEIPT (amt 2072) ===',target2,'| date raw:',JSON.stringify(target2&&target2.date),'| fmtDate:',target2?fmtDate(target2.date):'NOT FOUND');
-
-    /* Also dump the RAW unparsed row from the sheet for these two, by scanning
-       the original or/rr arrays directly (bypasses our orders/receipts mapping
-       entirely, so we can see if the source data itself is missing the date). */
-    const rawOrderRow=or.slice(1).find(r=>r[oIdAmtIdx]&&r[oIdAmtIdx].replace(/[₹,\s]/g,'')==='3537');
-    const rawRcptRow=rr.slice(1).find(r=>r[rIdAmtIdx]&&r[rIdAmtIdx].replace(/[₹,\s]/g,'')==='2072');
-    console.log('=== RAW ORDER ROW (amt 3537) ===',rawOrderRow);
-    console.log('=== RAW RECEIPT ROW (amt 2072) ===',rawRcptRow);
+    const rBadRows=rr.slice(1).map((r,i)=>({row:i+2,len:r.length})).filter(x=>x.len!==rExpectedLen);
+    if(rBadRows.length)console.warn('[Aaradhya] Receipts sheet: '+rBadRows.length+' row(s) with unexpected column count (expected '+rExpectedLen+'). First few:',rBadRows.slice(0,5));
 
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
