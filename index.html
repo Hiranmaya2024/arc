@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- build marker: date-engine-v3-strict-dd-mm-yyyy -->
+
 <title>Aaradhya Rx Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -725,27 +730,43 @@ function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 const MON_NAMES=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
 
-/* Parse a date string in EXACTLY one of these four formats (day always first):
-     dd-mm-yyyy   e.g. 13-04-2026
-     dd-mm-yy     e.g. 13-04-26
-     dd-mon-yyyy  e.g. 13-Apr-2026  (also accepts 4-Jan-2026, single-digit day)
-     dd-mon-yy    e.g. 13-Apr-26
-   Separators '-', '/', '.' are all accepted. Returns a real Date object, or
-   null if the string doesn't match one of these four shapes. No fuzzy
-   fallback — if it doesn't match, we want to know about it (see health
-   check warnings in loadData) rather than silently guessing wrong. */
+/* Parse a date string in one of these shapes:
+     dd-mm-yyyy, dd-mm-yy, dd-mon-yyyy, dd-mon-yy   (hyphen or dot separator,
+       day ALWAYS first — this is the format used when a sheet cell holds
+       literal text, exactly as specified)
+     m/d/yyyy                                        (slash separator — this
+       is what Google's gviz CSV export produces for a cell that is a TRUE
+       Date-typed cell rather than text, regardless of the sheet's display
+       format; gviz always serialises real dates as US month/day/year)
+   Returns a real Date object, or null if the string matches none of these
+   shapes. No fuzzy guessing — an unrecognised shape returns null so it can
+   be caught by the health-check warnings rather than silently misread. */
 function parseDateSmart(raw){
   if(raw===null||raw===undefined)return null;
   const d=String(raw).trim();
   if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
 
   /* Google Sheets gviz CSV export occasionally serialises a Date-typed cell
-     as the literal text "Date(2026,3,13)" — year, 0-indexed month, day —
-     instead of plain text. Handle this before anything else. */
+     as the literal text "Date(2026,3,13)" — year, 0-indexed month, day. */
   const gviz=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
   if(gviz)return new Date(parseInt(gviz[1]),parseInt(gviz[2]),parseInt(gviz[3]));
 
-  const norm=d.replace(/[\/\.]/g,'-').trim();
+  /* SLASH separator → gviz's export of a true Date-typed cell, always
+     m/d/yyyy (US order) regardless of the sheet's locale or display format. */
+  const slashMatch=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if(slashMatch){
+    const mi=parseInt(slashMatch[1]),day=parseInt(slashMatch[2]);
+    const yrPart=slashMatch[3];
+    const year=yrPart.length===2?2000+parseInt(yrPart):parseInt(yrPart);
+    if(mi<1||mi>12||day<1||day>31)return null;
+    const result=new Date(year,mi-1,day);
+    if(result.getDate()!==day||result.getMonth()!==mi-1||result.getFullYear()!==year)return null;
+    return result;
+  }
+
+  /* HYPHEN or DOT separator → literal text in dd-mm-yyyy / dd-mm-yy /
+     dd-mon-yyyy / dd-mon-yy format, day always first, per spec. */
+  const norm=d.replace(/\./g,'-').trim();
   const m=norm.match(/^(\d{1,2})-([A-Za-z]{3,}|\d{1,2})-(\d{2}|\d{4})$/);
   if(!m)return null;
 
@@ -762,9 +783,9 @@ function parseDateSmart(raw){
     monthIdx=mi-1;
   }else{
     /* dd-mon-yyyy / dd-mon-yy */
-    monthIdx=MON_NAMES_LC.indexOf(m[2].toLowerCase().slice(0,3));
-    if(monthIdx<=0)return null; /* MON_NAMES_LC[0] is '' (unused), so <=0 means no match */
-    monthIdx=monthIdx-1; /* MON_NAMES_LC is 1-indexed (index 0 is blank) */
+    const idx=MON_NAMES_LC.indexOf(m[2].toLowerCase().slice(0,3));
+    if(idx<=0)return null; /* MON_NAMES_LC[0] is '' (unused), so <=0 means no match */
+    monthIdx=idx-1; /* MON_NAMES_LC is 1-indexed (index 0 is blank) */
   }
 
   const result=new Date(year,monthIdx,day);
@@ -1048,7 +1069,7 @@ async function loadData(){
 
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
-    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v4-slash-fix';
     showPage('dashboard');
   }catch(e){
     document.getElementById('loading-scr').style.display='none';
