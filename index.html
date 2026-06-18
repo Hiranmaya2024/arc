@@ -743,24 +743,15 @@ function monthFromDateObj(dt){
 const MON_NAMES=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
 
-/* Parse a date string in one of these shapes:
-     dd-mm-yyyy, dd-mm-yy, dd-mon-yyyy, dd-mon-yy   (hyphen or dot separator,
-       day ALWAYS first — this is the format used when a sheet cell holds
-       literal text, exactly as specified)
-     m/d/yyyy                                        (slash separator — this
-       is what Google's gviz CSV export produces for a cell that is a TRUE
-       Date-typed cell rather than text, regardless of the sheet's display
-       format; gviz always serialises real dates as US month/day/year)
-   Returns a real Date object, or null if the string matches none of these
-   shapes. No fuzzy guessing — an unrecognised shape returns null so it can
-   be caught by the health-check warnings rather than silently misread. */
+/* IMPROVED DATE PARSER — handles dd-mm-yyyy, yyyy-mm-dd, dd-mmm-yyyy, m/d/yyyy, d/m/yyyy */
 function parseDateSmart(raw){
   if(raw===null||raw===undefined)return null;
   let d=String(raw)
     .replace(/^[\uFEFF\u200B]+/,'')
-    .replace(/[\u00A0\s]+/g,' ')
     .trim()
     .replace(/^'/,'');
+  // Remove time part if present (e.g. "15-04-2026 12:30")
+  if(d.includes(' ')) d = d.split(' ')[0];
   if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
 
   // 1. Google's Date(...) syntax
@@ -791,17 +782,30 @@ function parseDateSmart(raw){
   const parts=norm.split('-');
   if(parts.length===3){
     const p1=parts[0], p2=parts[1], p3=parts[2];
-    const yrPart=p3, year=yrPart.length===2?2000+parseInt(yrPart):parseInt(yrPart);
-    // Try dd-mm-yyyy
-    let dt=tryDate(year, parseInt(p2), parseInt(p1));
+    let year, month, day, dt;
+
+    // --- Try dd-mm-yyyy (day-month-year) ---
+    year = parseInt(p3);
+    if(year<100) year+=2000;
+    month = parseInt(p2);
+    day = parseInt(p1);
+    dt = tryDate(year, month, day);
     if(dt) return dt;
-    // Try yyyy-mm-dd
-    dt=tryDate(year, parseInt(p2), parseInt(p3));
+
+    // --- Try yyyy-mm-dd (year-month-day) ---
+    year = parseInt(p1);
+    if(year<100) year+=2000;
+    month = parseInt(p2);
+    day = parseInt(p3);
+    dt = tryDate(year, month, day);
     if(dt) return dt;
-    // Try dd-mmm-yyyy (month is letters)
-    const monthIdx=MON_NAMES_LC.indexOf(p2.toLowerCase().slice(0,3));
+
+    // --- Try dd-mmm-yyyy (day-monthname-year) ---
+    const monthIdx = MON_NAMES_LC.indexOf(p2.toLowerCase().slice(0,3));
     if(monthIdx>0){
-      dt=tryDate(year, monthIdx, parseInt(p1));
+      year = parseInt(p3);
+      if(year<100) year+=2000;
+      dt = tryDate(year, monthIdx, parseInt(p1));
       if(dt) return dt;
     }
     return null;
