@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- build marker: date-engine-v6-autodetect -->
+<!-- build marker: date-engine-v7-explicit -->
 
 <title>Aaradhya Rx Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -577,69 +577,23 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   AUTO-DETECT DATE COLUMN – scans data rows for date-like values
+   🔧 USER CONFIGURATION – EXPLICIT COLUMN INDICES
    ================================================================
-   This function finds the column index that contains date strings
-   (dd-mm-yyyy, yyyy-mm-dd, dd/mm/yyyy, etc.) by inspecting the
-   first few data rows. It is immune to column reordering and
-   header name changes.
+   Orders: set to -1 to auto‑detect, or set the exact 0‑based index.
+   Receipts: set your exact 0‑based column indices.
    ═══════════════════════════════════════════════════════════════ */
-function findDateColumn(rows, headerRow){
-  // If we have a header, try to match common date header names first
-  if(headerRow && headerRow.length){
-    const dateHeaderCandidates = ['date','orderdate','transactiondate','order date','invoice date','bill date','rcptdate','receiptdate','payment date'];
-    for(const cand of dateHeaderCandidates){
-      const idx = headerRow.findIndex(h => h && h.toLowerCase().trim() === cand);
-      if(idx !== -1) return idx;
-    }
-    // Also try partial matches
-    for(const cand of dateHeaderCandidates){
-      const idx = headerRow.findIndex(h => h && h.toLowerCase().trim().includes(cand));
-      if(idx !== -1) return idx;
-    }
-  }
 
-  // If header detection fails, scan the first 10 data rows for a column that contains a date pattern
-  const maxRows = Math.min(10, rows.length);
-  if(maxRows === 0) return -1;
-  // Get the number of columns from the first row
-  const colCount = rows[0].length;
-  // For each column, check if it contains a date pattern in at least 2 rows
-  for(let col = 0; col < colCount; col++){
-    let dateMatches = 0;
-    for(let r = 0; r < maxRows; r++){
-      const val = rows[r][col] || '';
-      if(val && isDateLike(val)) dateMatches++;
-    }
-    if(dateMatches >= 2) return col; // found a date column
-  }
-  return -1;
-}
+// ── Orders (leave -1 to auto-detect, or set your exact indices) ──
+const ORDER_DATE_COLUMN_INDEX = -1;        // auto-detect
+const ORDER_AMOUNT_COLUMN_INDEX = -1;      // auto-detect
+const ORDER_CUSTID_COLUMN_INDEX = -1;      // auto-detect
+const ORDER_BIZNAME_COLUMN_INDEX = -1;     // auto-detect
 
-function isDateLike(str){
-  // Quick check: contains numbers and separators (-, /, .)
-  // and looks like a date pattern: dd-mm-yyyy, yyyy-mm-dd, dd/mm/yyyy, etc.
-  // Also allow month names like "15-Apr-2026"
-  const trimmed = str.trim();
-  if(!trimmed) return false;
-  // Check if it matches common date regex patterns
-  const patterns = [
-    /^\d{1,2}[-\/\.]\d{1,2}[-\/\.]\d{2,4}$/, // dd-mm-yyyy or dd/mm/yyyy
-    /^\d{4}[-\/\.]\d{1,2}[-\/\.]\d{1,2}$/, // yyyy-mm-dd
-    /^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/, // dd-Mon-yyyy
-    /^[A-Za-z]{3}-\d{1,2}-\d{2,4}$/, // Mon-dd-yyyy
-    /^\d{1,2}\s[A-Za-z]{3}\s\d{2,4}$/, // dd Mon yyyy
-  ];
-  for(const p of patterns){
-    if(p.test(trimmed)) return true;
-  }
-  // Also let JavaScript try to parse it as a date
-  const d = new Date(trimmed);
-  if(!isNaN(d.getTime()) && d.getFullYear() > 2000 && d.getFullYear() < 2100){
-    return true;
-  }
-  return false;
-}
+// ── Receipts (set your exact 0‑based column indices) ──
+const RECEIPT_DATE_COLUMN_INDEX = 2;        // RcptDate (column 3)
+const RECEIPT_AMOUNT_COLUMN_INDEX = 3;      // Amount (column 4)
+const RECEIPT_CUSTID_COLUMN_INDEX = 0;      // Customer ID (column 1)
+const RECEIPT_BIZNAME_COLUMN_INDEX = 1;     // Business Name (column 2)
 
 /* ═══════ CONSTANTS ═══════ */
 const SID='1bjUIiD3xL8NWWzkZAatxvwp5n98yq7JVE5FODCbmvAs';
@@ -940,6 +894,55 @@ function findCol(headerRow,...candidates){
   return -1;
 }
 
+/* ═══════ AUTO-DETECT DATE COLUMN ═══════ */
+function findDateColumn(rows, headerRow){
+  // Try header-based detection first
+  if(headerRow && headerRow.length){
+    const dateHeaderCandidates = ['date','orderdate','transactiondate','order date','invoice date','bill date','rcptdate','receiptdate','payment date'];
+    for(const cand of dateHeaderCandidates){
+      const idx = headerRow.findIndex(h => h && h.toLowerCase().trim() === cand);
+      if(idx !== -1) return idx;
+    }
+    for(const cand of dateHeaderCandidates){
+      const idx = headerRow.findIndex(h => h && h.toLowerCase().trim().includes(cand));
+      if(idx !== -1) return idx;
+    }
+  }
+
+  const maxRows = Math.min(10, rows.length);
+  if(maxRows === 0) return -1;
+  const colCount = rows[0].length;
+  for(let col = 0; col < colCount; col++){
+    let dateMatches = 0;
+    for(let r = 0; r < maxRows; r++){
+      const val = rows[r][col] || '';
+      if(val && isDateLike(val)) dateMatches++;
+    }
+    if(dateMatches >= 2) return col;
+  }
+  return -1;
+}
+
+function isDateLike(str){
+  const trimmed = str.trim();
+  if(!trimmed) return false;
+  const patterns = [
+    /^\d{1,2}[-\/\.]\d{1,2}[-\/\.]\d{2,4}$/,
+    /^\d{4}[-\/\.]\d{1,2}[-\/\.]\d{1,2}$/,
+    /^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/,
+    /^[A-Za-z]{3}-\d{1,2}-\d{2,4}$/,
+    /^\d{1,2}\s[A-Za-z]{3}\s\d{2,4}$/,
+  ];
+  for(const p of patterns){
+    if(p.test(trimmed)) return true;
+  }
+  const d = new Date(trimmed);
+  if(!isNaN(d.getTime()) && d.getFullYear() > 2000 && d.getFullYear() < 2100){
+    return true;
+  }
+  return false;
+}
+
 /* ═══════ CHART ENGINE ═══════ */
 function buildBarChart(data,opts={}){
   const W=opts.width||320,H=opts.height||140,pad={t:18,r:10,b:26,l:10};
@@ -1165,6 +1168,7 @@ async function loadData(){
     window.__RAW_RECEIPTS=rr;
     window.__RAW_CUSTOMERS=cr;
 
+    // ── 1_CUSTOMERS ──
     const cH=cr[0]||[];
     const cIdId=findCol(cH,'customerid','custid'); const cIdIdx=cIdId!==-1?cIdId:0;
     const cIdName=findCol(cH,'businessname','partnername'); const cIdNameIdx=cIdName!==-1?cIdName:1;
@@ -1187,51 +1191,65 @@ async function loadData(){
       });
     }
 
-    // ---- ORDERS ----
+    // ── 2_ORDERS ──
     const oH=or[0]||[];
-    const oIdOrder=findCol(oH,'orderid'); const oIdOrderIdx=oIdOrder!==-1?oIdOrder:0;
-    const oIdCust=findCol(oH,'customerid','custid'); const oIdCustIdx=oIdCust!==-1?oIdCust:1;
-    const oIdBiz=findCol(oH,'businessname'); const oIdBizIdx=oIdBiz!==-1?oIdBiz:2;
-    // AUTO-DETECT date column instead of hardcoding
-    const dataRows = or.slice(1); // skip header
-    let oIdDateIdx = findDateColumn(dataRows, oH);
-    if(oIdDateIdx === -1){
-      // Fallback: try to find by header
-      oIdDateIdx = findCol(oH,'orderdate','date','transactiondate','Order Date','Invoice Date','Bill Date');
-      if(oIdDateIdx === -1) oIdDateIdx = 3; // last resort
-    }
-    const oIdMonth=findCol(oH,'ordermonth','month'); const oIdMonthIdx=oIdMonth!==-1?oIdMonth:4;
-    const oIdNet=findCol(oH,'netamount'); const oIdGross=findCol(oH,'grossamount');
-    const oIdAmtIdx=oIdNet!==-1?oIdNet:(oIdGross!==-1?oIdGross:8);
+    let oIdOrderIdx, oIdCustIdx, oIdBizIdx, oIdDateIdx, oIdAmtIdx;
 
-    console.log('[Aaradhya] Auto-detected order date column index:', oIdDateIdx, 'header:', oH[oIdDateIdx] || 'MISSING');
+    if (ORDER_DATE_COLUMN_INDEX >= 0) {
+      // Use explicit indices
+      oIdOrderIdx = ORDER_CUSTID_COLUMN_INDEX >= 0 ? ORDER_CUSTID_COLUMN_INDEX : 0;
+      oIdCustIdx = ORDER_CUSTID_COLUMN_INDEX >= 0 ? ORDER_CUSTID_COLUMN_INDEX : 1;
+      oIdBizIdx = ORDER_BIZNAME_COLUMN_INDEX >= 0 ? ORDER_BIZNAME_COLUMN_INDEX : 2;
+      oIdDateIdx = ORDER_DATE_COLUMN_INDEX;
+      oIdAmtIdx = ORDER_AMOUNT_COLUMN_INDEX >= 0 ? ORDER_AMOUNT_COLUMN_INDEX : 8;
+    } else {
+      // Auto-detect
+      oIdOrderIdx = findCol(oH,'orderid'); if(oIdOrderIdx===-1) oIdOrderIdx=0;
+      oIdCustIdx = findCol(oH,'customerid','custid'); if(oIdCustIdx===-1) oIdCustIdx=1;
+      oIdBizIdx = findCol(oH,'businessname'); if(oIdBizIdx===-1) oIdBizIdx=2;
+      oIdDateIdx = findDateColumn(or.slice(1), oH);
+      if(oIdDateIdx === -1) oIdDateIdx = findCol(oH,'orderdate','date','transactiondate','Order Date','Invoice Date','Bill Date');
+      if(oIdDateIdx === -1) oIdDateIdx = 3;
+      const oIdNet=findCol(oH,'netamount');
+      const oIdGross=findCol(oH,'grossamount');
+      oIdAmtIdx=oIdNet!==-1?oIdNet:(oIdGross!==-1?oIdGross:8);
+    }
+
+    const oIdMonthIdx = findCol(oH,'ordermonth','month'); const oIdMonthIdxFinal = oIdMonthIdx!==-1?oIdMonthIdx:4;
+
+    console.log('[Aaradhya] Order date column index:', oIdDateIdx, 'header:', oH[oIdDateIdx] || 'MISSING');
 
     orders=[];
     for(let i=1;i<or.length;i++){
       const r=or[i];if(!r[oIdOrderIdx])continue;
-      const rawAmt=(r[oIdAmtIdx]||r[6]||'').replace(/[₹,\s]/g,'');
+      const rawAmt=(r[oIdAmtIdx]||r[8]||'').replace(/[₹,\s]/g,'');
       const amt=parseFloat(rawAmt)||0;
       const dateVal=(r[oIdDateIdx]||'').trim();
       const dObj=parseDateSmart(dateVal);
-      const sheetMonth=(r[oIdMonthIdx]||'').trim();
+      const sheetMonth=(r[oIdMonthIdxFinal]||'').trim();
       const month=normMonth(sheetMonth)||monthFromDateObj(dObj);
       orders.push({id:r[oIdOrderIdx],custId:r[oIdCustIdx]||'',bizName:r[oIdBizIdx]||'',date:dateVal,_d:dObj,month,amount:amt});
     }
 
-    // ---- RECEIPTS ----
+    // ── 12_RECEIPTS (EXPLICIT INDICES) ──
     const rH=rr[0]||[];
-    const rIdCust=findCol(rH,'customerid','custid'); const rIdCustIdx=rIdCust!==-1?rIdCust:0;
-    const rIdBiz=findCol(rH,'businessname'); const rIdBizIdx=rIdBiz!==-1?rIdBiz:1;
-    const rcptDataRows = rr.slice(1);
-    let rIdDateIdx = findDateColumn(rcptDataRows, rH);
-    if(rIdDateIdx === -1){
-      rIdDateIdx = findCol(rH,'rcptdate','receiptdate','date','Receipt Date','Payment Date');
-      if(rIdDateIdx === -1) rIdDateIdx = 2;
-    }
-    const rIdMonth=findCol(rH,'month'); const rIdMonthIdx=rIdMonth!==-1?rIdMonth:3;
-    const rIdAmt=findCol(rH,'amount'); const rIdAmtIdx=rIdAmt!==-1?rIdAmt:5;
+    let rIdCustIdx, rIdBizIdx, rIdDateIdx, rIdAmtIdx;
 
-    console.log('[Aaradhya] Auto-detected receipt date column index:', rIdDateIdx, 'header:', rH[rIdDateIdx] || 'MISSING');
+    if (RECEIPT_DATE_COLUMN_INDEX >= 0) {
+      rIdCustIdx = RECEIPT_CUSTID_COLUMN_INDEX;
+      rIdBizIdx = RECEIPT_BIZNAME_COLUMN_INDEX;
+      rIdDateIdx = RECEIPT_DATE_COLUMN_INDEX;
+      rIdAmtIdx = RECEIPT_AMOUNT_COLUMN_INDEX;
+    } else {
+      // Fallback auto-detect (should not be needed)
+      rIdCustIdx = findCol(rH,'customerid','custid'); if(rIdCustIdx===-1) rIdCustIdx=0;
+      rIdBizIdx = findCol(rH,'businessname'); if(rIdBizIdx===-1) rIdBizIdx=1;
+      rIdDateIdx = findDateColumn(rr.slice(1), rH); if(rIdDateIdx===-1) rIdDateIdx=2;
+      rIdAmtIdx = findCol(rH,'amount'); if(rIdAmtIdx===-1) rIdAmtIdx=3;
+    }
+
+    console.log('[Aaradhya] Receipt date column index:', rIdDateIdx, 'header:', rH[rIdDateIdx] || 'MISSING');
+    console.log('[Aaradhya] Receipt columns → CustID:', rIdCustIdx, 'BizName:', rIdBizIdx, 'Date:', rIdDateIdx, 'Amount:', rIdAmtIdx);
 
     receipts=[];
     for(let i=1;i<rr.length;i++){
@@ -1240,8 +1258,8 @@ async function loadData(){
       if(amt===0)continue;
       const rcptDate=(r[rIdDateIdx]||'').trim();
       const dObj=parseDateSmart(rcptDate);
-      const sheetMonth=(r[rIdMonthIdx]||'').trim();
-      const month=normMonth(sheetMonth)||monthFromDateObj(dObj);
+      const sheetMonth=''; // No month column in this sheet
+      const month=monthFromDateObj(dObj);
       receipts.push({custId:r[rIdCustIdx]||'Unknown',bizName:r[rIdBizIdx]||'',date:rcptDate,_d:dObj,month,amount:amt});
     }
 
@@ -1252,12 +1270,13 @@ async function loadData(){
 
     console.log('[Aaradhya] Orders columns → date: "'+oH[oIdDateIdx]+'" (idx '+oIdDateIdx+'), amount: "'+oH[oIdAmtIdx]+'" (idx '+oIdAmtIdx+')');
     console.log('[Aaradhya] Receipts columns → date: "'+rH[rIdDateIdx]+'" (idx '+rIdDateIdx+'), amount: "'+rH[rIdAmtIdx]+'" (idx '+rIdAmtIdx+')');
+
     const oUnparsed=orders.filter(o=>o.date&&!o._d);
     const rUnparsed=receipts.filter(r=>r.date&&!r._d);
-    if(oUnparsed.length)console.warn('[Aaradhya] '+oUnparsed.length+' order date(s) could not be parsed (raw values shown below):',oUnparsed.map(o=>({id:o.id,custId:o.custId,date:JSON.stringify(o.date)})));
-    if(rUnparsed.length)console.warn('[Aaradhya] '+rUnparsed.length+' receipt date(s) could not be parsed (raw values shown below):',rUnparsed.map(r=>({custId:r.custId,bizName:r.bizName,date:JSON.stringify(r.date)})));
+    if(oUnparsed.length)console.warn('[Aaradhya] '+oUnparsed.length+' order date(s) could not be parsed:',oUnparsed.map(o=>({id:o.id,custId:o.custId,date:JSON.stringify(o.date)})));
+    if(rUnparsed.length)console.warn('[Aaradhya] '+rUnparsed.length+' receipt date(s) could not be parsed:',rUnparsed.map(r=>({custId:r.custId,bizName:r.bizName,date:JSON.stringify(r.date)})));
 
-    // Detailed debug for Maa Laxmi Medical
+    // Maa Laxmi Medical debug
     const maaLaxmiO=orders.filter(o=>(o.bizName||'').toLowerCase().includes('maa laxmi')||(o.bizName||'').toLowerCase().includes('laxmi'));
     console.log('[Aaradhya] Maa Laxmi Medical orders — raw date → parsed display:');
     maaLaxmiO.forEach(o=>{
@@ -1274,7 +1293,7 @@ async function loadData(){
 
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
-    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v6-autodetect';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v7-explicit';
     showPage('dashboard');
   }catch(e){
     document.getElementById('loading-scr').style.display='none';
