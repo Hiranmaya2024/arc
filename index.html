@@ -743,10 +743,6 @@ const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
    be caught by the health-check warnings rather than silently misread. */
 function parseDateSmart(raw){
   if(raw===null||raw===undefined)return null;
-  /* Strip: leading apostrophe (Sheets' "force text" marker), all whitespace
-     variants including non-breaking space (\u00A0), zero-width characters,
-     and BOM — any of which could make an otherwise-valid string silently
-     fail every regex below without looking visibly different. */
   let d=String(raw)
     .replace(/^[\uFEFF\u200B]+/,'')
     .replace(/[\u00A0\s]+/g,' ')
@@ -754,72 +750,50 @@ function parseDateSmart(raw){
     .replace(/^'/,'');
   if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
 
-  /* Google Sheets gviz CSV export occasionally serialises a Date-typed cell
-     as the literal text "Date(2026,3,13)" — year, 0-indexed month, day. */
+  // 1. Google's Date(...) syntax
   const gviz=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
   if(gviz)return new Date(parseInt(gviz[1]),parseInt(gviz[2]),parseInt(gviz[3]));
 
-  /* SLASH separator → gviz's export of a true Date-typed cell, always
-     m/d/yyyy (US order) regardless of the sheet's locale or display format. */
-  const slashMatch=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
-  if(slashMatch){
-    const mi=parseInt(slashMatch[1]),day=parseInt(slashMatch[2]);
-    const yrPart=slashMatch[3];
-    const year=yrPart.length===2?2000+parseInt(yrPart):parseInt(yrPart);
-    if(mi<1||mi>12||day<1||day>31)return null;
-    const result=new Date(year,mi-1,day);
-    if(result.getDate()!==day||result.getMonth()!==mi-1||result.getFullYear()!==year)return null;
-    return result;
+  // Helper to safely build a Date
+  const tryDate=(y,m,day)=>{
+    if(y<100)y+=2000;
+    const dt=new Date(y,m-1,day);
+    if(dt.getFullYear()===y && dt.getMonth()===m-1 && dt.getDate()===day) return dt;
+    return null;
+  };
+
+  // 2. Slash separator: try m/d/yyyy (gviz true date), then d/m/yyyy
+  const slash=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if(slash){
+    const a=parseInt(slash[1]), b=parseInt(slash[2]), yr=parseInt(slash[3]);
+    let dt=tryDate(yr, a, b);          // m/d
+    if(dt) return dt;
+    dt=tryDate(yr, b, a);              // d/m
+    if(dt) return dt;
+    return null;
   }
 
-  /* HYPHEN or DOT separator → literal text in dd-mm-yyyy / dd-mm-yy /
-     dd-mon-yyyy / dd-mon-yy format, day always first, per spec. */
+  // 3. Hyphen or dot separator: try dd-mm-yyyy, then yyyy-mm-dd, then dd-mmm-yyyy
   const norm=d.replace(/\./g,'-').trim();
-  const m=norm.match(/^(\d{1,2})-([A-Za-z]{3,}|\d{1,2})-(\d{2}|\d{4})$/);
-  if(!m)return null;
-
-  const day=parseInt(m[1]);
-  const yrPart=m[3];
-  const year=yrPart.length===2?2000+parseInt(yrPart):parseInt(yrPart);
-  if(isNaN(day)||day<1||day>31)return null;
-
-  let monthIdx; /* 0-indexed for Date() constructor */
-  if(/^\d+$/.test(m[2])){
-    /* dd-mm-yyyy / dd-mm-yy */
-    const mi=parseInt(m[2]);
-    if(mi<1||mi>12)return null;
-    monthIdx=mi-1;
-  }else{
-    /* dd-mon-yyyy / dd-mon-yy */
-    const idx=MON_NAMES_LC.indexOf(m[2].toLowerCase().slice(0,3));
-    if(idx<=0)return null; /* MON_NAMES_LC[0] is '' (unused), so <=0 means no match */
-    monthIdx=idx-1; /* MON_NAMES_LC is 1-indexed (index 0 is blank) */
+  const parts=norm.split('-');
+  if(parts.length===3){
+    const p1=parts[0], p2=parts[1], p3=parts[2];
+    const yrPart=p3, year=yrPart.length===2?2000+parseInt(yrPart):parseInt(yrPart);
+    // Try dd-mm-yyyy
+    let dt=tryDate(year, parseInt(p2), parseInt(p1));
+    if(dt) return dt;
+    // Try yyyy-mm-dd
+    dt=tryDate(year, parseInt(p2), parseInt(p3));
+    if(dt) return dt;
+    // Try dd-mmm-yyyy (month is letters)
+    const monthIdx=MON_NAMES_LC.indexOf(p2.toLowerCase().slice(0,3));
+    if(monthIdx>0){
+      dt=tryDate(year, monthIdx, parseInt(p1));
+      if(dt) return dt;
+    }
+    return null;
   }
-
-  const result=new Date(year,monthIdx,day);
-  /* Guard against JS Date's auto-rollover (e.g. day=31 in a 30-day month
-     silently becoming the 1st of next month) — treat that as invalid. */
-  if(result.getDate()!==day||result.getMonth()!==monthIdx||result.getFullYear()!==year)return null;
-  return result;
-}
-
-/* Display formatter — takes the CACHED Date object (never re-parses a string).
-   Returns "—" for missing/invalid dates, else "13-Apr-2026" (dd-mon-yyyy,
-   hyphen-separated, matching the format requested for display). */
-function fmtDateObj(dt){
-  if(!dt||isNaN(dt.getTime()))return '—';
-  return `${String(dt.getDate()).padStart(2,'0')}-${MON_NAMES[dt.getMonth()+1]}-${dt.getFullYear()}`;
-}
-
-/* Sort-key helper — takes the cached Date object, returns epoch ms (0 if null).
-   Used directly as a comparator value: array.sort((a,b)=>dateKey(b._d)-dateKey(a._d)) */
-function dateKey(dt){return dt&&!isNaN(dt.getTime())?dt.getTime():0;}
-
-/* Derive "Mon-YYYY" month bucket directly from a cached Date object —
-   guaranteed to match whatever date was actually parsed and displayed. */
-function monthFromDateObj(dt){
-  if(!dt||isNaN(dt.getTime()))return '';
-  return MON_NAMES[dt.getMonth()+1]+'-'+dt.getFullYear();
+  return null;
 }
 
 /* ═══════════ PREDICTION ENGINE ═══════════
