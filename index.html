@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- build marker: date-engine-v4-aggressive -->
+<!-- build marker: date-engine-v5-ultra -->
 
 <title>Aaradhya Rx Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -611,7 +611,7 @@ function monthFromDateObj(dt){
   return MON_NAMES[dt.getMonth()+1]+'-'+dt.getFullYear();
 }
 
-/* ═══════════ AGGRESSIVE DATE PARSER ═══════════ */
+/* ═══════════ ULTRA-AGGRESSIVE DATE PARSER ═══════════ */
 const MON_NAMES=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
 
@@ -621,11 +621,11 @@ function parseDateSmart(raw){
     .replace(/^[\uFEFF\u200B]+/,'')
     .trim()
     .replace(/^'/,'');
-  // Strip time part (anything after a space)
+  // Remove time part (anything after a space)
   if(d.includes(' ')) d = d.split(' ')[0];
   if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
 
-  // Helper: build a Date and verify components
+  // Helper to build a Date and verify components
   const tryDate=(y,m,day)=>{
     if(y<100) y+=2000;
     const dt=new Date(y,m-1,day);
@@ -705,7 +705,32 @@ function parseDateSmart(raw){
     return null;
   }
 
-  // 4. Last resort: let JavaScript's Date.parse have a go, but validate.
+  // 4. Space-separated: "15 Apr 2026" or "Apr 15 2026"
+  const spaceParts = d.split(' ');
+  if(spaceParts.length === 3){
+    const a=spaceParts[0], b=spaceParts[1], c=spaceParts[2];
+    // Try dd mmm yyyy
+    let monthIdx = MON_NAMES_LC.indexOf(a.toLowerCase().slice(0,3));
+    if(monthIdx>0){
+      let dt = tryDate(parseInt(c), monthIdx, parseInt(b));
+      if(dt) return dt;
+    }
+    // Try mmm dd yyyy
+    monthIdx = MON_NAMES_LC.indexOf(a.toLowerCase().slice(0,3));
+    if(monthIdx>0){
+      let dt = tryDate(parseInt(c), monthIdx, parseInt(b));
+      if(dt) return dt;
+    }
+    // Try dd mmm yyyy (same as above, but we already tried both orders)
+    // Also try yyyy mmm dd
+    monthIdx = MON_NAMES_LC.indexOf(b.toLowerCase().slice(0,3));
+    if(monthIdx>0){
+      let dt = tryDate(parseInt(a), monthIdx, parseInt(c));
+      if(dt) return dt;
+    }
+  }
+
+  // 5. Last resort: let JavaScript's Date.parse have a go, but validate.
   const jsDate = new Date(d);
   if(!isNaN(jsDate.getTime())){
     const y=jsDate.getFullYear(), m=jsDate.getMonth()+1, day=jsDate.getDate();
@@ -1154,14 +1179,12 @@ async function loadData(){
     if(oUnparsed.length)console.warn('[Aaradhya] '+oUnparsed.length+' order date(s) could not be parsed (raw values shown below):',oUnparsed.map(o=>({id:o.id,custId:o.custId,date:JSON.stringify(o.date)})));
     if(rUnparsed.length)console.warn('[Aaradhya] '+rUnparsed.length+' receipt date(s) could not be parsed (raw values shown below):',rUnparsed.map(r=>({custId:r.custId,bizName:r.bizName,date:JSON.stringify(r.date)})));
 
-    const ayushO=orders.filter(o=>(o.bizName||'').toLowerCase().includes('ayush'));
-    const ayushR=receipts.filter(r=>(r.bizName||'').toLowerCase().includes('ayush'));
-    console.log('[Aaradhya] Ayush orders — raw date → parsed display:',ayushO.map(o=>o.date+' → '+fmtDateObj(o._d)+' (amt ₹'+o.amount+')'));
-    console.log('[Aaradhya] Ayush receipts — raw date → parsed display:',ayushR.map(r=>r.date+' → '+fmtDateObj(r._d)+' (amt ₹'+r.amount+')'));
-
-    /* Check Maa Laxmi Medical specifically */
+    // Detailed debug for Maa Laxmi Medical
     const maaLaxmiO=orders.filter(o=>(o.bizName||'').toLowerCase().includes('maa laxmi')||(o.bizName||'').toLowerCase().includes('laxmi'));
-    console.log('[Aaradhya] Maa Laxmi Medical orders — raw date → parsed display:',maaLaxmiO.map(o=>o.date+' → '+fmtDateObj(o._d)+' (month: '+o.month+')'));
+    console.log('[Aaradhya] Maa Laxmi Medical orders — raw date → parsed display:');
+    maaLaxmiO.forEach(o=>{
+      console.log(`  Raw: "${o.date}" → Parsed: ${fmtDateObj(o._d)} (month: ${o.month})`);
+    });
 
     const oExpectedLen=oH.length;
     const oBadRows=or.slice(1).map((r,i)=>({row:i+2,len:r.length})).filter(x=>x.len!==oExpectedLen);
@@ -1173,7 +1196,7 @@ async function loadData(){
 
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
-    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v4-aggressive';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v5-ultra';
     showPage('dashboard');
   }catch(e){
     document.getElementById('loading-scr').style.display='none';
