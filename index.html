@@ -743,7 +743,15 @@ const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
    be caught by the health-check warnings rather than silently misread. */
 function parseDateSmart(raw){
   if(raw===null||raw===undefined)return null;
-  const d=String(raw).trim();
+  /* Strip: leading apostrophe (Sheets' "force text" marker), all whitespace
+     variants including non-breaking space (\u00A0), zero-width characters,
+     and BOM — any of which could make an otherwise-valid string silently
+     fail every regex below without looking visibly different. */
+  let d=String(raw)
+    .replace(/^[\uFEFF\u200B]+/,'')
+    .replace(/[\u00A0\s]+/g,' ')
+    .trim()
+    .replace(/^'/,'');
   if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
 
   /* Google Sheets gviz CSV export occasionally serialises a Date-typed cell
@@ -975,6 +983,17 @@ async function loadData(){
   try{
     const[cr,or,rr]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS'),fetchSheet('12_RECEIPTS')]);
 
+    /* Keep raw parsed CSV rows accessible from the browser console for direct
+       inspection: window.__RAW_ORDERS, window.__RAW_RECEIPTS. Each row is the
+       exact array produced by parseCSV — nothing transformed, nothing mapped.
+       To inspect a specific date cell, e.g. for order row 50:
+         window.__RAW_ORDERS[50]
+       This bypasses every layer of column-resolution and date-parsing logic
+       so the literal CSV text can be seen directly. */
+    window.__RAW_ORDERS=or;
+    window.__RAW_RECEIPTS=rr;
+    window.__RAW_CUSTOMERS=cr;
+
     /* ── 1_CUSTOMERS: resolve columns by header, fallback to known index ── */
     const cH=cr[0]||[];
     const cIdId=findCol(cH,'customerid','custid'); const cIdIdx=cIdId!==-1?cIdId:0;
@@ -1042,6 +1061,16 @@ async function loadData(){
     }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
 
+    /* Expose processed records too: window.__ORDERS / window.__RECEIPTS.
+       Each entry has .date (the literal raw string after trim) and ._d (the
+       parsed Date object, or null). Run this in console to check any
+       customer's records directly, e.g.:
+         window.__ORDERS.filter(o=>o.bizName.toLowerCase().includes('ayush'))
+           .map(o=>({raw:o.date, parsed:o._d, display:fmtDateObj(o._d)}))
+    */
+    window.__ORDERS=orders;
+    window.__RECEIPTS=receipts;
+
     /* ── Column resolution + date parse health check (logs once per load) ── */
     console.log('[Aaradhya] Orders columns → date: "'+oH[oIdDateIdx]+'" (idx '+oIdDateIdx+'), amount: "'+oH[oIdAmtIdx]+'" (idx '+oIdAmtIdx+')');
     console.log('[Aaradhya] Receipts columns → date: "'+rH[rIdDateIdx]+'" (idx '+rIdDateIdx+'), amount: "'+rH[rIdAmtIdx]+'" (idx '+rIdAmtIdx+')');
@@ -1069,7 +1098,7 @@ async function loadData(){
 
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
-    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v4-slash-fix';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v5-debug-exposed';
     showPage('dashboard');
   }catch(e){
     document.getElementById('loading-scr').style.display='none';
@@ -1591,7 +1620,7 @@ function showDetailById(custId){
         <tbody>
           ${sRcpts.map((r,i)=>`<tr>
             <td style="color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:11px">${String(sRcpts.length-i).padStart(2,'0')}</td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(r._d)}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(r._d)}<div style="font-size:9px;color:var(--text3);opacity:.6">src: ${r.date||'(empty)'}</div></td>
             <td class="ord-amt" style="color:var(--green);font-size:15px">${fmtINR(r.amount)}</td>
           </tr>`).join('')}
         </tbody>
@@ -1617,7 +1646,7 @@ function showDetailById(custId){
         <tbody>
           ${sOrds.map(o=>`<tr>
             <td><span class="oid">${o.id}</span></td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(o._d)}</td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(o._d)}<div style="font-size:9px;color:var(--text3);opacity:.6">src: ${o.date||'(empty)'}</div></td>
             <td class="ord-amt">${fmtINR(o.amount)}</td>
           </tr>`).join('')}
         </tbody>
