@@ -673,6 +673,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       <div class="panel-hd"><div class="panel-title">◈ TOP AGENTS</div></div>
       <div id="top-list-area"></div>
     </div>
+    <!-- analytics charts -->
+    <div id="chart-section"></div>
     <!-- tier changes -->
     <div id="tc-section"></div>
     <!-- receipts summary -->
@@ -717,6 +719,17 @@ function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:T
 
 /* ═══════ UTILS ═══════ */
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
+
+/* ═══════════ DATE HELPERS (restored) ═══════════ */
+function fmtDateObj(dt){
+  if(!dt||isNaN(dt.getTime()))return '—';
+  return String(dt.getDate()).padStart(2,'0')+'-'+MON_NAMES[dt.getMonth()+1]+'-'+dt.getFullYear();
+}
+function dateKey(dt){return dt&&!isNaN(dt.getTime())?dt.getTime():0;}
+function monthFromDateObj(dt){
+  if(!dt||isNaN(dt.getTime()))return '';
+  return MON_NAMES[dt.getMonth()+1]+'-'+dt.getFullYear();
+}
 
 /* ═══════════════════════════════════════════════════════════
    CANONICAL DATE ENGINE — single source of truth for all dates.
@@ -949,6 +962,231 @@ function findCol(headerRow,...candidates){
   return -1;
 }
 
+/* ═══════ LIGHTWEIGHT SVG CHART ENGINE ═══════ */
+/* Vertical bar chart. data: [{label, value, color?}]. */
+function buildBarChart(data,opts={}){
+  const W=opts.width||320,H=opts.height||140,pad={t:18,r:10,b:26,l:10};
+  const innerW=W-pad.l-pad.r,innerH=H-pad.t-pad.b;
+  const maxV=Math.max(1,...data.map(d=>d.value));
+  const n=data.length||1;
+  const gap=8,barW=Math.max(8,(innerW-gap*(n-1))/n);
+  const defaultColor=opts.color||'var(--cyan)';
+  let bars='',labels='';
+  data.forEach((d,i)=>{
+    const h=Math.max(2,(d.value/maxV)*innerH);
+    const x=pad.l+i*(barW+gap);
+    const y=pad.t+innerH-h;
+    const color=d.color||defaultColor;
+    bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${color}" opacity="0.85">
+      <title>${d.label}: ${opts.fmt?opts.fmt(d.value):d.value}</title>
+    </rect>`;
+    if(d.value>0){
+      bars+=`<text x="${x+barW/2}" y="${y-5}" text-anchor="middle" font-size="9" font-family="Share Tech Mono, monospace" fill="${color}">${opts.barLabelFmt?opts.barLabelFmt(d.value):''}</text>`;
+    }
+    labels+=`<text x="${x+barW/2}" y="${H-8}" text-anchor="middle" font-size="9" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.3">${d.label}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" preserveAspectRatio="xMidYMid meet">
+    <line x1="${pad.l}" y1="${pad.t+innerH}" x2="${W-pad.r}" y2="${pad.t+innerH}" stroke="var(--border2)" stroke-width="1"/>
+    ${bars}${labels}
+  </svg>`;
+}
+
+/* Line chart with optional second series, glow stroke, and dot markers.
+   series: [{name,color,values:[...]}], labels:[...] */
+function buildLineChart(opts){
+  const W=opts.width||320,H=opts.height||150,pad={t:20,r:14,b:24,l:14};
+  const innerW=W-pad.l-pad.r,innerH=H-pad.t-pad.b;
+  const labels=opts.labels||[];
+  const series=opts.series||[];
+  const allVals=series.flatMap(s=>s.values);
+  const maxV=Math.max(1,...allVals);
+  const n=labels.length||1;
+  const stepX=n>1?innerW/(n-1):0;
+  const xAt=i=>pad.l+(n>1?i*stepX:innerW/2);
+  const yAt=v=>pad.t+innerH-(v/maxV)*innerH;
+
+  /* gridlines */
+  let grid='';
+  for(let g=0;g<=2;g++){
+    const gy=pad.t+innerH*(g/2);
+    grid+=`<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="var(--border2)" stroke-width="1"/>`;
+  }
+
+  let paths='';
+  series.forEach((s,si)=>{
+    const pts=s.values.map((v,i)=>`${xAt(i)},${yAt(v)}`).join(' ');
+    const areaPath=`M${xAt(0)},${pad.t+innerH} L${pts.split(' ').join(' L')} L${xAt(n-1)},${pad.t+innerH} Z`;
+    paths+=`<path d="${areaPath}" fill="${s.color}" opacity="0.07"/>`;
+    paths+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 4px ${s.color}80)"/>`;
+    s.values.forEach((v,i)=>{
+      paths+=`<circle cx="${xAt(i)}" cy="${yAt(v)}" r="3.5" fill="${s.color}" stroke="var(--bg)" stroke-width="1.5">
+        <title>${s.name} — ${labels[i]}: ${opts.fmt?opts.fmt(v):v}</title>
+      </circle>`;
+    });
+  });
+
+  const labelEls=labels.map((l,i)=>`<text x="${xAt(i)}" y="${H-6}" text-anchor="middle" font-size="9" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.3">${l}</text>`).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" preserveAspectRatio="xMidYMid meet">
+    ${grid}${paths}${labelEls}
+  </svg>`;
+}
+
+/* Donut/ring chart. data: [{label, value, color}]. Returns {svg,legend}. */
+function buildDonutChart(data,opts={}){
+  const size=opts.size||130,stroke=opts.stroke||16;
+  const r=(size-stroke)/2,cx=size/2,cy=size/2,circumference=2*Math.PI*r;
+  const total=data.reduce((s,d)=>s+d.value,0)||1;
+  let offset=0,arcs='';
+  data.forEach(d=>{
+    const frac=d.value/total;
+    const len=frac*circumference;
+    arcs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${d.color}"
+      stroke-width="${stroke}" stroke-dasharray="${len} ${circumference-len}"
+      stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt">
+      <title>${d.label}: ${d.value}</title>
+    </circle>`;
+    offset+=len;
+  });
+  const centerLbl=opts.centerLabel||'';
+  const centerVal=opts.centerValue||total;
+  const svg=`<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;flex-shrink:0">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border2)" stroke-width="${stroke}"/>
+    ${arcs}
+    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="20" font-weight="700" font-family="Rajdhani, sans-serif" fill="var(--text)">${centerVal}</text>
+    <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="8" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.5">${centerLbl}</text>
+  </svg>`;
+  const legend=data.filter(d=>d.value>0).map(d=>`
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:3px 0">
+      <span style="width:8px;height:8px;border-radius:2px;background:${d.color};flex-shrink:0;box-shadow:0 0 6px ${d.color}80"></span>
+      <span style="color:var(--text2)">${d.label}</span>
+      <span style="color:${d.color};font-weight:700;margin-left:auto;font-family:'Rajdhani',sans-serif">${d.value}</span>
+    </div>`).join('');
+  return {svg,legend};
+}
+
+/* ── PROFILE CHARTS ── */
+function buildProfileChartsHTML(custId,cOrds,cRcpts,initOut,aAmt,aCollected,outstanding){
+  /* Per-month order vs receipt trend for this customer, last 6 known months */
+  const trendMonths=allMonths.slice(0,6).slice().reverse();
+  const ordByMonth=trendMonths.map(m=>cOrds.filter(o=>o.month===m).reduce((s,o)=>s+o.amount,0));
+  const rcptByMonth=trendMonths.map(m=>cRcpts.filter(r=>r.month===m).reduce((s,r)=>s+r.amount,0));
+  const trendLabels=trendMonths.map(m=>m.split('-')[0]);
+  const hasTrendData=ordByMonth.some(v=>v>0)||rcptByMonth.some(v=>v>0);
+
+  const trendChart=(trendMonths.length>=2&&hasTrendData)?buildLineChart({
+    width:300,height:150,labels:trendLabels,
+    series:[
+      {name:'Ordered',color:'#00E5FF',values:ordByMonth},
+      {name:'Collected',color:'#00FF88',values:rcptByMonth},
+    ],
+    fmt:fmtINR
+  }):'<div class="empty-note">[ NOT ENOUGH ORDER HISTORY YET ]</div>';
+
+  /* Payment status donut: Collected vs Outstanding share of total liability */
+  const totalLiability=initOut+aAmt;
+  const donutData=[
+    {label:'Collected',value:aCollected,color:'#00FF88'},
+    {label:'Outstanding',value:outstanding,color:'#FF2D78'},
+  ];
+  const collPctForDonut=totalLiability>0?Math.round(aCollected/totalLiability*100):0;
+  const donut=buildDonutChart(donutData,{centerLabel:'PAID',centerValue:collPctForDonut+'%'});
+
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" class="dash-chart-grid">
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">◈ PURCHASE TREND</div>
+        <div class="panel-tag">LAST ${trendMonths.length} CYCLES</div>
+      </div>
+      <div style="padding:14px 14px 6px">
+        ${trendChart}
+        ${(trendMonths.length>=2&&hasTrendData)?`
+        <div style="display:flex;gap:16px;justify-content:center;padding-top:8px;border-top:1px solid var(--border2);margin-top:4px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><span style="width:10px;height:2px;background:#00E5FF;display:inline-block;box-shadow:0 0 6px #00E5FF"></span>Ordered</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><span style="width:10px;height:2px;background:#00FF88;display:inline-block;box-shadow:0 0 6px #00FF88"></span>Collected</div>
+        </div>`:''}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd"><div class="panel-title">◈ PAYMENT STATUS</div></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:18px 12px;flex-wrap:wrap">
+        ${donut.svg}
+        <div style="min-width:110px">${donut.legend}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════ DASHBOARD ANALYTICS CHARTS ═══════ */
+function renderDashCharts(ids,totals){
+  const sec=document.getElementById('chart-section');
+
+  /* Revenue + collections trend across the last 6 known months (oldest→newest) */
+  const trendMonths=allMonths.slice(0,6).slice().reverse();
+  const revByMonth=trendMonths.map(m=>orders.filter(o=>o.month===m).reduce((s,o)=>s+o.amount,0));
+  const collByMonth=trendMonths.map(m=>receipts.filter(r=>r.month===m).reduce((s,r)=>s+r.amount,0));
+  const trendLabels=trendMonths.map(m=>m.split('-')[0]);
+
+  const trendChart=trendMonths.length>=2?buildLineChart({
+    width:320,height:160,labels:trendLabels,
+    series:[
+      {name:'Revenue',color:'#00E5FF',values:revByMonth},
+      {name:'Collected',color:'#00FF88',values:collByMonth},
+    ],
+    fmt:fmtINR
+  }):'<div class="empty-note">[ NOT ENOUGH MONTHS OF DATA YET ]</div>';
+
+  /* Tier distribution donut, using already-computed totals for the selected period */
+  const donutData=TIERS.map(t=>{
+    const nextMin=TIERS[TIERS.indexOf(t)-1]?.min||Infinity;
+    const cnt=ids.filter(id=>totals[id]>=t.min&&totals[id]<nextMin).length;
+    return {label:t.name,value:cnt,color:t.color};
+  });
+  const unrankedCnt=ids.filter(id=>totals[id]<TIERS[TIERS.length-1].min).length;
+  if(unrankedCnt>0)donutData.push({label:'UNRANKED',value:unrankedCnt,color:UNRANKED.color});
+  const donut=buildDonutChart(donutData,{centerLabel:'AGENTS',centerValue:ids.length});
+
+  /* Top 6 agents bar chart for the selected period */
+  const top6=ids.slice().sort((a,b)=>totals[b]-totals[a]).slice(0,6);
+  const nm2=nameMap(orders);
+  const barData=top6.map(id=>{
+    const t=getTier(totals[id]);
+    return {label:(nm2[id]||id).split(' ')[0].slice(0,8),value:totals[id],color:t.color};
+  });
+  const barChart=barData.length>0?buildBarChart(barData,{width:320,height:150,fmt:fmtINR,barLabelFmt:v=>'₹'+(v>=1000?(v/1000).toFixed(1)+'k':v)}):'<div class="empty-note">[ NO DATA ]</div>';
+
+  sec.innerHTML=`
+  <div class="panel" style="margin-bottom:14px">
+    <div class="panel-hd">
+      <div class="panel-title">◈ REVENUE TREND</div>
+      <div class="panel-tag">LAST ${trendMonths.length} CYCLES</div>
+    </div>
+    <div style="padding:14px 16px 6px">
+      ${trendChart}
+      ${trendMonths.length>=2?`
+      <div style="display:flex;gap:16px;justify-content:center;padding-top:8px;border-top:1px solid var(--border2);margin-top:4px">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><span style="width:10px;height:2px;background:#00E5FF;display:inline-block;box-shadow:0 0 6px #00E5FF"></span>Revenue</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><span style="width:10px;height:2px;background:#00FF88;display:inline-block;box-shadow:0 0 6px #00FF88"></span>Collected</div>
+      </div>`:''}
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px" class="dash-chart-grid">
+    <div class="panel">
+      <div class="panel-hd"><div class="panel-title">◈ RANK SPLIT</div></div>
+      <div style="display:flex;align-items:center;gap:14px;padding:16px">
+        ${donut.svg}
+        <div style="flex:1;min-width:0">${donut.legend}</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd"><div class="panel-title">◈ TOP 6 AGENTS</div></div>
+      <div style="padding:14px 12px 6px">${barChart}</div>
+    </div>
+  </div>
+  `;
+}
+
 /* ═══════ LOAD ═══════ */
 async function loadData(){
   document.getElementById('loading-scr').style.display='flex';
@@ -1072,7 +1310,7 @@ async function loadData(){
 
     buildPills();renderDash();buildBizList();
     document.getElementById('loading-scr').style.display='none';
-    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v5-debug-exposed';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v6-charts-restored';
     showPage('dashboard');
   }catch(e){
     document.getElementById('loading-scr').style.display='none';
@@ -1211,6 +1449,7 @@ function renderDash(){
 
   renderTierChanges(chgMap,curMo,prevMo,nm);
   renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo);
+  renderDashCharts(ids,totals);
 }
 
 function renderTierChanges(chgMap,curMo,prevMo,nm){
@@ -1550,6 +1789,8 @@ function showDetailById(custId){
       </div>
     </div>
 
+    ${buildProfileChartsHTML(custId,cOrds,cRcpts,initOut,aAmt,aCollected,outstanding)}
+
     ${questHTML(quests,curMo)}
 
     ${predictHTML}
@@ -1654,4 +1895,3 @@ loadData();
 </script>
 </body>
 </html>
-
