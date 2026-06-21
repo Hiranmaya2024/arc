@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- build marker: date-engine-v7-explicit -->
+<!-- build marker: date-engine-v3-strict-dd-mm-yyyy -->
 
 <title>Aaradhya Rx Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,14 +50,17 @@ body{
   color:var(--text);
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
+  /* scanline overlay */
   background-image:
     repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.012) 2px,rgba(0,229,255,.012) 4px);
 }
 a{text-decoration:none;color:inherit}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
+/* headings use Rajdhani */
 .rj{font-family:'Rajdhani',sans-serif}
 .mono{font-family:'Share Tech Mono',monospace}
 
+/* ═══════════ GRID CORNERS MIXIN (pseudo brackets) ═══════════ */
 .hud-box{position:relative}
 .hud-box::before,.hud-box::after{
   content:'';position:absolute;width:10px;height:10px;
@@ -73,6 +76,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .hud-box-b::before{bottom:0;left:0;border-width:0 0 1.5px 1.5px}
 .hud-box-b::after{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
 
+/* ═══════════ TOPBAR ═══════════ */
 .topbar{
   height:58px;padding:0 20px;display:flex;align-items:center;gap:14px;
   position:sticky;top:0;z-index:300;
@@ -81,6 +85,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   backdrop-filter:blur(12px);
   box-shadow:0 1px 0 rgba(0,229,255,.08), 0 4px 24px rgba(0,0,0,.6);
 }
+/* animated cyan scan line on topbar */
 .topbar::after{
   content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent 0%,var(--cyan) 50%,transparent 100%);
@@ -88,6 +93,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 @keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 
+/* logo = pill cross */
 .logo-wrap{width:36px;height:36px;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center}
 .logo-pill{
   width:36px;height:36px;border-radius:50%;
@@ -107,32 +113,117 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .bar-sub span{color:var(--cyan2);opacity:.6}
 
 .bar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+/* tab switcher */
 .tab-rack{display:flex;gap:2px;background:rgba(0,229,255,.05);border:1px solid var(--border2);border-radius:5px;padding:3px}
 .tab-btn{padding:5px 14px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;color:var(--text3);border-radius:3px;transition:all .15s}
 .tab-btn.on{background:rgba(0,229,255,.12);color:var(--cyan);box-shadow:inset 0 0 8px rgba(0,229,255,.15)}
+/* hud buttons */
 .hbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:.05em;border-radius:4px;transition:all .15s;cursor:pointer}
 .hbtn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
 .hbtn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
 .hbtn-cyan{background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.4);box-shadow:var(--cyan-glow)}
 .hbtn-cyan:hover{background:rgba(0,229,255,.2)}
 
+/* ═══════════ LAYOUT ═══════════ */
 .shell{max-width:980px;margin:0 auto;padding:20px 16px 60px}
 .page{display:none}
 .page.on{display:block}
 
+/* ═══════════ PERIOD FILTER ═══════════ */
 .period-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:20px}
 .period-lbl{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-right:4px}
 .pill{padding:4px 14px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:.05em;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);transition:all .15s;cursor:pointer}
 .pill:hover{border-color:var(--cyan);color:var(--cyan)}
 .pill.on{background:rgba(0,229,255,.1);color:var(--cyan);border-color:rgba(0,229,255,.5);box-shadow:0 0 10px rgba(0,229,255,.2)}
 
+/* ═══════════ LOADING ═══════════ */
 .loading-scr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;gap:16px}
+
+/* ═══════════ LOGIN SCREEN ═══════════ */
+.login-scr{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(0,229,255,.06), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(0,255,136,.05), transparent 40%);
+  padding:20px;
+}
+.login-card{
+  width:100%;max-width:360px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:32px 28px 26px;
+  box-shadow:0 0 40px rgba(0,229,255,.08), inset 0 1px 0 rgba(255,255,255,.03);
+  text-align:center;
+}
+.login-title{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:.08em;color:var(--text);margin-bottom:4px}
+.login-sub{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--text3);margin-bottom:26px}
+.login-field{text-align:left;margin-bottom:14px}
+.login-field label{display:block;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text2);margin-bottom:6px}
+.login-field input{
+  width:100%;box-sizing:border-box;
+  background:var(--panel2);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:11px 12px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:13px;color:var(--text);
+  outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+.login-field input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.1)}
+.login-field input::placeholder{color:var(--text3)}
+.login-err{
+  text-align:left;font-size:12px;color:var(--red);
+  background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.25);
+  border-radius:6px;padding:9px 11px;margin-bottom:14px;
+}
+.login-btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  color:#04141A;
+  border:none;border-radius:6px;
+  padding:12px;
+  font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.08em;
+  cursor:pointer;
+  box-shadow:0 0 16px rgba(0,229,255,.3);
+  transition:transform .1s, box-shadow .15s;
+}
+.login-btn:hover{box-shadow:0 0 22px rgba(0,229,255,.45)}
+.login-btn:active{transform:scale(.98)}
+.login-hint{margin-top:18px;font-size:11px;color:var(--text3);line-height:1.5}
+.login-hint strong{color:var(--text2)}
+
 .hud-spinner{width:44px;height:44px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite;box-shadow:var(--cyan-glow)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-scr .lt{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase}
 .loading-scr .ls{font-size:11px;color:var(--text3)}
 .err-bar{background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.3);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:18px}
 
+/* ═══════════ COLLAPSIBLE FOLD SECTIONS ═══════════ */
+.fold{
+  background:var(--panel);border-radius:var(--r);
+  border:1px solid var(--border);margin-bottom:12px;overflow:hidden;
+}
+.fold summary{
+  list-style:none;cursor:pointer;user-select:none;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px;
+  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);
+  -webkit-tap-highlight-color:transparent;
+}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary::after{
+  content:'▾';font-size:12px;color:var(--text3);transition:transform .15s;
+}
+.fold[open] summary::after{transform:rotate(180deg)}
+.fold[open] summary{border-bottom:1px solid var(--border2)}
+.fold > div{padding:4px 0}
+
+/* ═══════════ SECTION PANEL ═══════════ */
 .panel{
   background:var(--panel);border-radius:var(--r);
   border:1px solid var(--border);margin-bottom:14px;overflow:hidden;
@@ -147,6 +238,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .panel-title{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:8px}
 .panel-tag{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:.07em;padding:3px 10px;border-radius:3px;background:rgba(0,229,255,.08);color:var(--cyan2);border:1px solid var(--border2)}
 
+/* ═══════════ METRICS ═══════════ */
 .metrics-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px;margin-bottom:14px}
 .mc{
   background:var(--panel);border-radius:var(--r);padding:18px 20px;
@@ -163,6 +255,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   box-shadow:inset 0 0 30px rgba(0,229,255,.04), var(--cyan-glow);
 }
 .mc.hero::after{color:var(--cyan)}
+/* grid pattern inside hero */
 .mc.hero::before{
   content:'';position:absolute;inset:0;
   background-image:linear-gradient(rgba(0,229,255,.04) 1px,transparent 1px),
@@ -175,6 +268,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .mc.hero .mc-val{color:var(--cyan);font-size:26px;text-shadow:var(--cyan-glow)}
 .mc-sub{font-size:11px;color:var(--text3);margin-top:4px}
 
+/* ═══════════ TIER GRID ═══════════ */
+/* Tier defs */
 .tier-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
 .tc{padding:16px 8px;text-align:center;border-right:1px solid var(--border2);position:relative;transition:background .15s;cursor:default;overflow:hidden}
 .tc:last-child{border-right:none}
@@ -185,10 +280,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tc-ct{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:3px}
 .tc-mn{font-size:9px;color:var(--text3);font-weight:500;letter-spacing:.03em}
 
+/* ═══════════ TOP PURCHASERS ═══════════ */
 .top-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .12s;position:relative}
 .top-row:last-child{border-bottom:none}
 .top-row:hover{background:rgba(0,229,255,.03)}
 .top-row:hover .tr-chev{color:var(--cyan);opacity:1}
+/* rank medal */
 .rank-orb{
   width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;flex-shrink:0;
@@ -203,10 +300,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tr-badge{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;padding:2px 9px;border-radius:2px;margin-top:4px;display:inline-block}
 .tr-chev{color:var(--text3);font-size:18px;opacity:.4;transition:all .15s;flex-shrink:0;margin-left:4px}
 
+/* inline change badges */
 .ibadge{display:inline-flex;align-items:center;gap:3px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:2px;vertical-align:middle;margin-left:5px}
 .ibadge.up{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.3)}
 .ibadge.dn{background:rgba(255,45,120,.1);color:var(--red);border:1px solid rgba(255,45,120,.3)}
 
+/* ═══════════ TIER CHANGE SECTION ═══════════ */
 .tc-head-up{padding:8px 18px;background:rgba(0,255,136,.06);border-bottom:1px solid rgba(0,255,136,.12);border-top:1px solid var(--border2);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:6px}
 .tc-head-dn{padding:8px 18px;background:rgba(255,45,120,.06);border-bottom:1px solid rgba(255,45,120,.12);border-top:1px solid var(--border2);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);display:flex;align-items:center;gap:6px}
 .tch-row{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .12s}
@@ -220,6 +319,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tch-prev{font-size:10px;color:var(--text3);margin-top:2px}
 .no-chg{padding:18px;text-align:center;font-size:12px;color:var(--text3)}
 
+/* ═══════════ PARTNERS LIST ═══════════ */
 .search-wrap{position:relative;margin-bottom:12px}
 .search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .search-inp{
@@ -238,6 +338,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 .pl-item:last-child{border-bottom:none}
 .pl-item:hover{background:rgba(0,229,255,.03)}
+/* avatar */
 .pl-av{
   width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;
   font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;flex-shrink:0;
@@ -250,6 +351,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .pl-amt{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--cyan)}
 .pl-tier{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:.05em;padding:2px 8px;border-radius:2px;margin-top:3px;display:inline-block}
 
+/* ═══════════ DETAIL HERO ═══════════ */
 .det-panel{
   background:var(--panel);border-radius:var(--r);border:1px solid var(--border);
   border-left-width:4px;margin-bottom:12px;overflow:hidden;position:relative;
@@ -277,6 +379,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .chg-pill.up{background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.3)}
 .chg-pill.dn{background:rgba(255,45,120,.1);color:var(--red);border-color:rgba(255,45,120,.3)}
 
+/* tier change banner */
 .chg-banner{display:flex;align-items:center;gap:14px;margin:0 20px 16px;padding:12px 16px;border-radius:4px;border:1px solid}
 .chg-banner.up{background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.25)}
 .chg-banner.dn{background:rgba(255,45,120,.06);border-color:rgba(255,45,120,.25)}
@@ -286,18 +389,21 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .chg-banner-lbl.dn{color:var(--red)}
 .chg-banner-tiers{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 
+/* info grid */
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 16px;position:relative}
 .inf{background:var(--panel2);border-radius:4px;padding:10px 13px;border:1px solid var(--border2)}
 .inf-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
 .inf-val{font-size:13px;font-weight:600;color:var(--text);word-break:break-word}
 .inf-val.mono{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan2);letter-spacing:.04em}
 .s2{grid-column:1/-1}
+/* capsule-style contact btns */
 .cbtns{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
 .cbtn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;transition:filter .15s;cursor:pointer;border:1px solid}
 .cbtn:hover{filter:brightness(1.15)}
 .cbtn-call{background:rgba(0,229,255,.1);color:var(--cyan);border-color:rgba(0,229,255,.35)}
 .cbtn-wa{background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.3)}
 
+/* stats strip */
 .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 18px;position:relative}
 .st{background:var(--panel2);border-radius:4px;padding:12px 10px;text-align:center;border:1px solid var(--border2);position:relative;overflow:hidden}
 .st-bar{position:absolute;top:0;left:0;right:0;height:2px}
@@ -305,8 +411,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .st-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
 .st-diff{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;margin-top:5px;letter-spacing:.03em}
 
+/* ═══════════ QUEST CARD ═══════════ */
 .quest-panel{background:var(--panel);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:12px;position:relative}
 .quest-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.5}
+/* header */
 .qhd{display:flex;align-items:stretch;min-height:68px}
 .qhd-left{
   flex:1;padding:14px 20px;
@@ -317,24 +425,29 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .qhd-icon{font-size:26px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,184,0,.5))}
 .qhd-ttl{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);text-shadow:0 0 12px rgba(255,184,0,.4)}
 .qhd-sub{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:.03em}
+/* ring + score */
 .qhd-right{padding:14px 20px;display:flex;align-items:center;gap:14px;background:rgba(255,184,0,.04)}
 .qring-wrap{position:relative;width:54px;height:54px;flex-shrink:0}
 .qring-wrap svg{transform:rotate(-90deg)}
 .qring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--amber)}
 .qscore-num{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:var(--amber);line-height:1;text-shadow:0 0 12px rgba(255,184,0,.4)}
 .qscore-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-top:3px}
+/* quest items */
 .qi{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border2);transition:background .12s}
 .qi:last-child{border-bottom:none}
 .qi:hover{background:rgba(255,255,255,.015)}
+/* icon pill — looks like a medicine capsule */
 .qi-pill{
   width:44px;height:44px;border-radius:22px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;font-size:20px;
   position:relative;overflow:hidden;border:1px solid;
 }
+/* vertical half-split like a capsule */
 .qi-pill::before{content:'';position:absolute;top:0;bottom:0;left:0;width:50%;background:rgba(255,255,255,.04)}
 .qi-body{flex:1;min-width:0}
 .qi-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.04em;color:var(--text);margin-bottom:2px}
 .qi-desc{font-size:11px;color:var(--text3);margin-bottom:8px}
+/* XP bar */
 .xp-track{height:8px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;margin-bottom:5px;position:relative}
 .xp-track::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 20px)}
 .xp-fill{height:100%;border-radius:1px;transition:width .6s cubic-bezier(.4,0,.2,1);position:relative}
@@ -342,6 +455,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .xp-row{display:flex;justify-content:space-between;align-items:center}
 .xp-prog{font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:600}
 .xp-tip{font-size:10px;color:var(--text3)}
+/* status ring */
 .q-stat{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;min-width:44px}
 .q-orb{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid;font-family:'Rajdhani',sans-serif}
 .q-orb.done{background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.4);box-shadow:0 0 10px rgba(0,255,136,.25)}
@@ -349,6 +463,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .q-orb.low{background:rgba(255,255,255,.04);color:var(--text3);border-color:var(--border2)}
 .q-pct{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700}
 
+/* ═══════════ ORDER TABLE ═══════════ */
 .ord-panel{background:var(--panel);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
 .ord-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border2)}
 .ord-hd-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
@@ -364,6 +479,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tbl-more{text-align:center;padding:10px;font-size:11px;color:var(--text3);border-top:1px solid var(--border2)}
 .empty-note{text-align:center;padding:40px 20px;font-size:13px;color:var(--text3)}
 
+/* ═══════════ RECEIPTS PANEL ═══════════ */
 .rcpt-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border2)}
 .rcpt-sum-cell{padding:14px 16px;text-align:center;border-right:1px solid var(--border2)}
 .rcpt-sum-cell:last-child{border-right:none}
@@ -375,9 +491,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .rcpt-name{font-size:12px;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rcpt-mo{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;padding:2px 7px;border-radius:2px;background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2);flex-shrink:0}
 .rcpt-amt{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0;min-width:80px}
+/* outstanding badge */
 .outstanding-pill{display:inline-flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;background:rgba(255,45,120,.1);color:var(--red);border:1px solid rgba(255,45,120,.3)}
 .clear-pill{display:inline-flex;align-items:center;gap:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.25)}
 
+/* ═══════════ PREDICTION CARD ═══════════ */
 .predict-panel{background:var(--panel);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:12px;position:relative}
 .predict-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),transparent);opacity:.5}
 .predict-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
@@ -394,13 +512,41 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .predict-countdown.normal{background:rgba(0,229,255,.08);color:var(--cyan2);border:1px solid var(--border2)}
 .predict-insufficient{padding:16px 18px;text-align:center;color:var(--text3);font-size:12px;grid-column:1/-1}
 .cadence-stat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);margin-top:6px}
+/* 4-col metrics on wider screens */
 @media(min-width:700px){.metrics-grid-4{grid-template-columns:1.3fr 1fr 1fr 1fr}}
 
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:400;background:rgba(4,8,15,.97);border-top:1px solid var(--border);backdrop-filter:blur(16px);padding:0;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 24px rgba(0,0,0,.6)}
-.mob-nav::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.3;animation:scan 3s linear infinite}
+/* ═══════════════════════════════════════
+   MOBILE BOTTOM NAV BAR
+═══════════════════════════════════════ */
+.mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:400;
+  background:rgba(4,8,15,.97);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  padding:0;
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -4px 24px rgba(0,0,0,.6);
+}
+.mob-nav::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:.3;animation:scan 3s linear infinite;
+}
 .mob-nav-inner{display:flex;align-items:stretch}
-.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--text3);transition:all .15s;border:none;background:none;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
-.mob-tab::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--cyan);border-radius:0 0 2px 2px;transform:scaleX(0);transition:transform .2s}
+.mob-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:10px 6px;
+  font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;
+  color:var(--text3);transition:all .15s;border:none;background:none;cursor:pointer;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-tab::after{
+  content:'';position:absolute;top:0;left:20%;right:20%;height:2px;
+  background:var(--cyan);border-radius:0 0 2px 2px;
+  transform:scaleX(0);transition:transform .2s;
+}
 .mob-tab.on{color:var(--cyan)}
 .mob-tab.on::after{transform:scaleX(1);box-shadow:0 0 8px var(--cyan)}
 .mob-tab-icon{font-size:18px;line-height:1;transition:transform .15s}
@@ -408,10 +554,19 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .mob-tab-sync{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--amber);border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mob-tab-sync .mob-tab-icon{filter:drop-shadow(0 0 4px var(--amber))}
 
+/* ═══════════════════════════════════════
+   MOBILE TOPBAR ADJUSTMENTS
+═══════════════════════════════════════ */
 @media(max-width:600px){
+  /* Show bottom nav, hide desktop tabs + sync btn in topbar */
   .mob-nav{display:block}
   .tab-rack{display:none !important}
   .desk-sync{display:none !important}
+
+  /* Stack analytics charts into one column on small screens */
+  .dash-chart-grid{grid-template-columns:1fr !important}
+
+  /* Compact topbar */
   .topbar{height:52px;padding:0 14px;gap:10px}
   .logo-pill{width:32px;height:32px}
   .logo-pill span{font-size:14px}
@@ -419,37 +574,55 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .bar-sub{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
   .bar-right{gap:6px}
   .hbtn{padding:5px 10px;font-size:11px}
+
+  /* Shell — room for bottom nav */
   .shell{padding:14px 10px 86px}
+
+  /* Metrics: hero full-width, other 2 side by side */
   .metrics-grid{grid-template-columns:1fr 1fr;gap:10px}
   .metrics-grid .mc:first-child{grid-column:1/-1}
   .mc{padding:14px 14px}
   .mc-val{font-size:24px}
   .mc.hero .mc-val{font-size:22px}
   .mc-ico{font-size:16px;margin-bottom:8px}
+
+  /* Tier grid: 3 columns, wrap to 2 rows */
   .tier-grid{grid-template-columns:repeat(3,1fr)}
   .tc{padding:13px 6px}
   .tc:nth-child(4){border-top:1px solid var(--border2)}
   .tc:nth-child(5){border-top:1px solid var(--border2);border-right:none}
   .tc-ct{font-size:26px}
   .tc-emoji{font-size:18px}
+
+  /* Top row: tighter */
   .top-row{padding:11px 12px;gap:10px}
   .rank-orb{width:28px;height:28px;font-size:11px}
   .tr-name{font-size:13px}
   .tr-amt{font-size:14px}
-  .tr-right .tr-badge{display:none}
+  .tr-right .tr-badge{display:none} /* hide on mobile, space is tight */
+
+  /* Tier change section */
   .tch-row{padding:10px 12px;gap:10px}
   .panel-hd{padding:11px 14px}
+
+  /* Search */
   .search-inp{font-size:14px;padding:11px 12px 11px 36px}
   .search-wrap svg{left:11px}
+
+  /* Partner list items */
   .pl-item{padding:10px 12px;gap:10px}
   .pl-av{width:34px;height:34px;font-size:12px}
   .pl-name{font-size:13px}
   .pl-amt{font-size:12px}
+
+  /* Period pills — horizontal scroll */
   .period-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
   .period-bar::-webkit-scrollbar{display:none}
   .period-bar .period-lbl{flex-shrink:0}
   #period-pills{flex-wrap:nowrap;flex-shrink:0}
   .pill{white-space:nowrap;flex-shrink:0}
+
+  /* Detail page */
   .det-top-bar{padding:14px 14px;gap:12px}
   .det-avatar{width:46px;height:46px;font-size:17px}
   .det-name{font-size:18px}
@@ -459,6 +632,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .st-num{font-size:15px}
   .chg-banner{margin:12px 14px 0;padding:10px 12px;gap:10px}
   .chg-banner-icon{font-size:22px}
+
+  /* Quest card */
   .qhd{flex-direction:column}
   .qhd-left{border-right:none;border-bottom:1px solid rgba(255,184,0,.15);padding:12px 16px}
   .qhd-right{padding:12px 16px;border-top:none;justify-content:flex-start;gap:16px}
@@ -468,19 +643,35 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .qi-desc{font-size:10px;margin-bottom:6px}
   .q-stat{min-width:38px}
   .q-orb{width:32px;height:32px;font-size:13px}
+
+  /* Order/receipt table: compact on mobile, keep all columns visible */
   .ord-tbl th{padding:7px 10px;font-size:9px}
   .ord-tbl td{padding:9px 10px;font-size:12px}
   .oid{font-size:10px}
   .ord-amt{font-size:13px}
+
+  /* Contact buttons */
   .cbtns{gap:8px}
   .cbtn{padding:9px 18px;font-size:13px}
+
+  /* ibadge on mobile — shorter text */
   .ibadge{font-size:9px;padding:2px 5px}
+
+  /* Prediction panel — stack on mobile */
   .predict-grid{grid-template-columns:1fr}
   .predict-cell{border-right:none;border-bottom:1px solid var(--border2)}
   .predict-cell:last-child{border-bottom:none}
   .predict-date{font-size:18px}
+
+  /* tighter panel & fold spacing for compact mobile scroll */
+  .panel,.fold{margin-bottom:10px}
+  .panel-hd,.fold summary{padding:11px 14px}
+  .period-bar{margin-bottom:14px}
 }
 
+/* ═══════════════════════════════════════
+   TABLET (601–900px)
+═══════════════════════════════════════ */
 @media(min-width:601px) and (max-width:900px){
   .shell{padding:18px 16px 48px}
   .metrics-grid{grid-template-columns:1.2fr 1fr 1fr;gap:12px}
@@ -490,6 +681,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .tab-rack{display:flex}
 }
 
+/* ═══════════════════════════════════════
+   TOUCH — larger tap targets
+═══════════════════════════════════════ */
 @media(hover:none){
   .top-row,.pl-item,.tch-row,.ord-tbl tr{cursor:pointer;-webkit-tap-highlight-color:transparent}
   .top-row:active,.pl-item:active,.tch-row:active{background:rgba(0,229,255,.05)!important}
@@ -498,6 +692,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .mob-tab{min-height:52px}
 }
 
+/* ═══════════════════════════════════════
+   SAFE AREA (notch phones)
+═══════════════════════════════════════ */
 @supports(padding-bottom:env(safe-area-inset-bottom)){
   .mob-nav{padding-bottom:env(safe-area-inset-bottom)}
   @media(max-width:600px){
@@ -505,8 +702,166 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   }
 }
 </style>
+
+<style id="v3-upgrade">
+/* ===== V3 EXECUTIVE CRM UPGRADE ===== */
+.kpi-ribbon{
+position:sticky;top:58px;z-index:250;
+display:grid;grid-template-columns:repeat(4,1fr);
+gap:10px;padding:10px;margin-bottom:14px;
+background:rgba(4,8,15,.92);backdrop-filter:blur(18px);
+border:1px solid rgba(0,229,255,.12);border-radius:14px;
+}
+.kpi-mini{padding:10px 12px;background:rgba(255,255,255,.03);
+border-radius:10px;text-align:center}
+.kpi-mini .v{font:700 18px Rajdhani,sans-serif;color:#00E5FF}
+.kpi-mini .l{font:600 10px Rajdhani,sans-serif;letter-spacing:.12em;color:#7A8FA8}
+
+.crm-progress{height:8px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
+.crm-progress>span{display:block;height:100%;
+background:linear-gradient(90deg,#00E5FF,#00FF88)}
+.pro-tier{
+display:inline-flex;align-items:center;gap:6px;
+padding:4px 10px;border-radius:20px;
+background:rgba(0,229,255,.08);font-size:11px;font-weight:700
+}
+.pro-tier::before{content:"◆"}
+.executive-panel{
+padding:16px;border-radius:14px;
+background:linear-gradient(135deg,rgba(0,229,255,.05),rgba(0,255,136,.03));
+border:1px solid rgba(0,229,255,.12);
+margin-bottom:14px;
+}
+.executive-title{font:700 22px Rajdhani,sans-serif;color:#00E5FF}
+.executive-sub{color:#7A8FA8;font-size:12px}
+@media(max-width:600px){
+.kpi-ribbon{grid-template-columns:repeat(2,1fr);top:52px}
+}
+</style>
+
+
+<style id="v4-upgrade">
+.agent-progress-card{
+background:rgba(255,255,255,.03);
+border:1px solid rgba(0,229,255,.08);
+border-radius:12px;
+padding:14px;
+margin-bottom:10px;
+}
+.agent-progress-bar{
+height:10px;border-radius:20px;
+background:rgba(255,255,255,.06);
+overflow:hidden;
+}
+.agent-progress-fill{
+height:100%;
+background:linear-gradient(90deg,#00E5FF,#00FF88);
+}
+.executive-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:12px;
+margin-bottom:14px;
+}
+.exec-card{
+padding:14px;
+border-radius:12px;
+background:rgba(255,255,255,.03);
+border:1px solid rgba(0,229,255,.08);
+}
+.exec-title{font-size:10px;color:#7A8FA8;letter-spacing:.12em}
+.exec-value{font:700 24px Rajdhani,sans-serif;color:#00E5FF}
+@media(max-width:700px){
+.executive-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
+
+<style id="v5-upgrade">
+.ai-insights-grid{
+display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px
+}
+.ai-card{
+padding:14px;border-radius:12px;
+background:linear-gradient(135deg,rgba(180,79,255,.08),rgba(0,229,255,.04));
+border:1px solid rgba(180,79,255,.15)
+}
+.ai-h{font:700 11px Rajdhani,sans-serif;letter-spacing:.12em;color:#B44FFF}
+.ai-v{font:700 24px Rajdhani,sans-serif;color:#fff;margin-top:6px}
+.ai-s{font-size:11px;color:#7A8FA8}
+.route-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.route-card{padding:12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(0,229,255,.08)}
+.route-tap:active{background:rgba(0,229,255,.05)}
+.rt-due-block{margin-top:12px;padding-top:10px;border-top:1px solid var(--border2)}
+.rt-due-hd{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--red);margin-bottom:6px}
+.rt-due-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px}
+.rt-due-rank{width:16px;height:16px;border-radius:50%;background:rgba(255,45,120,.12);color:var(--red);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rt-due-name{flex:1;min-width:0;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt-due-amt{color:var(--red);font-family:'Share Tech Mono',monospace;font-weight:600;flex-shrink:0}
+.rt-due-empty{color:var(--text3);font-size:11px;padding:4px 0}
+.rt-tap-hint{margin-top:10px;font-size:10px;letter-spacing:.08em;color:var(--cyan2);text-align:right;opacity:.7}
+.pl-item-due{border-left:2px solid var(--red)}
+@media(max-width:800px){
+.ai-insights-grid,.route-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
+
+<style id="v6-upgrade">
+.v6-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.v6-card{padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(0,229,255,.08)}
+.v6-title{font:700 10px Rajdhani,sans-serif;letter-spacing:.12em;color:#7A8FA8}
+.v6-value{font:700 22px Rajdhani,sans-serif;color:#00E5FF}
+.v6-recovery{margin-bottom:14px;padding:14px;border-radius:12px;background:rgba(255,45,120,.05);border:1px solid rgba(255,45,120,.15)}
+.v6-health{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.health-pill{padding:10px;border-radius:10px;text-align:center;background:rgba(255,255,255,.03)}
+@media(max-width:800px){.v6-grid,.v6-health{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+
+<style id="v7-upgrade">
+.v7-forecast,.v7-route-analytics{
+margin-bottom:14px;padding:14px;border-radius:12px;
+background:rgba(0,229,255,.04);
+border:1px solid rgba(0,229,255,.12);
+}
+.v7-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.v7-box{padding:12px;border-radius:10px;background:rgba(255,255,255,.03)}
+@media(max-width:800px){.v7-grid{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="login-scr" class="login-scr">
+  <div class="login-card">
+    <div class="logo-pill" style="margin:0 auto 18px">
+      <span>Rx</span>
+      <div class="logo-dot" style="top:4px;right:4px"></div>
+    </div>
+    <div class="login-title">AARADHYA RX COMMAND</div>
+    <div class="login-sub">PARTNER REWARDS ACCESS TERMINAL</div>
+
+    <form id="login-form" onsubmit="return handleLogin(event)">
+      <div class="login-field">
+        <label>LOGIN ID</label>
+        <input type="text" id="login-id" autocomplete="username" placeholder="admin or your Customer ID" required>
+      </div>
+      <div class="login-field">
+        <label>PASSWORD</label>
+        <input type="password" id="login-pw" autocomplete="current-password" placeholder="admin password or mobile number" required>
+      </div>
+      <div id="login-err" class="login-err" style="display:none"></div>
+      <button type="submit" class="login-btn">⟩ AUTHENTICATE</button>
+    </form>
+
+    <div class="login-hint">Agents: use your <strong>Customer ID</strong> as Login ID and your registered <strong>mobile number</strong> as password.</div>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL (hidden until login) ═══ -->
+<div id="app-root" style="display:none">
 
 <!-- ═══ TOPBAR ═══ -->
 <header class="topbar">
@@ -525,15 +880,21 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     <div id="nav-home" style="display:none"><button class="hbtn hbtn-ghost" onclick="goHome()">⌂ BASE</button></div>
     <div class="tab-rack" id="main-tabs">
       <button class="tab-btn on" onclick="switchTab('dashboard',this)">COMMAND</button>
-      <button class="tab-btn"   onclick="switchTab('details',this)">AGENTS</button>
-    </div>
+      <button class="tab-btn" id="tab-agents-btn" onclick="switchTab('details',this)">AGENTS</button>
+      <button class="tab-btn"
+ onclick="switchTab('routes',this)">
+ ROUTES
+</button>
+      </div>
     <button class="hbtn hbtn-cyan" onclick="loadData()">⟳ SYNC</button>
+    <button class="hbtn hbtn-ghost" onclick="handleLogout()" title="Log out">⏻</button>
   </div>
 </header>
 
 <!-- ═══ MAIN ═══ -->
 <div class="shell">
 
+  <!-- loading -->
   <div id="loading-scr" class="loading-scr">
     <div class="hud-spinner"></div>
     <div class="lt">INITIALISING DATA FEED</div>
@@ -541,66 +902,106 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   </div>
   <div id="err-bar" class="err-bar" style="display:none"></div>
 
+  <!-- ── DASHBOARD ── -->
   <div id="page-dashboard" class="page">
     <div class="period-bar">
       <span class="period-lbl">◈ CYCLE</span>
       <div id="period-pills" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
+    <!-- primary KPI metrics (live computed data) -->
     <div class="metrics-grid" id="metrics-area"></div>
-    <div class="panel" style="margin-bottom:14px">
+
+    <!-- tiers -->
+    <div class="panel" style="margin-bottom:12px">
       <div class="panel-hd">
         <div class="panel-title">◈ RANK DISTRIBUTION</div>
         <div class="panel-tag" id="tier-cycle-lbl">LIVE</div>
       </div>
       <div class="tier-grid" id="tier-grid-area"></div>
     </div>
-    <div class="panel" style="margin-bottom:14px">
+    <!-- top purchasers -->
+    <div class="panel" style="margin-bottom:12px">
       <div class="panel-hd"><div class="panel-title">◈ TOP AGENTS</div></div>
       <div id="top-list-area"></div>
     </div>
-    <div id="chart-section"></div>
-    <div id="tc-section"></div>
-    <div id="rcpt-section"></div>
+    <!-- analytics charts -->
+    <details class="fold" open>
+      <summary>📊 PURCHASE &amp; REVENUE CHARTS</summary>
+      <div id="chart-section"></div>
+    </details>
+    <!-- tier changes -->
+    <details class="fold">
+      <summary>🔄 RANK SHIFTS</summary>
+      <div id="tc-section"></div>
+    </details>
+    <!-- receipts summary -->
+    <details class="fold">
+      <summary>🧾 PAYMENT RECEIPTS</summary>
+      <div id="rcpt-section"></div>
+    </details>
   </div>
 
+  <!-- ── ROUTES ── -->
+  <div id="page-routes" class="page">
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">ROUTE ANALYTICS</div>
+      </div>
+      <div id="routes-area"></div>
+    </div>
+  </div>
+
+  <!-- ── AGENTS LIST ── -->
   <div id="page-details" class="page">
     <div class="search-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="search-inp" id="search-inp" type="text" placeholder="Search agent name, city or district…" oninput="filterBiz()">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input class="search-inp"
+             id="search-inp"
+             type="text"
+             placeholder="Search agent name, city or district…"
+             oninput="filterBiz()">
     </div>
     <div class="plist" id="plist-area"></div>
   </div>
 
-  <div id="page-detail" class="page"></div>
+  <!-- ── ROUTE DETAIL ── -->
+  <div id="page-routeDetail" class="page">
+    <div class="panel">
+      <div class="panel-hd">
+        <div id="routeTitle" class="panel-title"></div>
+      </div>
+      <div id="routeDetailArea"></div>
+    </div>
+  </div>
 
-</div>
+  <!-- ── AGENT DETAIL ── -->
+  <div id="page-detail" class="page">
+    <div class="panel">
+      <div class="panel-hd"><div class="panel-title">LOADING…</div></div>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+</div><!-- /app-root -->
 
 <script>
-/* ═══════════════════════════════════════════════════════════════
-   🔧 USER CONFIGURATION – EXPLICIT COLUMN INDICES
-   ================================================================
-   Orders: set to -1 to auto‑detect, or set the exact 0‑based index.
-   Receipts: set your exact 0‑based column indices.
-   ═══════════════════════════════════════════════════════════════ */
-
-// ── Orders (leave -1 to auto-detect, or set your exact indices) ──
-const ORDER_DATE_COLUMN_INDEX = -1;        // auto-detect
-const ORDER_AMOUNT_COLUMN_INDEX = -1;      // auto-detect
-const ORDER_CUSTID_COLUMN_INDEX = -1;      // auto-detect
-const ORDER_BIZNAME_COLUMN_INDEX = -1;     // auto-detect
-
-// ── Receipts (set your exact 0‑based column indices) ──
-const RECEIPT_DATE_COLUMN_INDEX = 2;        // RcptDate (column 3)
-const RECEIPT_AMOUNT_COLUMN_INDEX = 3;      // Amount (column 4)
-const RECEIPT_CUSTID_COLUMN_INDEX = 0;      // Customer ID (column 1)
-const RECEIPT_BIZNAME_COLUMN_INDEX = 1;     // Business Name (column 2)
-
 /* ═══════ CONSTANTS ═══════ */
 const SID='1bjUIiD3xL8NWWzkZAatxvwp5n98yq7JVE5FODCbmvAs';
 const CSV='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=';
-
 let customers=[],orders=[],receipts=[],allMonths=[];
+let routeMaster=[];
 let selMonth='All',navStack=['dashboard'];
+/* AUTH — { role: 'admin'|'customer', custId: string|null }
+   role='admin' sees all data unrestricted, same as before.
+   role='customer' is scoped to a single custId everywhere: dashboard
+   metrics, agents list, and detail page all filter down to just them. */
+let AUTH=null;
+const ADMIN_ID='admin', ADMIN_PW='admin';
+const AUTH_STORAGE_KEY='aaradhya_rx_auth';
 const MMAP={Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
 
 /* ═══════ TIERS ═══════ */
@@ -619,156 +1020,236 @@ function tRank(t){const i=TIERS.findIndex(x=>x.name===t.name);return i===-1?-1:T
 /* ═══════ UTILS ═══════ */
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 
-/* ═══════════ DATE HELPERS ═══════════ */
+/* ═══════════════════════════════════════════════════════════
+   LIGHTWEIGHT SVG CHART ENGINE — no external libraries, themed
+   to match the sci-fi HUD aesthetic. Three chart types:
+     buildBarChart   — vertical bars (e.g. monthly revenue trend)
+     buildLineChart  — line + glow + dot markers (e.g. dual trend)
+     buildDonutChart — ring chart (e.g. tier distribution)
+   All return a ready-to-insert HTML string containing an <svg>.
+═══════════════════════════════════════════════════════════ */
+
+/* Vertical bar chart. data: [{label, value, color?}]. */
+function buildBarChart(data,opts={}){
+  const W=opts.width||320,H=opts.height||140,pad={t:18,r:10,b:26,l:10};
+  const innerW=W-pad.l-pad.r,innerH=H-pad.t-pad.b;
+  const maxV=Math.max(1,...data.map(d=>d.value));
+  const n=data.length||1;
+  const gap=8,barW=Math.max(8,(innerW-gap*(n-1))/n);
+  const defaultColor=opts.color||'var(--cyan)';
+  let bars='',labels='';
+  data.forEach((d,i)=>{
+    const h=Math.max(2,(d.value/maxV)*innerH);
+    const x=pad.l+i*(barW+gap);
+    const y=pad.t+innerH-h;
+    const color=d.color||defaultColor;
+    bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${color}" opacity="0.85">
+      <title>${d.label}: ${opts.fmt?opts.fmt(d.value):d.value}</title>
+    </rect>`;
+    if(d.value>0){
+      bars+=`<text x="${x+barW/2}" y="${y-5}" text-anchor="middle" font-size="9" font-family="Share Tech Mono, monospace" fill="${color}">${opts.barLabelFmt?opts.barLabelFmt(d.value):''}</text>`;
+    }
+    labels+=`<text x="${x+barW/2}" y="${H-8}" text-anchor="middle" font-size="9" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.3">${d.label}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" preserveAspectRatio="xMidYMid meet">
+    <line x1="${pad.l}" y1="${pad.t+innerH}" x2="${W-pad.r}" y2="${pad.t+innerH}" stroke="var(--border2)" stroke-width="1"/>
+    ${bars}${labels}
+  </svg>`;
+}
+
+/* Line chart with optional second series, glow stroke, and dot markers.
+   series: [{label, points:[{x,y}], color}] where x/y are already 0..1 normalised
+   is NOT required — pass raw values; this function does the scaling.
+   data: [{label, value}] for single-series, OR pass `series` array directly
+   for multi-series: opts.series = [{name,color,values:[...]}], opts.labels=[...] */
+function buildLineChart(opts){
+  const W=opts.width||320,H=opts.height||150,pad={t:20,r:14,b:24,l:14};
+  const innerW=W-pad.l-pad.r,innerH=H-pad.t-pad.b;
+  const labels=opts.labels||[];
+  const series=opts.series||[];
+  const allVals=series.flatMap(s=>s.values);
+  const maxV=Math.max(1,...allVals);
+  const n=labels.length||1;
+  const stepX=n>1?innerW/(n-1):0;
+  const xAt=i=>pad.l+(n>1?i*stepX:innerW/2);
+  const yAt=v=>pad.t+innerH-(v/maxV)*innerH;
+
+  /* gridlines */
+  let grid='';
+  for(let g=0;g<=2;g++){
+    const gy=pad.t+innerH*(g/2);
+    grid+=`<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="var(--border2)" stroke-width="1"/>`;
+  }
+
+  let paths='';
+  series.forEach((s,si)=>{
+    const pts=s.values.map((v,i)=>`${xAt(i)},${yAt(v)}`).join(' ');
+    const areaPath=`M${xAt(0)},${pad.t+innerH} L${pts.split(' ').join(' L')} L${xAt(n-1)},${pad.t+innerH} Z`;
+    paths+=`<path d="${areaPath}" fill="${s.color}" opacity="0.07"/>`;
+    paths+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 4px ${s.color}80)"/>`;
+    s.values.forEach((v,i)=>{
+      paths+=`<circle cx="${xAt(i)}" cy="${yAt(v)}" r="3.5" fill="${s.color}" stroke="var(--bg)" stroke-width="1.5">
+        <title>${s.name} — ${labels[i]}: ${opts.fmt?opts.fmt(v):v}</title>
+      </circle>`;
+    });
+  });
+
+  const labelEls=labels.map((l,i)=>`<text x="${xAt(i)}" y="${H-6}" text-anchor="middle" font-size="9" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.3">${l}</text>`).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" preserveAspectRatio="xMidYMid meet">
+    ${grid}${paths}${labelEls}
+  </svg>`;
+}
+
+/* Donut/ring chart. data: [{label, value, color}]. Returns SVG + an inline legend. */
+function buildDonutChart(data,opts={}){
+  const size=opts.size||130,stroke=opts.stroke||16;
+  const r=(size-stroke)/2,cx=size/2,cy=size/2,circumference=2*Math.PI*r;
+  const total=data.reduce((s,d)=>s+d.value,0)||1;
+  let offset=0,arcs='';
+  data.forEach(d=>{
+    const frac=d.value/total;
+    const len=frac*circumference;
+    arcs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${d.color}"
+      stroke-width="${stroke}" stroke-dasharray="${len} ${circumference-len}"
+      stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt">
+      <title>${d.label}: ${d.value}</title>
+    </circle>`;
+    offset+=len;
+  });
+  const centerLbl=opts.centerLabel||'';
+  const centerVal=opts.centerValue||total;
+  const svg=`<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;flex-shrink:0">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border2)" stroke-width="${stroke}"/>
+    ${arcs}
+    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="20" font-weight="700" font-family="Rajdhani, sans-serif" fill="var(--text)">${centerVal}</text>
+    <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="8" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.5">${centerLbl}</text>
+  </svg>`;
+  const legend=data.filter(d=>d.value>0).map(d=>`
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:3px 0">
+      <span style="width:8px;height:8px;border-radius:2px;background:${d.color};flex-shrink:0;box-shadow:0 0 6px ${d.color}80"></span>
+      <span style="color:var(--text2)">${d.label}</span>
+      <span style="color:${d.color};font-weight:700;margin-left:auto;font-family:'Rajdhani',sans-serif">${d.value}</span>
+    </div>`).join('');
+  return {svg,legend};
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANONICAL DATE ENGINE — single source of truth for all dates.
+   Every order/receipt row gets its date parsed ONCE at load time
+   into a real Date object (record._d). Every other date need in
+   the app (display, sorting, month derivation, predictions) reads
+   from that cached Date — nothing re-parses the raw string later.
+   This guarantees display, sort order, and month grouping can
+   never disagree with each other.
+═══════════════════════════════════════════════════════════ */
+const MON_NAMES=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
+
+/* Parse a date string in one of these shapes:
+     dd-mm-yyyy, dd-mm-yy, dd-mon-yyyy, dd-mon-yy   (hyphen or dot separator,
+       day ALWAYS first — this is the format used when a sheet cell holds
+       literal text, exactly as specified)
+     m/d/yyyy                                        (slash separator — this
+       is what Google's gviz CSV export produces for a cell that is a TRUE
+       Date-typed cell rather than text, regardless of the sheet's display
+       format; gviz always serialises real dates as US month/day/year)
+   Returns a real Date object, or null if the string matches none of these
+   shapes. No fuzzy guessing — an unrecognised shape returns null so it can
+   be caught by the health-check warnings rather than silently misread. */
+function parseDateSmart(raw){
+  if(raw===null||raw===undefined)return null;
+  /* Strip: leading apostrophe (Sheets' "force text" marker), all whitespace
+     variants including non-breaking space (\u00A0), zero-width characters,
+     and BOM — any of which could make an otherwise-valid string silently
+     fail every regex below without looking visibly different. */
+  let d=String(raw)
+    .replace(/^[\uFEFF\u200B]+/,'')
+    .replace(/[\u00A0\s]+/g,' ')
+    .trim()
+    .replace(/^'/,'');
+  if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
+
+  /* Google Sheets gviz CSV export occasionally serialises a Date-typed cell
+     as the literal text "Date(2026,3,13)" — year, 0-indexed month, day. */
+  const gviz=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
+  if(gviz)return new Date(parseInt(gviz[1]),parseInt(gviz[2]),parseInt(gviz[3]));
+
+  /* SLASH separator → gviz's export of a true Date-typed cell, always
+     m/d/yyyy (US order) regardless of the sheet's locale or display format. */
+  const slashMatch=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if(slashMatch){
+    const mi=parseInt(slashMatch[1]),day=parseInt(slashMatch[2]);
+    const yrPart=slashMatch[3];
+    const year=yrPart.length===2?2000+parseInt(yrPart):parseInt(yrPart);
+    if(mi<1||mi>12||day<1||day>31)return null;
+    const result=new Date(year,mi-1,day);
+    if(result.getDate()!==day||result.getMonth()!==mi-1||result.getFullYear()!==year)return null;
+    return result;
+  }
+
+  /* HYPHEN or DOT separator → literal text in dd-mm-yyyy / dd-mm-yy /
+     dd-mon-yyyy / dd-mon-yy format, day always first, per spec. */
+  const norm=d.replace(/\./g,'-').trim();
+  const m=norm.match(/^(\d{1,2})-([A-Za-z]{3,}|\d{1,2})-(\d{2}|\d{4})$/);
+  if(!m)return null;
+
+  const day=parseInt(m[1]);
+  const yrPart=m[3];
+  const year=yrPart.length===2?2000+parseInt(yrPart):parseInt(yrPart);
+  if(isNaN(day)||day<1||day>31)return null;
+
+  let monthIdx; /* 0-indexed for Date() constructor */
+  if(/^\d+$/.test(m[2])){
+    /* dd-mm-yyyy / dd-mm-yy */
+    const mi=parseInt(m[2]);
+    if(mi<1||mi>12)return null;
+    monthIdx=mi-1;
+  }else{
+    /* dd-mon-yyyy / dd-mon-yy */
+    const idx=MON_NAMES_LC.indexOf(m[2].toLowerCase().slice(0,3));
+    if(idx<=0)return null; /* MON_NAMES_LC[0] is '' (unused), so <=0 means no match */
+    monthIdx=idx-1; /* MON_NAMES_LC is 1-indexed (index 0 is blank) */
+  }
+
+  const result=new Date(year,monthIdx,day);
+  /* Guard against JS Date's auto-rollover (e.g. day=31 in a 30-day month
+     silently becoming the 1st of next month) — treat that as invalid. */
+  if(result.getDate()!==day||result.getMonth()!==monthIdx||result.getFullYear()!==year)return null;
+  return result;
+}
+
+/* Display formatter — takes the CACHED Date object (never re-parses a string).
+   Returns "—" for missing/invalid dates, else "13-Apr-2026" (dd-mon-yyyy,
+   hyphen-separated, matching the format requested for display). */
 function fmtDateObj(dt){
   if(!dt||isNaN(dt.getTime()))return '—';
-  return String(dt.getDate()).padStart(2,'0')+'-'+MON_NAMES[dt.getMonth()+1]+'-'+dt.getFullYear();
+  return `${String(dt.getDate()).padStart(2,'0')}-${MON_NAMES[dt.getMonth()+1]}-${dt.getFullYear()}`;
 }
+
+/* Sort-key helper — takes the cached Date object, returns epoch ms (0 if null).
+   Used directly as a comparator value: array.sort((a,b)=>dateKey(b._d)-dateKey(a._d)) */
 function dateKey(dt){return dt&&!isNaN(dt.getTime())?dt.getTime():0;}
+
+/* Derive "Mon-YYYY" month bucket directly from a cached Date object —
+   guaranteed to match whatever date was actually parsed and displayed. */
 function monthFromDateObj(dt){
   if(!dt||isNaN(dt.getTime()))return '';
   return MON_NAMES[dt.getMonth()+1]+'-'+dt.getFullYear();
 }
 
-/* ═══════════ ULTRA-AGGRESSIVE DATE PARSER ═══════════ */
-const MON_NAMES=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const MON_NAMES_LC=MON_NAMES.map(m=>m.toLowerCase());
-
-function parseDateSmart(raw){
-  if(raw===null||raw===undefined)return null;
-  let d=String(raw)
-    .replace(/^[\uFEFF\u200B]+/,'')
-    .trim()
-    .replace(/^'/,'');
-  // Remove time part (anything after a space)
-  if(d.includes(' ')) d = d.split(' ')[0];
-  if(!d||d==='—'||d.toLowerCase()==='undefined'||d.toLowerCase()==='null')return null;
-
-  // Helper to build a Date and verify components
-  const tryDate=(y,m,day)=>{
-    if(y<100) y+=2000;
-    const dt=new Date(y,m-1,day);
-    if(dt.getFullYear()===y && dt.getMonth()===m-1 && dt.getDate()===day) return dt;
-    return null;
-  };
-
-  // 1. Google's Date(...) syntax
-  const gviz=d.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
-  if(gviz) return tryDate(parseInt(gviz[1]), parseInt(gviz[2]), parseInt(gviz[3]));
-
-  // 2. Slash format: try m/d, d/m, and also yyyy/mm/dd
-  const slash=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
-  if(slash){
-    const a=parseInt(slash[1]), b=parseInt(slash[2]), yr=parseInt(slash[3]);
-    let dt=tryDate(yr, a, b);          // m/d
-    if(dt) return dt;
-    dt=tryDate(yr, b, a);              // d/m
-    if(dt) return dt;
-    // If year part is 4 digits, try yyyy/mm/dd
-    if(slash[3].length===4 && a>=1000){
-      dt=tryDate(a, b, yr);
-      if(dt) return dt;
-    }
-    return null;
-  }
-
-  // 3. Hyphen or dot: split by '-' or '.'
-  const norm=d.replace(/\./g,'-').trim();
-  const parts=norm.split('-');
-  if(parts.length===3){
-    const p1=parts[0], p2=parts[1], p3=parts[2];
-    let year, month, day, dt;
-
-    // Try dd-mm-yyyy (day-month-year)
-    year = parseInt(p3);
-    if(year<100) year+=2000;
-    month = parseInt(p2);
-    day = parseInt(p1);
-    dt = tryDate(year, month, day);
-    if(dt) return dt;
-
-    // Try yyyy-mm-dd (year-month-day)
-    year = parseInt(p1);
-    if(year<100) year+=2000;
-    month = parseInt(p2);
-    day = parseInt(p3);
-    dt = tryDate(year, month, day);
-    if(dt) return dt;
-
-    // Try dd-mmm-yyyy (day-monthname-year)
-    const monthIdx = MON_NAMES_LC.indexOf(p2.toLowerCase().slice(0,3));
-    if(monthIdx>0){
-      year = parseInt(p3);
-      if(year<100) year+=2000;
-      dt = tryDate(year, monthIdx, parseInt(p1));
-      if(dt) return dt;
-    }
-
-    // Try mmm-dd-yyyy (monthname-day-year)
-    if(monthIdx>0){
-      year = parseInt(p3);
-      if(year<100) year+=2000;
-      dt = tryDate(year, monthIdx, parseInt(p2));
-      if(dt) return dt;
-    }
-
-    // Try yyyy-mmm-dd (year-monthname-day)
-    const monthIdx2 = MON_NAMES_LC.indexOf(p2.toLowerCase().slice(0,3));
-    if(monthIdx2>0){
-      year = parseInt(p1);
-      if(year<100) year+=2000;
-      dt = tryDate(year, monthIdx2, parseInt(p3));
-      if(dt) return dt;
-    }
-
-    return null;
-  }
-
-  // 4. Space-separated: "15 Apr 2026" or "Apr 15 2026"
-  const spaceParts = d.split(' ');
-  if(spaceParts.length === 3){
-    const a=spaceParts[0], b=spaceParts[1], c=spaceParts[2];
-    // Try dd mmm yyyy
-    let monthIdx = MON_NAMES_LC.indexOf(a.toLowerCase().slice(0,3));
-    if(monthIdx>0){
-      let dt = tryDate(parseInt(c), monthIdx, parseInt(b));
-      if(dt) return dt;
-    }
-    // Try mmm dd yyyy
-    monthIdx = MON_NAMES_LC.indexOf(a.toLowerCase().slice(0,3));
-    if(monthIdx>0){
-      let dt = tryDate(parseInt(c), monthIdx, parseInt(b));
-      if(dt) return dt;
-    }
-    // Try yyyy mmm dd
-    monthIdx = MON_NAMES_LC.indexOf(b.toLowerCase().slice(0,3));
-    if(monthIdx>0){
-      let dt = tryDate(parseInt(a), monthIdx, parseInt(c));
-      if(dt) return dt;
-    }
-  }
-
-  // 5. Last resort: let JavaScript's Date.parse have a go, but validate.
-  const jsDate = new Date(d);
-  if(!isNaN(jsDate.getTime())){
-    const y=jsDate.getFullYear(), m=jsDate.getMonth()+1, day=jsDate.getDate();
-    if(y>=2000 && y<=2100 && m>=1 && m<=12 && day>=1 && day<=31){
-      return jsDate;
-    }
-  }
-
-  return null;
-}
-
-/* ═══════════ PREDICTION ENGINE ═══════════ */
+/* ═══════════ PREDICTION ENGINE ═══════════
+   Computes average gap between consecutive orders/receipts for a customer,
+   then projects the next likely order/payment date from the most recent one.
+   Operates entirely on cached Date objects — no re-parsing. */
 function computeCadence(dateObjList){
   const valid=dateObjList.filter(d=>d&&!isNaN(d.getTime()));
   if(valid.length<2) return {avgDays:null,lastDate:valid.length===1?valid[0]:null,nextDate:null,sampleSize:valid.length};
-  const sorted=valid.slice().sort((a,b)=>a-b);
+  const sorted=valid.slice().sort((a,b)=>a-b); /* oldest → newest */
   const gaps=[];
   for(let i=1;i<sorted.length;i++){
     const gapDays=Math.round((sorted[i]-sorted[i-1])/(1000*60*60*24));
-    if(gapDays>0) gaps.push(gapDays);
+    if(gapDays>0) gaps.push(gapDays); /* ignore same-day duplicate entries */
   }
   if(!gaps.length) return {avgDays:null,lastDate:sorted[sorted.length-1],nextDate:null,sampleSize:valid.length};
   const avgDays=Math.round(gaps.reduce((s,g)=>s+g,0)/gaps.length);
@@ -777,6 +1258,7 @@ function computeCadence(dateObjList){
   return {avgDays,lastDate,nextDate,sampleSize:valid.length};
 }
 
+/* Days from today until a predicted date — negative means overdue */
 function daysFromToday(d){
   if(!d||isNaN(d.getTime()))return null;
   const today=new Date(); today.setHours(0,0,0,0);
@@ -784,6 +1266,7 @@ function daysFromToday(d){
   return Math.round((target-today)/(1000*60*60*24));
 }
 
+/* Build the HUD prediction panel HTML for order + payment cadence */
 function buildPredictionHTML(orderCad,rcptCad){
   const orderCell=buildPredictCell('📦','NEXT ORDER',orderCad,'#818CF8');
   const rcptCell=buildPredictCell('💳','NEXT PAYMENT',rcptCad,'#00FF88');
@@ -820,8 +1303,8 @@ function buildPredictCell(icon,label,cad,color){
     <div class="cadence-stat">LAST: ${fmtDateObj(cad.lastDate)}</div>
   </div>`;
 }
-
 function moVal(m){
+  /* handles both "Apr-2026" and "Apr-26" */
   const p=m.split('-');
   const yr=parseInt(p[1]||0);
   const fullYr=yr<100?2000+yr:yr;
@@ -829,6 +1312,9 @@ function moVal(m){
 }
 function ini(name){return (name||'').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?';}
 
+/* Normalise month strings to "Mon-YYYY" format (e.g. "Apr-2026", "Apr-26" → "Apr-2026").
+   Used only as a fallback when a sheet's pre-computed month column has a value
+   but a Date object isn't being used to derive the bucket. */
 function normMonth(s){
   if(!s)return '';
   s=s.trim();
@@ -838,6 +1324,7 @@ function normMonth(s){
   return s;
 }
 
+/* ── Receipt aggregation ── */
 function rcptTotalsFrom(rcpts){
   const t={};
   rcpts.forEach(r=>{
@@ -871,21 +1358,31 @@ function parseCSV(txt){
   if(row.length){row.push(cur.trim());if(row.some(x=>x!==''))rows.push(row);}
   return rows;
 }
-
 async function fetchSheet(name){
+  /* Cache-bust: Google's CSV export endpoint and some browsers can serve a
+     stale cached response, especially right after switching to a different
+     sheet ID. Appending a changing param forces a fresh fetch every load. */
   const r=await fetch(CSV+encodeURIComponent(name)+'&_t='+Date.now(),{cache:'no-store'});
   if(!r.ok)throw new Error('Cannot read "'+name+'"');
   return parseCSV(await r.text());
 }
 
+/* Find a column index by matching header text against candidate keywords.
+   Immune to column reordering, header renames, or extra/missing columns.
+   Matches case/whitespace/punctuation-insensitively. Prefers an EXACT
+   normalised match first (avoids e.g. "OrderDate" wrongly matching a
+   "Date" candidate meant for a different column), then falls back to
+   substring containment. */
 function findCol(headerRow,...candidates){
   const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const normHeaders=headerRow.map(norm);
+  /* pass 1: exact match */
   for(const cand of candidates){
     const cN=norm(cand);
     const idx=normHeaders.findIndex(h=>h===cN);
     if(idx!==-1)return idx;
   }
+  /* pass 2: substring containment (header contains candidate) */
   for(const cand of candidates){
     const cN=norm(cand);
     const idx=normHeaders.findIndex(h=>h.includes(cN));
@@ -894,154 +1391,728 @@ function findCol(headerRow,...candidates){
   return -1;
 }
 
-/* ═══════ AUTO-DETECT DATE COLUMN ═══════ */
-function findDateColumn(rows, headerRow){
-  // Try header-based detection first
-  if(headerRow && headerRow.length){
-    const dateHeaderCandidates = ['date','orderdate','transactiondate','order date','invoice date','bill date','rcptdate','receiptdate','payment date'];
-    for(const cand of dateHeaderCandidates){
-      const idx = headerRow.findIndex(h => h && h.toLowerCase().trim() === cand);
-      if(idx !== -1) return idx;
-    }
-    for(const cand of dateHeaderCandidates){
-      const idx = headerRow.findIndex(h => h && h.toLowerCase().trim().includes(cand));
-      if(idx !== -1) return idx;
-    }
+/* ═══════ AUTH ═══════ */
+function normMobile(s){return (s||'').replace(/\D/g,'').slice(-10);} /* last 10 digits, strips +91/spaces/dashes */
+
+function handleLogin(ev){
+  ev.preventDefault();
+  const idRaw=document.getElementById('login-id').value.trim();
+  const pwRaw=document.getElementById('login-pw').value.trim();
+  const errEl=document.getElementById('login-err');
+  errEl.style.display='none';
+
+  /* Admin login: fixed credentials, sees everything */
+  if(idRaw.toLowerCase()===ADMIN_ID&&pwRaw===ADMIN_PW){
+    AUTH={role:'admin',custId:null};
+    sessionStorage.setItem(AUTH_STORAGE_KEY,JSON.stringify(AUTH));
+    enterApp();
+    return false;
   }
 
-  const maxRows = Math.min(10, rows.length);
-  if(maxRows === 0) return -1;
-  const colCount = rows[0].length;
-  for(let col = 0; col < colCount; col++){
-    let dateMatches = 0;
-    for(let r = 0; r < maxRows; r++){
-      const val = rows[r][col] || '';
-      if(val && isDateLike(val)) dateMatches++;
-    }
-    if(dateMatches >= 2) return col;
+  /* Customer login: Login ID = Customer ID (case-insensitive exact match),
+     Password = registered mobile number (matched on last 10 digits, so
+     "+91 93375 53491", "9337553491", "93375-53491" all work the same). */
+  const cust=customers.find(c=>(c.id||'').toLowerCase()===idRaw.toLowerCase());
+  if(cust&&cust.mobile&&normMobile(cust.mobile)===normMobile(pwRaw)&&normMobile(pwRaw).length===10){
+    AUTH={role:'customer',custId:cust.id};
+    sessionStorage.setItem(AUTH_STORAGE_KEY,JSON.stringify(AUTH));
+    enterApp();
+    return false;
   }
-  return -1;
-}
 
-function isDateLike(str){
-  const trimmed = str.trim();
-  if(!trimmed) return false;
-  const patterns = [
-    /^\d{1,2}[-\/\.]\d{1,2}[-\/\.]\d{2,4}$/,
-    /^\d{4}[-\/\.]\d{1,2}[-\/\.]\d{1,2}$/,
-    /^\d{1,2}-[A-Za-z]{3}-\d{2,4}$/,
-    /^[A-Za-z]{3}-\d{1,2}-\d{2,4}$/,
-    /^\d{1,2}\s[A-Za-z]{3}\s\d{2,4}$/,
-  ];
-  for(const p of patterns){
-    if(p.test(trimmed)) return true;
-  }
-  const d = new Date(trimmed);
-  if(!isNaN(d.getTime()) && d.getFullYear() > 2000 && d.getFullYear() < 2100){
-    return true;
-  }
+  errEl.style.display='block';
+  errEl.textContent='Invalid Login ID or password. Customers: use your Customer ID and registered mobile number.';
   return false;
 }
 
-/* ═══════ CHART ENGINE ═══════ */
-function buildBarChart(data,opts={}){
-  const W=opts.width||320,H=opts.height||140,pad={t:18,r:10,b:26,l:10};
-  const innerW=W-pad.l-pad.r,innerH=H-pad.t-pad.b;
-  const maxV=Math.max(1,...data.map(d=>d.value));
-  const n=data.length||1;
-  const gap=8,barW=Math.max(8,(innerW-gap*(n-1))/n);
-  const defaultColor=opts.color||'var(--cyan)';
-  let bars='',labels='';
-  data.forEach((d,i)=>{
-    const h=Math.max(2,(d.value/maxV)*innerH);
-    const x=pad.l+i*(barW+gap);
-    const y=pad.t+innerH-h;
-    const color=d.color||defaultColor;
-    bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${color}" opacity="0.85">
-      <title>${d.label}: ${opts.fmt?opts.fmt(d.value):d.value}</title>
-    </rect>`;
-    if(d.value>0){
-      bars+=`<text x="${x+barW/2}" y="${y-5}" text-anchor="middle" font-size="9" font-family="Share Tech Mono, monospace" fill="${color}">${opts.barLabelFmt?opts.barLabelFmt(d.value):''}</text>`;
-    }
-    labels+=`<text x="${x+barW/2}" y="${H-8}" text-anchor="middle" font-size="9" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.3">${d.label}</text>`;
-  });
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" preserveAspectRatio="xMidYMid meet">
-    <line x1="${pad.l}" y1="${pad.t+innerH}" x2="${W-pad.r}" y2="${pad.t+innerH}" stroke="var(--border2)" stroke-width="1"/>
-    ${bars}${labels}
-  </svg>`;
+function handleLogout(){
+  AUTH=null;
+  sessionStorage.removeItem(AUTH_STORAGE_KEY);
+  document.getElementById('app-root').style.display='none';
+  document.getElementById('login-scr').style.display='flex';
+  document.getElementById('login-form').reset();
+  document.getElementById('login-err').style.display='none';
 }
 
-function buildLineChart(opts){
-  const W=opts.width||320,H=opts.height||150,pad={t:20,r:14,b:24,l:14};
-  const innerW=W-pad.l-pad.r,innerH=H-pad.t-pad.b;
-  const labels=opts.labels||[];
-  const series=opts.series||[];
-  const allVals=series.flatMap(s=>s.values);
-  const maxV=Math.max(1,...allVals);
-  const n=labels.length||1;
-  const stepX=n>1?innerW/(n-1):0;
-  const xAt=i=>pad.l+(n>1?i*stepX:innerW/2);
-  const yAt=v=>pad.t+innerH-(v/maxV)*innerH;
+function enterApp(){
+  document.getElementById('login-scr').style.display='none';
+  document.getElementById('app-root').style.display='block';
 
-  let grid='';
-  for(let g=0;g<=2;g++){
-    const gy=pad.t+innerH*(g/2);
-    grid+=`<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="var(--border2)" stroke-width="1"/>`;
+  /* Customers don't get the Agents directory (it would just show themselves)
+     — they land straight on their own profile instead. */
+  document.getElementById('tab-agents-btn').style.display=AUTH.role==='customer'?'none':'inline-block';
+
+  if(AUTH.role==='customer'){
+    navStack=['detail'];
+    showDetailById(AUTH.custId);
+    document.getElementById('main-tabs').style.display='none';
+    document.getElementById('nav-home').style.display='none';
+    document.getElementById('nav-back').style.display='none';
+  }else{
+    navStack=['dashboard'];
+    showPage('dashboard');
+  }
+}
+
+/* On a hard refresh, customers MUST log in again before any sheet data is
+   fetched — we can't validate a stored customer session without the
+   customer list loaded first. So: load data silently in the background,
+   then check the stored session against it, then either auto-enter or show
+   the login screen. Admin sessions don't need customer data to validate, so
+   they can enter immediately while data loads behind the scenes. */
+async function bootApp(){
+  const stored=sessionStorage.getItem(AUTH_STORAGE_KEY);
+  let pending=null;
+  if(stored){
+    try{pending=JSON.parse(stored);}catch(e){pending=null;}
   }
 
-  let paths='';
-  series.forEach((s,si)=>{
-    const pts=s.values.map((v,i)=>`${xAt(i)},${yAt(v)}`).join(' ');
-    const areaPath=`M${xAt(0)},${pad.t+innerH} L${pts.split(' ').join(' L')} L${xAt(n-1)},${pad.t+innerH} Z`;
-    paths+=`<path d="${areaPath}" fill="${s.color}" opacity="0.07"/>`;
-    paths+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" style="filter:drop-shadow(0 0 4px ${s.color}80)"/>`;
-    s.values.forEach((v,i)=>{
-      paths+=`<circle cx="${xAt(i)}" cy="${yAt(v)}" r="3.5" fill="${s.color}" stroke="var(--bg)" stroke-width="1.5">
-        <title>${s.name} — ${labels[i]}: ${opts.fmt?opts.fmt(v):v}</title>
-      </circle>`;
-    });
-  });
+  if(pending&&pending.role==='admin'){
+    AUTH=pending;
+    enterApp();
+    await loadData();
+    return;
+  }
 
-  const labelEls=labels.map((l,i)=>`<text x="${xAt(i)}" y="${H-6}" text-anchor="middle" font-size="9" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.3">${l}</text>`).join('');
+  /* Either no stored session, or a customer session that needs the
+     customer list loaded first to verify the custId still exists.
+     AUTH is still null at this point, so loadData() itself won't render
+     anything — we decide what to show once data + session are both known. */
+  await loadData();
 
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" preserveAspectRatio="xMidYMid meet">
-    ${grid}${paths}${labelEls}
-  </svg>`;
+  if(pending&&pending.role==='customer'&&customers.find(c=>c.id===pending.custId)){
+    AUTH=pending;
+    enterApp();
+  }
+  /* else: stay on the login screen (already visible by default) */
 }
 
-function buildDonutChart(data,opts={}){
-  const size=opts.size||130,stroke=opts.stroke||16;
-  const r=(size-stroke)/2,cx=size/2,cy=size/2,circumference=2*Math.PI*r;
-  const total=data.reduce((s,d)=>s+d.value,0)||1;
-  let offset=0,arcs='';
-  data.forEach(d=>{
-    const frac=d.value/total;
-    const len=frac*circumference;
-    arcs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${d.color}"
-      stroke-width="${stroke}" stroke-dasharray="${len} ${circumference-len}"
-      stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt">
-      <title>${d.label}: ${d.value}</title>
-    </circle>`;
-    offset+=len;
-  });
-  const centerLbl=opts.centerLabel||'';
-  const centerVal=opts.centerValue||total;
-  const svg=`<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;flex-shrink:0">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border2)" stroke-width="${stroke}"/>
-    ${arcs}
-    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="20" font-weight="700" font-family="Rajdhani, sans-serif" fill="var(--text)">${centerVal}</text>
-    <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="8" font-family="Rajdhani, sans-serif" font-weight="600" fill="var(--text3)" letter-spacing="0.5">${centerLbl}</text>
-  </svg>`;
-  const legend=data.filter(d=>d.value>0).map(d=>`
-    <div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:3px 0">
-      <span style="width:8px;height:8px;border-radius:2px;background:${d.color};flex-shrink:0;box-shadow:0 0 6px ${d.color}80"></span>
-      <span style="color:var(--text2)">${d.label}</span>
-      <span style="color:${d.color};font-weight:700;margin-left:auto;font-family:'Rajdhani',sans-serif">${d.value}</span>
-    </div>`).join('');
-  return {svg,legend};
+/* ═══════ LOAD ═══════ */
+async function loadData(){
+  document.getElementById('loading-scr').style.display='flex';
+  document.getElementById('err-bar').style.display='none';
+  ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
+  try{
+    const[cr,or,rr]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS'),fetchSheet('12_RECEIPTS')]);
+    const cm=await fetchSheet('COLUMN_MASTER');
+
+    /* ── 1_CUSTOMERS: resolve columns by header, fallback to known index ── */
+    const cH=cr[0]||[];
+    const cIdId=findCol(cH,'customerid','custid'); const cIdIdx=cIdId!==-1?cIdId:0;
+    const cIdName=findCol(cH,'businessname','partnername'); const cIdNameIdx=cIdName!==-1?cIdName:1;
+    const cIdOwner=findCol(cH,'ownername'); const cIdOwnerIdx=cIdOwner!==-1?cIdOwner:2;
+    const cIdMobile=findCol(cH,'mobile','whatsapp','phone'); const cIdMobileIdx=cIdMobile!==-1?cIdMobile:3;
+    const cIdOut=findCol(cH,'outstanding'); const cIdOutIdx=cIdOut!==-1?cIdOut:4;
+    const cIdAddr=findCol(cH,'address'); const cIdAddrIdx=cIdAddr!==-1?cIdAddr:5;
+    const cIdCity=findCol(cH,'city'); const cIdCityIdx=cIdCity!==-1?cIdCity:6;
+    const cIdDist=findCol(cH,'district'); const cIdDistIdx=cIdDist!==-1?cIdDist:7;
+    const cIdLic=findCol(cH,'druglicense','license','licence'); const cIdLicIdx=cIdLic!==-1?cIdLic:9;
+
+    customers=[];
+    for(let i=1;i<cr.length;i++){
+      const r=cr[i];if(!r[cIdIdx]||!r[cIdNameIdx])continue;
+      const initOut=parseFloat((r[cIdOutIdx]||'').replace(/[₹,\s]/g,''))||0;
+      customers.push({
+        id:r[cIdIdx],name:r[cIdNameIdx],owner:r[cIdOwnerIdx]||'',mobile:r[cIdMobileIdx]||'',
+        initOutstanding:initOut,address:r[cIdAddrIdx]||'',city:r[cIdCityIdx]||'',
+        district:r[cIdDistIdx]||'',license:r[cIdLicIdx]||''
+      });
+    }
+
+    /* ── 2_ORDERS: resolve columns by header, fallback to known index ── */
+    const oH=or[0]||[];
+    const oIdOrder=findCol(oH,'orderid'); const oIdOrderIdx=oIdOrder!==-1?oIdOrder:0;
+    const oIdCust=findCol(oH,'customerid','custid'); const oIdCustIdx=oIdCust!==-1?oIdCust:1;
+    const oIdBiz=findCol(oH,'businessname'); const oIdBizIdx=oIdBiz!==-1?oIdBiz:2;
+    const oIdDate=findCol(oH,'orderdate','date','transactiondate'); const oIdDateIdx=oIdDate!==-1?oIdDate:3;
+    const oIdMonth=findCol(oH,'ordermonth','month'); const oIdMonthIdx=oIdMonth!==-1?oIdMonth:4;
+    const oIdNet=findCol(oH,'netamount'); const oIdGross=findCol(oH,'grossamount');
+    const oIdAmtIdx=oIdNet!==-1?oIdNet:(oIdGross!==-1?oIdGross:8);
+
+    orders=[];
+    for(let i=1;i<or.length;i++){
+      const r=or[i];if(!r[oIdOrderIdx])continue;
+      const rawAmt=(r[oIdAmtIdx]||r[6]||'').replace(/[₹,\s]/g,'');
+      const amt=parseFloat(rawAmt)||0;
+      const dateVal=(r[oIdDateIdx]||'').trim();
+      const dObj=parseDateSmart(dateVal);
+      const sheetMonth=(r[oIdMonthIdx]||'').trim();
+      /* Prefer the sheet's own month column when present; else derive from the parsed date */
+      const month=normMonth(sheetMonth)||monthFromDateObj(dObj);
+      orders.push({id:r[oIdOrderIdx],custId:r[oIdCustIdx]||'',bizName:r[oIdBizIdx]||'',date:dateVal,_d:dObj,month,amount:amt});
+    }
+
+    /* ── 12_RECEIPTS: resolve columns by header, fallback to known index ── */
+    const rH=rr[0]||[];
+    const rIdCust=findCol(rH,'customerid','custid'); const rIdCustIdx=rIdCust!==-1?rIdCust:0;
+    const rIdBiz=findCol(rH,'businessname'); const rIdBizIdx=rIdBiz!==-1?rIdBiz:1;
+    const rIdDate=findCol(rH,'rcptdate','receiptdate','date'); const rIdDateIdx=rIdDate!==-1?rIdDate:2;
+    const rIdMonth=findCol(rH,'month'); const rIdMonthIdx=rIdMonth!==-1?rIdMonth:3;
+    const rIdAmt=findCol(rH,'amount'); const rIdAmtIdx=rIdAmt!==-1?rIdAmt:5;
+
+    receipts=[];
+    for(let i=1;i<rr.length;i++){
+      const r=rr[i];if(!r[rIdCustIdx]&&!r[rIdBizIdx])continue;
+      const amt=parseFloat((r[rIdAmtIdx]||'').replace(/[₹,\s]/g,''))||0;
+      if(amt===0)continue;
+      const rcptDate=(r[rIdDateIdx]||'').trim();
+      const dObj=parseDateSmart(rcptDate);
+      const sheetMonth=(r[rIdMonthIdx]||'').trim();
+      const month=normMonth(sheetMonth)||monthFromDateObj(dObj);
+      receipts.push({custId:r[rIdCustIdx]||'Unknown',bizName:r[rIdBizIdx]||'',date:rcptDate,_d:dObj,month,amount:amt});
+    }
+    routeMaster=[];
+
+for(let i=1;i<cm.length;i++){
+
+ const r=cm[i];
+
+ routeMaster.push({
+
+   customerId:r[0]||'',
+   businessName:r[1]||'',
+
+   area:r[2]||'',
+   route:r[3]||'',
+
+   mr:r[4]||'',
+
+   accountStatus:r[5]||'',
+
+   reactivatePayment:
+      Number(r[6]||0),
+
+   fyBusiness:
+      Number(r[7]||0),
+
+   fyCollection:
+      Number(r[8]||0),
+
+   balance:
+      Number(r[9]||0),
+
+   lat:
+      Number(r[10]||0),
+
+   lng:
+      Number(r[11]||0)
+
+ });
+
+}
+    allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
+
+    document.getElementById('loading-scr').style.display='none';
+    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS';
+
+    /* Only build the admin-wide dashboard/agents views once an admin is
+       confirmed logged in. While AUTH is still null (login screen showing,
+       auth not yet resolved) or for a customer session, skip this — a
+       customer re-syncing should land back on their own profile, not get
+       bounced to the full dashboard, and there's no point rendering a
+       dashboard nobody can see yet during the initial boot check. */
+    if(AUTH&&AUTH.role==='admin'){
+buildPills();
+
+renderDash();
+
+buildBizList();
+
+renderRoutes();
+
+renderRouteSnapshot();
+
+showPage('dashboard');    }else if(AUTH&&AUTH.role==='customer'){
+      showDetailById(AUTH.custId);
+    }
+  }catch(e){
+    document.getElementById('loading-scr').style.display='none';
+    const el=document.getElementById('err-bar');
+    el.style.display='block';
+    el.innerHTML='<strong>[ERROR]</strong> '+e.message+' — Ensure sheet is public (Anyone with the link → Viewer).';
+  }
 }
 
+/* ═══════ PILLS ═══════ */
+function buildPills(){
+  const c=document.getElementById('period-pills');c.innerHTML='';
+  ['All',...allMonths].forEach(m=>{
+    const b=document.createElement('button');
+    b.className='pill'+(m===selMonth?' on':'');
+    b.textContent=m==='All'?'ALL TIME':m;
+    b.onclick=()=>{selMonth=m;buildPills();renderDash();};
+    c.appendChild(b);
+  });
+}
+function renderRouteSnapshot(){
+
+ const rt=
+   buildRouteAnalytics();
+
+ const el=
+   document.getElementById(
+    'routeSnapshot'
+   );
+
+ if(!el) return;
+
+ el.innerHTML=
+
+ Object.entries(rt)
+ .map(([name,r])=>`
+
+ <div class="v7-box"
+
+      onclick="openRouteTracker('${name}')"
+
+      style="cursor:pointer">
+
+   <b>${name}</b>
+
+   <br>
+
+   Performance Tracker
+
+   <br>
+
+   ${routeHealth(r)}
+
+ </div>
+
+ `).join('');
+}
+function openRouteTracker(route){
+
+ const rt =
+   buildRouteAnalytics();
+
+ const r =
+   rt[route];
+
+ if(!r){
+   alert('No data found');
+   return;
+ }
+const customersInRoute =
+ routeMaster.filter(x => {
+
+   const rr =
+    String(
+      x.route || x.area || ''
+    )
+    .trim()
+    .toUpperCase();
+
+   return rr ===
+     String(route)
+      .trim()
+      .toUpperCase();
+
+ }).sort((a,b)=>(b.balance||0)-(a.balance||0));
+
+ const efficiency =
+   r.revenue > 0
+    ? ((r.collection/r.revenue)*100)
+    : 0;
+
+ document.getElementById(
+   'routeTitle'
+ ).textContent =
+   route + ' PERFORMANCE TRACKER';
+
+ document.getElementById(
+   'routeDetailArea'
+ ).innerHTML = `
+
+ <div class="metrics-grid">
+
+   <div class="mc">
+      <div class="mc-lbl">
+        REVENUE
+      </div>
+
+      <div class="mc-val">
+        ${fmtINR(r.revenue)}
+      </div>
+   </div>
+
+   <div class="mc">
+      <div class="mc-lbl">
+        COLLECTION
+      </div>
+
+      <div class="mc-val">
+        ${fmtINR(r.collection)}
+      </div>
+   </div>
+
+   <div class="mc">
+      <div class="mc-lbl">
+        OUTSTANDING
+      </div>
+
+      <div class="mc-val">
+        ${fmtINR(r.outstanding)}
+      </div>
+   </div>
+
+   <div class="mc">
+      <div class="mc-lbl">
+        ACTIVE
+      </div>
+
+      <div class="mc-val">
+        ${r.active}
+      </div>
+   </div>
+
+   <div class="mc">
+      <div class="mc-lbl">
+        BLOCKED
+      </div>
+
+      <div class="mc-val">
+        ${r.blocked}
+      </div>
+   </div>
+
+   <div class="mc">
+      <div class="mc-lbl">
+        EFFICIENCY
+      </div>
+
+      <div class="mc-val">
+        ${efficiency.toFixed(1)}%
+      </div>
+   </div>
+
+ </div>
+
+ <div class="panel">
+
+   <div class="panel-hd">
+
+      <div class="panel-title">
+         CUSTOMERS IN ROUTE
+      </div>
+
+   </div>
+
+   ${customersInRoute.map((c,i)=>`
+
+      <div class="pl-item ${i<3 && c.balance>0 ? 'pl-item-due':''}"
+           onclick="showDetailById('${c.customerId}')">
+
+         <div class="pl-info">
+
+            <div class="pl-name">
+               ${i<3 && c.balance>0 ? '⚠ ' : ''}${c.businessName}
+            </div>
+
+            <div class="pl-loc">
+
+               ${c.accountStatus}
+
+               •
+
+               ${fmtINR(c.balance)}
+
+            </div>
+
+         </div>
+
+      </div>
+
+   `).join('')}
+
+ </div>
+
+ <div style="padding:12px">
+
+   <button
+      class="hbtn hbtn-cyan"
+      onclick="showPage('routes')">
+
+      ◄ BACK TO ROUTES
+
+   </button>
+
+ </div>
+
+ `;
+
+ showPage('routeDetail');
+
+}
+/* ═══════ AGGREGATION ═══════ */
+  function buildRouteAnalytics(){
+
+ const routes={};
+
+ routeMaster.forEach(r=>{
+
+   if(!routes[r.route]){
+
+      routes[r.route]={
+        revenue:0,
+        collection:0,
+        outstanding:0,
+        active:0,
+        blocked:0
+      };
+   }
+
+   routes[r.route].outstanding += r.balance;
+
+   if(r.accountStatus==='ACTIVE')
+      routes[r.route].active++;
+
+   if(r.accountStatus==='BLOCKED')
+      routes[r.route].blocked++;
+
+ });
+
+ orders.forEach(o=>{
+
+   const rm=
+      routeMaster.find(
+       x=>x.customerId===o.custId
+      );
+
+   if(!rm)return;
+
+   routes[rm.route].revenue+=o.amount;
+
+ });
+
+ receipts.forEach(r=>{
+
+   const rm=
+      routeMaster.find(
+       x=>x.customerId===r.custId
+      );
+
+   if(!rm)return;
+
+   routes[rm.route].collection+=r.amount;
+
+ });
+
+ return routes;
+}
+
+function routeHealth(r){
+
+ const cp=
+   r.revenue>0
+    ? (r.collection/r.revenue)*100
+    : 0;
+
+ if(cp>=90)return '🟢';
+ if(cp>=75)return '🟡';
+
+ return '🔴';
+}
+function filtOrd(){return selMonth==='All'?orders:orders.filter(o=>o.month===selMonth);}
+function totalsFrom(ords){
+  const t={};
+  ords.forEach(o=>{if(!o.custId||o.custId.toLowerCase()==='unknown')return;t[o.custId]=(t[o.custId]||0)+o.amount;});
+  return t;
+}
+function nameMap(ords){const m={};ords.forEach(o=>{if(o.custId&&o.bizName)m[o.custId]=o.bizName;});return m;}
+function buildChgMap(curMo,prevMo){
+  const cm=curMo?totalsFrom(orders.filter(o=>o.month===curMo)):{};
+  const pm=prevMo?totalsFrom(orders.filter(o=>o.month===prevMo)):{};
+  const map={};
+  [...new Set([...Object.keys(cm),...Object.keys(pm)])].forEach(id=>{
+    const ca=cm[id]||0,pa=pm[id]||0,ct=getTier(ca),pt=getTier(pa);
+    if(tRank(ct)!==tRank(pt))map[id]={curAmt:ca,prevAmt:pa,curTier:ct,prevTier:pt,change:tRank(ct)>tRank(pt)?'up':'dn'};
+  });
+  return map;
+}
+
+/* ═══════ DASHBOARD ═══════ */
+function renderDash(){
+  const ords=filtOrd(),totals=totalsFrom(ords),ids=Object.keys(totals);
+  const rev=ords.reduce((s,o)=>s+o.amount,0);
+  const curMo=selMonth!=='All'?selMonth:(allMonths[0]||'');
+  const prevMo=selMonth!=='All'?allMonths[allMonths.indexOf(selMonth)+1]||'':(allMonths[1]||'');
+  const chgMap=buildChgMap(curMo,prevMo);
+
+  /* receipts for selected period */
+  const fRcpts=filtRcpt();
+  const rcptTotal=fRcpts.reduce((s,r)=>s+r.amount,0);
+  const rcptCount=fRcpts.length;
+  /* outstanding = sum of (initOutstanding + orders - receipts) per customer */
+  const allBilled=orders.reduce((s,o)=>s+o.amount,0);
+  const allInitOut=customers.reduce((s,c)=>s+(c.initOutstanding||0),0);
+  const allCollected=receipts.reduce((s,r)=>s+r.amount,0);
+  const totalOutstanding=Math.max(0,allInitOut+allBilled-allCollected);
+  const totalBase=allInitOut+allBilled;
+  const collectionPct=totalBase>0?Math.min(100,Math.round(allCollected/totalBase*100)):0;
+  /* ===== EXECUTIVE DASHBOARD LIVE DATA ===== */
+
+const diamondCount =
+  ids.filter(id => (totals[id] || 0) >= 100000).length;
+
+const __kpiRevenueEl=document.getElementById('kpiRevenue'); if(__kpiRevenueEl) __kpiRevenueEl.textContent=fmtINR(rev);
+
+const __kpiAgentsEl=document.getElementById('kpiAgents'); if(__kpiAgentsEl) __kpiAgentsEl.textContent=ids.length;
+
+const __kpiDiamondEl=document.getElementById('kpiDiamond'); if(__kpiDiamondEl) __kpiDiamondEl.textContent=diamondCount;
+
+const __kpiCollectionEl=document.getElementById('kpiCollection'); if(__kpiCollectionEl) __kpiCollectionEl.textContent=fmtINR(rcptTotal);
+
+const __v4AgentsEl=document.getElementById('v4Agents'); if(__v4AgentsEl) __v4AgentsEl.textContent=ids.length;
+
+/* Collection % */
+const execVals =
+ document.querySelectorAll('.exec-value');
+
+if(execVals[2])
+ execVals[2].textContent =
+   collectionPct + '%';
+
+/* Growth */
+const prevRevenue =
+ prevMo
+  ? orders
+      .filter(o=>o.month===prevMo)
+      .reduce((s,o)=>s+o.amount,0)
+  : 0;
+
+const growth =
+ prevRevenue > 0
+  ? ((rev-prevRevenue)/prevRevenue)*100
+  : 0;
+
+if(execVals[3])
+ execVals[3].textContent =
+   (growth>=0?'+':'') +
+   growth.toFixed(1)+'%';
+
+/* V6 Cards */
+
+const v6 =
+ document.querySelectorAll('.v6-value');
+
+if(v6[0])
+ v6[0].textContent =
+   Math.round((rev/800000)*100)+'%';
+
+if(v6[1])
+ v6[1].textContent =
+   fmtINR(totalOutstanding);
+
+if(v6[2])
+ v6[2].textContent =
+   fmtINR(Math.round(rev*1.15));
+
+if(v6[3])
+ v6[3].textContent =
+   rev>=800000 ? 'A+' :
+   rev>=600000 ? 'A' :
+   rev>=400000 ? 'B' :
+   rev>=200000 ? 'C' : 'D';
+
+/* Forecast Engine */
+
+const forecast =
+ Math.round(rev*1.15);
+
+const __v7ForecastEl=document.getElementById('v7Forecast');
+if(__v7ForecastEl) __v7ForecastEl.textContent=fmtINR(forecast);
+
+const __v7StatusEl=document.getElementById('v7Status');
+if(__v7StatusEl) __v7StatusEl.textContent=forecast>=800000?'TARGET LIKELY':'NEEDS PUSH';
+
+  /* metrics — 4 cards */
+  document.getElementById('metrics-area').className='metrics-grid metrics-grid-4';
+  document.getElementById('metrics-area').innerHTML=`
+    <div class="mc hero hud-box hud-box-b">
+      <div class="mc-ico">💊</div>
+      <div class="mc-lbl">MISSION REVENUE</div>
+      <div class="mc-val">${fmtINR(rev)}</div>
+      <div class="mc-sub">${selMonth==='All'?'ALL CYCLES':selMonth} · ${ords.length} ORDERS</div>
+    </div>
+    <div class="mc">
+      <div class="mc-ico">🎯</div>
+      <div class="mc-lbl">ACTIVE AGENTS</div>
+      <div class="mc-val" style="color:var(--cyan)">${ids.length}</div>
+      <div class="mc-sub">with orders placed</div>
+    </div>
+    <div class="mc">
+      <div class="mc-ico">💳</div>
+      <div class="mc-lbl">COLLECTED</div>
+      <div class="mc-val" style="color:var(--green)">${fmtINR(rcptTotal)}</div>
+      <div class="mc-sub">${rcptCount} RECEIPTS · ${selMonth==='All'?'ALL TIME':selMonth}</div>
+    </div>
+    <div class="mc">
+      <div class="mc-ico">⚠️</div>
+      <div class="mc-lbl">OUTSTANDING</div>
+      <div class="mc-val" style="color:${totalOutstanding>0?'var(--red)':'var(--green)'}">${fmtINR(totalOutstanding)}</div>
+      <div class="mc-sub" style="color:${collectionPct>=80?'var(--green)':collectionPct>=50?'var(--amber)':'var(--red)'}">${collectionPct}% COLLECTED OVERALL</div>
+    </div>`;
+
+  /* tier grid */
+  document.getElementById('tier-cycle-lbl').textContent=selMonth==='All'?'ALL TIME':selMonth;
+  document.getElementById('tier-grid-area').innerHTML=TIERS.map(t=>{
+    const nextMin=TIERS[TIERS.indexOf(t)-1]?.min||Infinity;
+    const cnt=ids.filter(id=>totals[id]>=t.min&&totals[id]<nextMin).length;
+    return `<div class="tc">
+      <div class="tc-glow" style="background:linear-gradient(90deg,transparent,${t.color},transparent);opacity:.4"></div>
+      <span class="tc-emoji">${t.emoji}</span>
+      <div class="tc-nm" style="color:${t.color}">${t.name}</div>
+      <div class="tc-ct" style="color:${t.text};text-shadow:0 0 12px ${t.color}40">${cnt}</div>
+      <div class="tc-mn">≥ ${fmtINR(t.min)}</div>
+    </div>`;
+  }).join('');
+
+  /* top 5 */
+  const nm=nameMap(ords);
+  const top5=ids.sort((a,b)=>totals[b]-totals[a]).slice(0,5);
+  const medals=[
+    {bg:'rgba(255,184,0,.15)',c:'#FFB800',border:'rgba(255,184,0,.4)',lbl:'01',glow:'0 0 8px rgba(255,184,0,.4)'},
+    {bg:'rgba(148,163,184,.12)',c:'#94A3B8',border:'rgba(148,163,184,.3)',lbl:'02',glow:'none'},
+    {bg:'rgba(251,146,60,.12)',c:'#FB923C',border:'rgba(251,146,60,.3)',lbl:'03',glow:'none'},
+    {bg:'rgba(58,80,104,.2)',c:'#3A5068',border:'rgba(58,80,104,.3)',lbl:'04',glow:'none'},
+    {bg:'rgba(58,80,104,.2)',c:'#3A5068',border:'rgba(58,80,104,.3)',lbl:'05',glow:'none'},
+  ];
+  document.getElementById('top-list-area').innerHTML=top5.length===0
+    ?'<div class="empty-note">[ NO DATA FOR THIS CYCLE ]</div>'
+    :top5.map((id,i)=>{
+      const m=medals[i],tier=getTier(totals[id]),chg=chgMap[id];
+      const badge=chg?`<span class="ibadge ${chg.change}">${chg.change==='up'?'▲':'▼'} ${chg.curTier.name}</span>`:'';
+      /* per-partner collection info */
+      const pBilled=orders.filter(o=>o.custId===id).reduce((s,o)=>s+o.amount,0);
+      const pCollected=receipts.filter(r=>r.custId===id).reduce((s,r)=>s+r.amount,0);
+      const pOut=Math.max(0,pBilled-pCollected);
+      const outTag=pOut>0?`<span style="font-size:10px;color:var(--red);margin-left:6px">⚠ ${fmtINR(pOut)} DUE</span>`:'<span style="font-size:10px;color:var(--green);margin-left:6px">✓ CLEAR</span>';
+      return `<div class="top-row" onclick="showDetailById('${id}')">
+        <div class="rank-orb" style="background:${m.bg};color:${m.c};border-color:${m.border};box-shadow:${m.glow}">${m.lbl}</div>
+        <div class="tr-info">
+          <div class="tr-name">${nm[id]||id}</div>
+          <div class="tr-meta">${tier.emoji} <span style="color:${tier.color}">${tier.full}</span>${outTag}</div>
+        </div>
+        <div class="tr-right">
+          <div class="tr-amt" style="color:${tier.color};text-shadow:0 0 10px ${tier.color}50">${fmtINR(totals[id])} ${badge}</div>
+          <div class="tr-badge" style="background:${tier.bg};color:${tier.color};border:1px solid ${tier.border}">${tier.full}</div>
+        </div>
+        <div class="tr-chev">›</div>
+      </div>`;
+    }).join('');
+
+  renderTierChanges(chgMap,curMo,prevMo,nm);
+  renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo);
+  renderDashCharts(ids,totals);
+  renderRoutes();
+  renderRouteSnapshot();
+  showPage('dashboard');
+}
+
+/* ═══════ PROFILE-LEVEL ANALYTICS CHARTS ═══════ */
 function buildProfileChartsHTML(custId,cOrds,cRcpts,initOut,aAmt,aCollected,outstanding){
+  /* Per-month order vs receipt trend for this customer, last 6 known months */
   const trendMonths=allMonths.slice(0,6).slice().reverse();
   const ordByMonth=trendMonths.map(m=>cOrds.filter(o=>o.month===m).reduce((s,o)=>s+o.amount,0));
   const rcptByMonth=trendMonths.map(m=>cRcpts.filter(r=>r.month===m).reduce((s,r)=>s+r.amount,0));
@@ -1057,6 +2128,7 @@ function buildProfileChartsHTML(custId,cOrds,cRcpts,initOut,aAmt,aCollected,outs
     fmt:fmtINR
   }):'<div class="empty-note">[ NOT ENOUGH ORDER HISTORY YET ]</div>';
 
+  /* Payment status donut: Collected vs Outstanding share of total liability */
   const totalLiability=initOut+aAmt;
   const donutData=[
     {label:'Collected',value:aCollected,color:'#00FF88'},
@@ -1090,9 +2162,11 @@ function buildProfileChartsHTML(custId,cOrds,cRcpts,initOut,aAmt,aCollected,outs
   </div>`;
 }
 
+/* ═══════ DASHBOARD ANALYTICS CHARTS ═══════ */
 function renderDashCharts(ids,totals){
   const sec=document.getElementById('chart-section');
 
+  /* Revenue + collections trend across the last 6 known months (oldest→newest) */
   const trendMonths=allMonths.slice(0,6).slice().reverse();
   const revByMonth=trendMonths.map(m=>orders.filter(o=>o.month===m).reduce((s,o)=>s+o.amount,0));
   const collByMonth=trendMonths.map(m=>receipts.filter(r=>r.month===m).reduce((s,r)=>s+r.amount,0));
@@ -1107,6 +2181,7 @@ function renderDashCharts(ids,totals){
     fmt:fmtINR
   }):'<div class="empty-note">[ NOT ENOUGH MONTHS OF DATA YET ]</div>';
 
+  /* Tier distribution donut, using already-computed totals for the selected period */
   const donutData=TIERS.map(t=>{
     const nextMin=TIERS[TIERS.indexOf(t)-1]?.min||Infinity;
     const cnt=ids.filter(id=>totals[id]>=t.min&&totals[id]<nextMin).length;
@@ -1116,6 +2191,7 @@ function renderDashCharts(ids,totals){
   if(unrankedCnt>0)donutData.push({label:'UNRANKED',value:unrankedCnt,color:UNRANKED.color});
   const donut=buildDonutChart(donutData,{centerLabel:'AGENTS',centerValue:ids.length});
 
+  /* Top 6 agents bar chart for the selected period */
   const top6=ids.slice().sort((a,b)=>totals[b]-totals[a]).slice(0,6);
   const nm2=nameMap(orders);
   const barData=top6.map(id=>{
@@ -1154,279 +2230,6 @@ function renderDashCharts(ids,totals){
     </div>
   </div>
   `;
-}
-
-/* ═══════ LOAD DATA ═══════ */
-async function loadData(){
-  document.getElementById('loading-scr').style.display='flex';
-  document.getElementById('err-bar').style.display='none';
-  ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
-  try{
-    const[cr,or,rr]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS'),fetchSheet('12_RECEIPTS')]);
-
-    window.__RAW_ORDERS=or;
-    window.__RAW_RECEIPTS=rr;
-    window.__RAW_CUSTOMERS=cr;
-
-    // ── 1_CUSTOMERS ──
-    const cH=cr[0]||[];
-    const cIdId=findCol(cH,'customerid','custid'); const cIdIdx=cIdId!==-1?cIdId:0;
-    const cIdName=findCol(cH,'businessname','partnername'); const cIdNameIdx=cIdName!==-1?cIdName:1;
-    const cIdOwner=findCol(cH,'ownername'); const cIdOwnerIdx=cIdOwner!==-1?cIdOwner:2;
-    const cIdMobile=findCol(cH,'mobile','whatsapp','phone'); const cIdMobileIdx=cIdMobile!==-1?cIdMobile:3;
-    const cIdOut=findCol(cH,'outstanding'); const cIdOutIdx=cIdOut!==-1?cIdOut:4;
-    const cIdAddr=findCol(cH,'address'); const cIdAddrIdx=cIdAddr!==-1?cIdAddr:5;
-    const cIdCity=findCol(cH,'city'); const cIdCityIdx=cIdCity!==-1?cIdCity:6;
-    const cIdDist=findCol(cH,'district'); const cIdDistIdx=cIdDist!==-1?cIdDist:7;
-    const cIdLic=findCol(cH,'druglicense','license','licence'); const cIdLicIdx=cIdLic!==-1?cIdLic:9;
-
-    customers=[];
-    for(let i=1;i<cr.length;i++){
-      const r=cr[i];if(!r[cIdIdx]||!r[cIdNameIdx])continue;
-      const initOut=parseFloat((r[cIdOutIdx]||'').replace(/[₹,\s]/g,''))||0;
-      customers.push({
-        id:r[cIdIdx],name:r[cIdNameIdx],owner:r[cIdOwnerIdx]||'',mobile:r[cIdMobileIdx]||'',
-        initOutstanding:initOut,address:r[cIdAddrIdx]||'',city:r[cIdCityIdx]||'',
-        district:r[cIdDistIdx]||'',license:r[cIdLicIdx]||''
-      });
-    }
-
-    // ── 2_ORDERS ──
-    const oH=or[0]||[];
-    let oIdOrderIdx, oIdCustIdx, oIdBizIdx, oIdDateIdx, oIdAmtIdx;
-
-    if (ORDER_DATE_COLUMN_INDEX >= 0) {
-      // Use explicit indices
-      oIdOrderIdx = ORDER_CUSTID_COLUMN_INDEX >= 0 ? ORDER_CUSTID_COLUMN_INDEX : 0;
-      oIdCustIdx = ORDER_CUSTID_COLUMN_INDEX >= 0 ? ORDER_CUSTID_COLUMN_INDEX : 1;
-      oIdBizIdx = ORDER_BIZNAME_COLUMN_INDEX >= 0 ? ORDER_BIZNAME_COLUMN_INDEX : 2;
-      oIdDateIdx = ORDER_DATE_COLUMN_INDEX;
-      oIdAmtIdx = ORDER_AMOUNT_COLUMN_INDEX >= 0 ? ORDER_AMOUNT_COLUMN_INDEX : 8;
-    } else {
-      // Auto-detect
-      oIdOrderIdx = findCol(oH,'orderid'); if(oIdOrderIdx===-1) oIdOrderIdx=0;
-      oIdCustIdx = findCol(oH,'customerid','custid'); if(oIdCustIdx===-1) oIdCustIdx=1;
-      oIdBizIdx = findCol(oH,'businessname'); if(oIdBizIdx===-1) oIdBizIdx=2;
-      oIdDateIdx = findDateColumn(or.slice(1), oH);
-      if(oIdDateIdx === -1) oIdDateIdx = findCol(oH,'orderdate','date','transactiondate','Order Date','Invoice Date','Bill Date');
-      if(oIdDateIdx === -1) oIdDateIdx = 3;
-      const oIdNet=findCol(oH,'netamount');
-      const oIdGross=findCol(oH,'grossamount');
-      oIdAmtIdx=oIdNet!==-1?oIdNet:(oIdGross!==-1?oIdGross:8);
-    }
-
-    const oIdMonthIdx = findCol(oH,'ordermonth','month'); const oIdMonthIdxFinal = oIdMonthIdx!==-1?oIdMonthIdx:4;
-
-    console.log('[Aaradhya] Order date column index:', oIdDateIdx, 'header:', oH[oIdDateIdx] || 'MISSING');
-
-    orders=[];
-    for(let i=1;i<or.length;i++){
-      const r=or[i];if(!r[oIdOrderIdx])continue;
-      const rawAmt=(r[oIdAmtIdx]||r[8]||'').replace(/[₹,\s]/g,'');
-      const amt=parseFloat(rawAmt)||0;
-      const dateVal=(r[oIdDateIdx]||'').trim();
-      const dObj=parseDateSmart(dateVal);
-      const sheetMonth=(r[oIdMonthIdxFinal]||'').trim();
-      const month=normMonth(sheetMonth)||monthFromDateObj(dObj);
-      orders.push({id:r[oIdOrderIdx],custId:r[oIdCustIdx]||'',bizName:r[oIdBizIdx]||'',date:dateVal,_d:dObj,month,amount:amt});
-    }
-
-    // ── 12_RECEIPTS (EXPLICIT INDICES) ──
-    const rH=rr[0]||[];
-    let rIdCustIdx, rIdBizIdx, rIdDateIdx, rIdAmtIdx;
-
-    if (RECEIPT_DATE_COLUMN_INDEX >= 0) {
-      rIdCustIdx = RECEIPT_CUSTID_COLUMN_INDEX;
-      rIdBizIdx = RECEIPT_BIZNAME_COLUMN_INDEX;
-      rIdDateIdx = RECEIPT_DATE_COLUMN_INDEX;
-      rIdAmtIdx = RECEIPT_AMOUNT_COLUMN_INDEX;
-    } else {
-      // Fallback auto-detect (should not be needed)
-      rIdCustIdx = findCol(rH,'customerid','custid'); if(rIdCustIdx===-1) rIdCustIdx=0;
-      rIdBizIdx = findCol(rH,'businessname'); if(rIdBizIdx===-1) rIdBizIdx=1;
-      rIdDateIdx = findDateColumn(rr.slice(1), rH); if(rIdDateIdx===-1) rIdDateIdx=2;
-      rIdAmtIdx = findCol(rH,'amount'); if(rIdAmtIdx===-1) rIdAmtIdx=3;
-    }
-
-    console.log('[Aaradhya] Receipt date column index:', rIdDateIdx, 'header:', rH[rIdDateIdx] || 'MISSING');
-    console.log('[Aaradhya] Receipt columns → CustID:', rIdCustIdx, 'BizName:', rIdBizIdx, 'Date:', rIdDateIdx, 'Amount:', rIdAmtIdx);
-
-    receipts=[];
-    for(let i=1;i<rr.length;i++){
-      const r=rr[i];if(!r[rIdCustIdx]&&!r[rIdBizIdx])continue;
-      const amt=parseFloat((r[rIdAmtIdx]||'').replace(/[₹,\s]/g,''))||0;
-      if(amt===0)continue;
-      const rcptDate=(r[rIdDateIdx]||'').trim();
-      const dObj=parseDateSmart(rcptDate);
-      const sheetMonth=''; // No month column in this sheet
-      const month=monthFromDateObj(dObj);
-      receipts.push({custId:r[rIdCustIdx]||'Unknown',bizName:r[rIdBizIdx]||'',date:rcptDate,_d:dObj,month,amount:amt});
-    }
-
-    allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
-
-    window.__ORDERS=orders;
-    window.__RECEIPTS=receipts;
-
-    console.log('[Aaradhya] Orders columns → date: "'+oH[oIdDateIdx]+'" (idx '+oIdDateIdx+'), amount: "'+oH[oIdAmtIdx]+'" (idx '+oIdAmtIdx+')');
-    console.log('[Aaradhya] Receipts columns → date: "'+rH[rIdDateIdx]+'" (idx '+rIdDateIdx+'), amount: "'+rH[rIdAmtIdx]+'" (idx '+rIdAmtIdx+')');
-
-    const oUnparsed=orders.filter(o=>o.date&&!o._d);
-    const rUnparsed=receipts.filter(r=>r.date&&!r._d);
-    if(oUnparsed.length)console.warn('[Aaradhya] '+oUnparsed.length+' order date(s) could not be parsed:',oUnparsed.map(o=>({id:o.id,custId:o.custId,date:JSON.stringify(o.date)})));
-    if(rUnparsed.length)console.warn('[Aaradhya] '+rUnparsed.length+' receipt date(s) could not be parsed:',rUnparsed.map(r=>({custId:r.custId,bizName:r.bizName,date:JSON.stringify(r.date)})));
-
-    // Maa Laxmi Medical debug
-    const maaLaxmiO=orders.filter(o=>(o.bizName||'').toLowerCase().includes('maa laxmi')||(o.bizName||'').toLowerCase().includes('laxmi'));
-    console.log('[Aaradhya] Maa Laxmi Medical orders — raw date → parsed display:');
-    maaLaxmiO.forEach(o=>{
-      console.log(`  Raw: "${o.date}" → Parsed: ${fmtDateObj(o._d)} (month: ${o.month})`);
-    });
-
-    const oExpectedLen=oH.length;
-    const oBadRows=or.slice(1).map((r,i)=>({row:i+2,len:r.length})).filter(x=>x.len!==oExpectedLen);
-    if(oBadRows.length)console.warn('[Aaradhya] Orders sheet: '+oBadRows.length+' row(s) with unexpected column count (expected '+oExpectedLen+'). First few:',oBadRows.slice(0,5));
-
-    const rExpectedLen=rH.length;
-    const rBadRows=rr.slice(1).map((r,i)=>({row:i+2,len:r.length})).filter(x=>x.len!==rExpectedLen);
-    if(rBadRows.length)console.warn('[Aaradhya] Receipts sheet: '+rBadRows.length+' row(s) with unexpected column count (expected '+rExpectedLen+'). First few:',rBadRows.slice(0,5));
-
-    buildPills();renderDash();buildBizList();
-    document.getElementById('loading-scr').style.display='none';
-    document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS · v7-explicit';
-    showPage('dashboard');
-  }catch(e){
-    document.getElementById('loading-scr').style.display='none';
-    const el=document.getElementById('err-bar');
-    el.style.display='block';
-    el.innerHTML='<strong>[ERROR]</strong> '+e.message+' — Ensure sheet is public (Anyone with the link → Viewer).';
-  }
-}
-
-/* ═══════ PILLS ═══════ */
-function buildPills(){
-  const c=document.getElementById('period-pills');c.innerHTML='';
-  ['All',...allMonths].forEach(m=>{
-    const b=document.createElement('button');
-    b.className='pill'+(m===selMonth?' on':'');
-    b.textContent=m==='All'?'ALL TIME':m;
-    b.onclick=()=>{selMonth=m;buildPills();renderDash();};
-    c.appendChild(b);
-  });
-}
-
-/* ═══════ AGGREGATION ═══════ */
-function filtOrd(){return selMonth==='All'?orders:orders.filter(o=>o.month===selMonth);}
-function totalsFrom(ords){
-  const t={};
-  ords.forEach(o=>{if(!o.custId||o.custId.toLowerCase()==='unknown')return;t[o.custId]=(t[o.custId]||0)+o.amount;});
-  return t;
-}
-function nameMap(ords){const m={};ords.forEach(o=>{if(o.custId&&o.bizName)m[o.custId]=o.bizName;});return m;}
-function buildChgMap(curMo,prevMo){
-  const cm=curMo?totalsFrom(orders.filter(o=>o.month===curMo)):{};
-  const pm=prevMo?totalsFrom(orders.filter(o=>o.month===prevMo)):{};
-  const map={};
-  [...new Set([...Object.keys(cm),...Object.keys(pm)])].forEach(id=>{
-    const ca=cm[id]||0,pa=pm[id]||0,ct=getTier(ca),pt=getTier(pa);
-    if(tRank(ct)!==tRank(pt))map[id]={curAmt:ca,prevAmt:pa,curTier:ct,prevTier:pt,change:tRank(ct)>tRank(pt)?'up':'dn'};
-  });
-  return map;
-}
-
-/* ═══════ DASHBOARD ═══════ */
-function renderDash(){
-  const ords=filtOrd(),totals=totalsFrom(ords),ids=Object.keys(totals);
-  const rev=ords.reduce((s,o)=>s+o.amount,0);
-  const curMo=selMonth!=='All'?selMonth:(allMonths[0]||'');
-  const prevMo=selMonth!=='All'?allMonths[allMonths.indexOf(selMonth)+1]||'':(allMonths[1]||'');
-  const chgMap=buildChgMap(curMo,prevMo);
-
-  const fRcpts=filtRcpt();
-  const rcptTotal=fRcpts.reduce((s,r)=>s+r.amount,0);
-  const rcptCount=fRcpts.length;
-  const allBilled=orders.reduce((s,o)=>s+o.amount,0);
-  const allInitOut=customers.reduce((s,c)=>s+(c.initOutstanding||0),0);
-  const allCollected=receipts.reduce((s,r)=>s+r.amount,0);
-  const totalOutstanding=Math.max(0,allInitOut+allBilled-allCollected);
-  const totalBase=allInitOut+allBilled;
-  const collectionPct=totalBase>0?Math.min(100,Math.round(allCollected/totalBase*100)):0;
-
-  document.getElementById('metrics-area').className='metrics-grid metrics-grid-4';
-  document.getElementById('metrics-area').innerHTML=`
-    <div class="mc hero hud-box hud-box-b">
-      <div class="mc-ico">💊</div>
-      <div class="mc-lbl">MISSION REVENUE</div>
-      <div class="mc-val">${fmtINR(rev)}</div>
-      <div class="mc-sub">${selMonth==='All'?'ALL CYCLES':selMonth} · ${ords.length} ORDERS</div>
-    </div>
-    <div class="mc">
-      <div class="mc-ico">🎯</div>
-      <div class="mc-lbl">ACTIVE AGENTS</div>
-      <div class="mc-val" style="color:var(--cyan)">${ids.length}</div>
-      <div class="mc-sub">with orders placed</div>
-    </div>
-    <div class="mc">
-      <div class="mc-ico">💳</div>
-      <div class="mc-lbl">COLLECTED</div>
-      <div class="mc-val" style="color:var(--green)">${fmtINR(rcptTotal)}</div>
-      <div class="mc-sub">${rcptCount} RECEIPTS · ${selMonth==='All'?'ALL TIME':selMonth}</div>
-    </div>
-    <div class="mc">
-      <div class="mc-ico">⚠️</div>
-      <div class="mc-lbl">OUTSTANDING</div>
-      <div class="mc-val" style="color:${totalOutstanding>0?'var(--red)':'var(--green)'}">${fmtINR(totalOutstanding)}</div>
-      <div class="mc-sub" style="color:${collectionPct>=80?'var(--green)':collectionPct>=50?'var(--amber)':'var(--red)'}">${collectionPct}% COLLECTED OVERALL</div>
-    </div>`;
-
-  document.getElementById('tier-cycle-lbl').textContent=selMonth==='All'?'ALL TIME':selMonth;
-  document.getElementById('tier-grid-area').innerHTML=TIERS.map(t=>{
-    const nextMin=TIERS[TIERS.indexOf(t)-1]?.min||Infinity;
-    const cnt=ids.filter(id=>totals[id]>=t.min&&totals[id]<nextMin).length;
-    return `<div class="tc">
-      <div class="tc-glow" style="background:linear-gradient(90deg,transparent,${t.color},transparent);opacity:.4"></div>
-      <span class="tc-emoji">${t.emoji}</span>
-      <div class="tc-nm" style="color:${t.color}">${t.name}</div>
-      <div class="tc-ct" style="color:${t.text};text-shadow:0 0 12px ${t.color}40">${cnt}</div>
-      <div class="tc-mn">≥ ${fmtINR(t.min)}</div>
-    </div>`;
-  }).join('');
-
-  const nm=nameMap(ords);
-  const top5=ids.sort((a,b)=>totals[b]-totals[a]).slice(0,5);
-  const medals=[
-    {bg:'rgba(255,184,0,.15)',c:'#FFB800',border:'rgba(255,184,0,.4)',lbl:'01',glow:'0 0 8px rgba(255,184,0,.4)'},
-    {bg:'rgba(148,163,184,.12)',c:'#94A3B8',border:'rgba(148,163,184,.3)',lbl:'02',glow:'none'},
-    {bg:'rgba(251,146,60,.12)',c:'#FB923C',border:'rgba(251,146,60,.3)',lbl:'03',glow:'none'},
-    {bg:'rgba(58,80,104,.2)',c:'#3A5068',border:'rgba(58,80,104,.3)',lbl:'04',glow:'none'},
-    {bg:'rgba(58,80,104,.2)',c:'#3A5068',border:'rgba(58,80,104,.3)',lbl:'05',glow:'none'},
-  ];
-  document.getElementById('top-list-area').innerHTML=top5.length===0
-    ?'<div class="empty-note">[ NO DATA FOR THIS CYCLE ]</div>'
-    :top5.map((id,i)=>{
-      const m=medals[i],tier=getTier(totals[id]),chg=chgMap[id];
-      const badge=chg?`<span class="ibadge ${chg.change}">${chg.change==='up'?'▲':'▼'} ${chg.curTier.name}</span>`:'';
-      const pBilled=orders.filter(o=>o.custId===id).reduce((s,o)=>s+o.amount,0);
-      const pCollected=receipts.filter(r=>r.custId===id).reduce((s,r)=>s+r.amount,0);
-      const pOut=Math.max(0,pBilled-pCollected);
-      const outTag=pOut>0?`<span style="font-size:10px;color:var(--red);margin-left:6px">⚠ ${fmtINR(pOut)} DUE</span>`:'<span style="font-size:10px;color:var(--green);margin-left:6px">✓ CLEAR</span>';
-      return `<div class="top-row" onclick="showDetailById('${id}')">
-        <div class="rank-orb" style="background:${m.bg};color:${m.c};border-color:${m.border};box-shadow:${m.glow}">${m.lbl}</div>
-        <div class="tr-info">
-          <div class="tr-name">${nm[id]||id}</div>
-          <div class="tr-meta">${tier.emoji} <span style="color:${tier.color}">${tier.full}</span>${outTag}</div>
-        </div>
-        <div class="tr-right">
-          <div class="tr-amt" style="color:${tier.color};text-shadow:0 0 10px ${tier.color}50">${fmtINR(totals[id])} ${badge}</div>
-          <div class="tr-badge" style="background:${tier.bg};color:${tier.color};border:1px solid ${tier.border}">${tier.full}</div>
-        </div>
-        <div class="tr-chev">›</div>
-      </div>`;
-    }).join('');
-
-  renderTierChanges(chgMap,curMo,prevMo,nm);
-  renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo);
-  renderDashCharts(ids,totals);
 }
 
 function renderTierChanges(chgMap,curMo,prevMo,nm){
@@ -1469,18 +2272,22 @@ function renderTierChanges(chgMap,curMo,prevMo,nm){
   </div>`;
 }
 
+/* ═══════ RECEIPTS DASHBOARD PANEL ═══════ */
 function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
   const sec=document.getElementById('rcpt-section');
   if(!fRcpts.length){
     sec.innerHTML=`<div class="panel"><div class="panel-hd"><div class="panel-title">◈ PAYMENT RECEIPTS</div><div class="panel-tag">${selMonth==='All'?'ALL TIME':selMonth}</div></div><div class="no-chg">[ NO RECEIPTS IN THIS PERIOD ]</div></div>`;
     return;
   }
+  /* top collectors by receipt amount in period */
   const byAgent={};
   fRcpts.forEach(r=>{if(r.custId&&r.custId!=='Unknown')byAgent[r.custId]=(byAgent[r.custId]||0)+r.amount;});
   const topAgents=Object.entries(byAgent).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  /* name map from receipts+orders */
   const nm={};receipts.forEach(r=>{if(r.custId&&r.bizName)nm[r.custId]=r.bizName;});
   orders.forEach(o=>{if(o.custId&&o.bizName)nm[o.custId]=o.bizName;});
 
+  /* recent 20 receipts sorted newest first, using cached parsed Date objects */
   const sorted=[...fRcpts].sort((a,b)=>dateKey(b._d)-dateKey(a._d)).slice(0,20);
 
   sec.innerHTML=`<div class="panel">
@@ -1529,6 +2336,93 @@ function renderReceiptsDash(fRcpts,rcptTotal,rcptCount,curMo){
 }
 
 /* ═══════ BIZ LIST ═══════ */
+function top3OutstandingForRoute(routeName){
+  return routeMaster
+    .filter(x=>String(x.route||x.area||'').trim().toUpperCase()===String(routeName).trim().toUpperCase())
+    .filter(x=>(x.balance||0)>0)
+    .sort((a,b)=>(b.balance||0)-(a.balance||0))
+    .slice(0,3);
+}
+function renderRoutes(){
+
+ const rt=buildRouteAnalytics();
+
+ const el=document.getElementById('routes-area');
+
+ if(!el) return;
+
+ el.innerHTML=
+ Object.entries(rt)
+ .sort((a,b)=>b[1].revenue-a[1].revenue)
+ .map(([name,r])=>{
+
+   const efficiency=
+     r.revenue>0
+       ? ((r.collection/r.revenue)*100)
+       : 0;
+
+   const top3=top3OutstandingForRoute(name);
+   const top3Html=top3.length
+     ? top3.map((c,i)=>`<div class="rt-due-row">
+         <span class="rt-due-rank">${i+1}</span>
+         <span class="rt-due-name">${c.businessName||c.customerId}</span>
+         <span class="rt-due-amt">${fmtINR(c.balance)}</span>
+       </div>`).join('')
+     : '<div class="rt-due-row rt-due-empty">No outstanding dues</div>';
+
+   return `
+
+   <div class="mc route-tap" style="margin-bottom:12px;cursor:pointer" onclick="openRouteTracker('${name}')">
+
+     <div class="mc-lbl">${name}</div>
+
+     <div class="mc-val">
+       ${fmtINR(r.revenue)}
+     </div>
+
+     <div class="mc-sub">
+
+       Collection :
+       ${fmtINR(r.collection)}
+
+       <br>
+
+       Outstanding :
+       ${fmtINR(r.outstanding)}
+
+       <br>
+
+       Active :
+       ${r.active}
+
+       <br>
+
+       Blocked :
+       ${r.blocked}
+
+       <br>
+
+       Efficiency :
+       ${efficiency.toFixed(1)}%
+
+       <br>
+
+       Health :
+       ${routeHealth(r)}
+
+     </div>
+
+     <div class="rt-due-block">
+       <div class="rt-due-hd">⚠ TOP OUTSTANDING</div>
+       ${top3Html}
+     </div>
+
+     <div class="rt-tap-hint">TAP FOR PARTY LIST ▸</div>
+
+   </div>
+   `;
+ }).join('');
+}
 function buildBizList(){
   const t=totalsFrom(orders);
   window._AT=t;
@@ -1645,6 +2539,10 @@ function questHTML(quests,curMo){
 
 /* ═══════ DETAIL ═══════ */
 function showDetailById(custId){
+  /* Hard security boundary: a customer session can only ever render its
+     own profile, no matter what custId gets passed in (defends against
+     any stray onclick handler or leftover dashboard link). */
+  if(AUTH&&AUTH.role==='customer'&&custId!==AUTH.custId)return;
   const c=customers.find(x=>x.id===custId);if(!c)return;
   const curMo=allMonths[0]||'',prevMo=allMonths[1]||'';
   const cOrds=orders.filter(o=>o.custId===custId);
@@ -1665,10 +2563,16 @@ function showDetailById(custId){
   const diff=mAmt-pAmt,dS=diff>=0?'+':'',dC=diff>=0?'var(--green)':'var(--red)';
   const quests=computeQuests(custId,curMo,prevMo);
 
+  /* ── Receipt data for this customer ── */
   const cRcpts=receipts.filter(r=>r.custId===custId);
+
+  /* Sort receipts newest → oldest using cached parsed Date objects */
   const sRcpts=cRcpts.slice().sort((a,b)=>dateKey(b._d)-dateKey(a._d));
+
+  /* Sort orders newest → oldest using cached parsed Date objects */
   const sOrds=cOrds.slice().sort((a,b)=>dateKey(b._d)-dateKey(a._d));
 
+  /* ── Order & payment cadence + predictions (pass cached Date objects directly) ── */
   const orderCadence=computeCadence(cOrds.map(o=>o._d));
   const rcptCadence=computeCadence(cRcpts.map(r=>r._d));
   const predictHTML=buildPredictionHTML(orderCadence,rcptCadence);
@@ -1802,7 +2706,7 @@ function showDetailById(custId){
         <tbody>
           ${sRcpts.map((r,i)=>`<tr>
             <td style="color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:11px">${String(sRcpts.length-i).padStart(2,'0')}</td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(r._d)}<div style="font-size:9px;color:var(--text3);opacity:.6">src: ${r.date||'(empty)'}</div></td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(r._d)}</td>
             <td class="ord-amt" style="color:var(--green);font-size:15px">${fmtINR(r.amount)}</td>
           </tr>`).join('')}
         </tbody>
@@ -1828,7 +2732,7 @@ function showDetailById(custId){
         <tbody>
           ${sOrds.map(o=>`<tr>
             <td><span class="oid">${o.id}</span></td>
-            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(o._d)}<div style="font-size:9px;color:var(--text3);opacity:.6">src: ${o.date||'(empty)'}</div></td>
+            <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text)">${fmtDateObj(o._d)}</td>
             <td class="ord-amt">${fmtINR(o.amount)}</td>
           </tr>`).join('')}
         </tbody>
@@ -1841,24 +2745,253 @@ function showDetailById(custId){
 
 /* ═══════ NAVIGATION ═══════ */
 function showPage(page){
-  ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
-  document.getElementById('page-'+page).classList.add('on');
-  const isD=page==='detail';
-  document.getElementById('main-tabs').style.display=isD?'none':'flex';
-  document.getElementById('nav-back').style.display=isD?'block':'none';
-  document.getElementById('nav-home').style.display=isD?'block':'none';
-  if(navStack[navStack.length-1]!==page)navStack.push(page);
-  if(!isD)document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('on',(page==='dashboard'&&i===0)||(page==='details'&&i===1)));
-  window.scrollTo(0,0);
+
+ [
+  'dashboard',
+  'details',
+  'detail',
+  'routes',
+  'routeDetail'
+ ]
+ .forEach(p=>{
+
+   const el =
+     document.getElementById(
+       'page-'+p
+     );
+
+   if(el)
+     el.classList.remove('on');
+
+ });
+
+ const target =
+   document.getElementById(
+     'page-'+page
+   );
+
+ if(target)
+   target.classList.add('on');
+
 }
 function switchTab(page,el){
+  if(AUTH&&AUTH.role==='customer')return; /* customers stay on their own profile */
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');navStack=[page];showPage(page);
 }
-function goHome(){navStack=['dashboard'];showPage('dashboard');}
-function goBack(){navStack.pop();showPage(navStack[navStack.length-1]||'dashboard');}
+function goHome(){
+  if(AUTH&&AUTH.role==='customer'){showDetailById(AUTH.custId);return;}
+  navStack=['dashboard'];showPage('dashboard');
+}
+function goBack(){
+  if(AUTH&&AUTH.role==='customer')return; /* nothing to go back to */
+  navStack.pop();showPage(navStack[navStack.length-1]||'dashboard');
+}
 
-loadData();
+bootApp();
 </script>
+
+<script id="v7-dynamic-kpi">
+document.addEventListener('DOMContentLoaded',()=>{
+ try{
+   const agents=(window.customers||[]).length||0;
+   const rev=(window.customers||[]).reduce((a,c)=>a+(+c.amount||+c.business||0),0);
+   const el=document.getElementById('kpiAgents'); if(el) el.textContent=agents;
+   const er=document.getElementById('kpiRevenue'); if(er && rev) er.textContent='₹'+Math.round(rev).toLocaleString('en-IN');
+   const f=document.getElementById('v7Forecast'); if(f) f.textContent='Live Data Ready';
+   const s=document.getElementById('v7Status'); if(s) s.textContent='ON TRACK';
+ }catch(e){console.log(e);}
+});
+</script>
+
+
+<script id="v8-live-dashboard">
+function fmtINR_V8(v){
+ try{return '₹'+Number(v||0).toLocaleString('en-IN');}
+ catch(e){return '₹0';}
+}
+function getTierNameV8(b){
+ const n=Number(b||0);
+ if(n>=100000) return 'DIAMOND';
+ if(n>=70000) return 'PLATINUM';
+ if(n>=50000) return 'GOLD';
+ if(n>=20000) return 'SILVER';
+ if(n>=10000) return 'BRONZE';
+ return 'NEW';
+}
+function updateExecutiveDashboardV8(){
+ try{
+   const cust = window.customers || [];
+   const rcpt = window.receipts || [];
+
+   const totalRevenue = cust.reduce((s,c)=>s+(+c.business||+c.amount||0),0);
+   const totalCollections = rcpt.reduce((s,r)=>s+(+r.amount||0),0);
+   const diamondCount = cust.filter(c=>getTierNameV8(c.business)==='DIAMOND').length;
+
+   const rev=document.getElementById('kpiRevenue');
+   const ag=document.getElementById('kpiAgents');
+   const dia=document.getElementById('kpiDiamond');
+   const col=document.getElementById('kpiCollection');
+
+   if(rev) rev.textContent=fmtINR_V8(totalRevenue);
+   if(ag) ag.textContent=cust.length;
+   if(dia) dia.textContent=diamondCount;
+   if(col) col.textContent=fmtINR_V8(totalCollections);
+
+   const target=800000;
+   const ach=target?((totalRevenue/target)*100):0;
+
+   const v6=document.querySelectorAll('.v6-value');
+   if(v6.length>=4){
+      v6[0].textContent=ach.toFixed(1)+'%';
+      v6[1].textContent=fmtINR_V8(Math.max(0,totalRevenue-totalCollections));
+      v6[2].textContent=fmtINR_V8(totalRevenue*1.1);
+      v6[3].textContent=ach>=100?'A+':ach>=75?'A':ach>=50?'B':'C';
+   }
+
+   const f=document.getElementById('v7Forecast');
+   const s=document.getElementById('v7Status');
+   if(f) f.textContent=fmtINR_V8(totalRevenue*1.1);
+   if(s) s.textContent=ach>=100?'TARGET ACHIEVED':'ON TRACK';
+ }catch(err){console.log('V8 dashboard',err);}
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+ setTimeout(updateExecutiveDashboardV8,1500);
+});
+
+const __oldLoadData = window.loadData;
+if(typeof __oldLoadData === 'function'){
+ window.loadData = async function(){
+   const r = await __oldLoadData.apply(this,arguments);
+   setTimeout(updateExecutiveDashboardV8,500);
+   return r;
+ }
+}
+</script>
+
+
+<script id="v9-route-analytics">
+function getAreaV9(c){
+ return c.area || c.Area || c.AREA || c.route || c.Route || 'Unknown';
+}
+function renderRouteAnalyticsV9(){
+ try{
+   const routes={};
+   (window.customers||[]).forEach(c=>{
+      const area=getAreaV9(c);
+      if(!routes[area]) routes[area]={sales:0,outstanding:0,count:0};
+      routes[area].sales += Number(c.business||c.amount||0);
+      routes[area].outstanding += Number(c.balance||0);
+      routes[area].count++;
+   });
+
+   const wrap=document.querySelector('.v7-route-analytics .v7-grid');
+   if(!wrap) return;
+
+   const rows=Object.entries(routes).sort((a,b)=>b[1].sales-a[1].sales);
+   if(!rows.length) return;
+
+   wrap.innerHTML='';
+   rows.slice(0,12).forEach(([name,r])=>{
+      const d=document.createElement('div');
+      d.className='v7-box';
+      d.innerHTML='<b>'+name+'</b><br>Sales: ₹'+Math.round(r.sales).toLocaleString('en-IN')+
+      '<br>Outstanding: ₹'+Math.round(r.outstanding).toLocaleString('en-IN')+
+      '<br>Customers: '+r.count;
+      wrap.appendChild(d);
+   });
+ }catch(e){console.log(e);}
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+ setTimeout(renderRouteAnalyticsV9,2500);
+});
+
+if(window.loadData){
+ const oldLD=window.loadData;
+ window.loadData=async function(){
+   const r=await oldLD.apply(this,arguments);
+   setTimeout(()=>{
+      if(window.updateExecutiveDashboardV8) updateExecutiveDashboardV8();
+      renderRouteAnalyticsV9();
+   },800);
+   return r;
+ }
+}
+</script>
+
+
+<script id="dynamic-v10-patch">
+const MONTHLY_TARGET = 800000;
+
+function v10Fmt(v){return '₹'+Number(v||0).toLocaleString('en-IN');}
+
+function getFilteredOrders(){
+ if(window.selMonth && window.selMonth!=='All'){
+   return (window.orders||[]).filter(o=>String(o.orderMonth||o.month||'')===window.selMonth);
+ }
+ return window.orders||[];
+}
+
+function getFilteredReceipts(){
+ if(window.selMonth && window.selMonth!=='All'){
+   return (window.receipts||[]).filter(r=>String(r.orderMonth||r.month||'')===window.selMonth);
+ }
+ return window.receipts||[];
+}
+function updateV10Dashboard(){
+ try{
+   const ord=getFilteredOrders();
+   const rc=getFilteredReceipts();
+   const revenue=ord.reduce((s,o)=>s+Number(o.netAmount||o.amount||0),0);
+   const collection=rc.reduce((s,r)=>s+Number(r.amount||0),0);
+
+   const unique=new Set(ord.map(o=>o.customerId));
+   const agents=unique.size;
+
+   const salesByCust={};
+   ord.forEach(o=>{
+      salesByCust[o.customerId]=(salesByCust[o.customerId]||0)+Number(o.netAmount||0);
+   });
+   const diamond=Object.values(salesByCust).filter(v=>v>=100000).length;
+
+   const rev=document.getElementById('kpiRevenue');
+   const ag=document.getElementById('kpiAgents');
+   const di=document.getElementById('kpiDiamond');
+   const co=document.getElementById('kpiCollection');
+   if(rev) rev.textContent=v10Fmt(revenue);
+   if(ag) ag.textContent=agents;
+   if(di) di.textContent=diamond;
+   if(co) co.textContent=v10Fmt(collection);
+
+   const exec=document.querySelectorAll('.exec-value');
+   if(exec.length>=4){
+      exec[0].textContent='₹8L';
+      exec[1].textContent=agents;
+      exec[2].textContent=((collection/MONTHLY_TARGET)*100).toFixed(1)+'%';
+   }
+ }catch(e){console.log(e)}
+}
+
+document.addEventListener('DOMContentLoaded',()=>setTimeout(updateV10Dashboard,2000));
+</script>
+<div id="routeModal"
+     class="modal"
+     style="display:none">
+
+  <div class="modal-content">
+
+     <div id="routeDetail"></div>
+
+     <button onclick="
+      document.getElementById('routeModal').style.display='none'
+     ">
+      CLOSE
+     </button>
+
+  </div>
+
+</div>
 </body>
 </html>
