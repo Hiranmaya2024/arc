@@ -986,6 +986,24 @@ border:1px solid rgba(0,229,255,.12);
 
 </div><!-- /shell -->
 
+<!-- ═══ MOBILE BOTTOM NAV ═══ -->
+<nav class="mob-nav" id="mob-nav">
+  <div class="mob-nav-inner">
+    <button class="mob-tab on" id="mob-tab-dashboard" onclick="switchTab('dashboard',this)">
+      <span class="mob-tab-icon">⌂</span>COMMAND
+    </button>
+    <button class="mob-tab" id="mob-tab-details" onclick="switchTab('details',this)">
+      <span class="mob-tab-icon">👤</span>AGENTS
+    </button>
+    <button class="mob-tab" id="mob-tab-routes" onclick="switchTab('routes',this)">
+      <span class="mob-tab-icon">🛣</span>ROUTES
+    </button>
+    <button class="mob-tab-sync" onclick="loadData()">
+      <span class="mob-tab-icon">⟳</span>SYNC
+    </button>
+  </div>
+</nav>
+
 </div><!-- /app-root -->
 
 <script>
@@ -1448,6 +1466,7 @@ function enterApp(){
     document.getElementById('main-tabs').style.display='none';
     document.getElementById('nav-home').style.display='none';
     document.getElementById('nav-back').style.display='none';
+    const mn=document.getElementById('mob-nav'); if(mn) mn.style.display='none';
   }else{
     navStack=['dashboard'];
     showPage('dashboard');
@@ -2777,11 +2796,21 @@ function showPage(page){
 function switchTab(page,el){
   if(AUTH&&AUTH.role==='customer')return; /* customers stay on their own profile */
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');navStack=[page];showPage(page);
+  document.querySelectorAll('.mob-tab').forEach(b=>b.classList.remove('on'));
+  const deskBtn=document.querySelector(`.tab-btn[onclick*="switchTab('${page}'"]`);
+  if(deskBtn) deskBtn.classList.add('on');
+  const mobBtn=document.getElementById('mob-tab-'+page);
+  if(mobBtn) mobBtn.classList.add('on');
+  navStack=[page];showPage(page);
 }
 function goHome(){
   if(AUTH&&AUTH.role==='customer'){showDetailById(AUTH.custId);return;}
   navStack=['dashboard'];showPage('dashboard');
+  document.querySelectorAll('.tab-btn,.mob-tab').forEach(b=>b.classList.remove('on'));
+  const deskBtn=document.querySelector(`.tab-btn[onclick*="switchTab('dashboard'"]`);
+  if(deskBtn) deskBtn.classList.add('on');
+  const mobBtn=document.getElementById('mob-tab-dashboard');
+  if(mobBtn) mobBtn.classList.add('on');
 }
 function goBack(){
   if(AUTH&&AUTH.role==='customer')return; /* nothing to go back to */
