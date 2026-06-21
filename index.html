@@ -1599,16 +1599,16 @@ for(let i=1;i<cm.length;i++){
    accountStatus:r[5]||'',
 
    reactivatePayment:
-      Number(r[6]||0),
+      parseFloat(String(r[6]||'0').replace(/[₹,\s]/g,''))||0,
 
    fyBusiness:
-      Number(r[7]||0),
+      parseFloat(String(r[7]||'0').replace(/[₹,\s]/g,''))||0,
 
    fyCollection:
-      Number(r[8]||0),
+      parseFloat(String(r[8]||'0').replace(/[₹,\s]/g,''))||0,
 
    balance:
-      Number(r[9]||0),
+      parseFloat(String(r[9]||'0').replace(/[₹,\s]/g,''))||0,
 
    lat:
       Number(r[10]||0),
@@ -1881,7 +1881,7 @@ const customersInRoute =
       };
    }
 
-   routes[r.route].outstanding += r.balance;
+   routes[r.route].outstanding += (Number(r.balance)||0);
 
    if(r.accountStatus==='ACTIVE')
       routes[r.route].active++;
