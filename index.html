@@ -202,6 +202,76 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .loading-scr .ls{font-size:11px;color:var(--text3)}
 .err-bar{background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.3);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:18px}
 
+/* ═══════ OFFERS SECTION ═══════ */
+.offers-track{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:2px 2px 10px;
+  scrollbar-width:none;
+}
+.offers-track::-webkit-scrollbar{display:none}
+
+.offer-card{
+  flex:0 0 auto;
+  width:min(72vw,220px);
+  background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(0,229,255,.03));
+  border:1px solid rgba(0,229,255,.12);
+  border-radius:12px;
+  overflow:hidden;
+  transition:transform .18s,border-color .18s,box-shadow .18s;
+  cursor:default;
+}
+.offer-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(0,229,255,.3);
+  box-shadow:0 6px 24px rgba(0,229,255,.1);
+}
+.offer-img-wrap{
+  width:100%;
+  aspect-ratio:16/9;
+  overflow:hidden;
+  background:rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:center;
+}
+.offer-img{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform .3s;
+}
+.offer-card:hover .offer-img{transform:scale(1.04)}
+.offer-img-placeholder{
+  background:rgba(0,229,255,.05);
+  border-bottom:1px solid rgba(0,229,255,.1);
+}
+.offer-body{padding:10px 12px 12px}
+.offer-name{
+  font-family:'Rajdhani',sans-serif;
+  font-size:14px;font-weight:700;
+  letter-spacing:.04em;
+  color:var(--text);
+  line-height:1.3;
+  margin-bottom:6px;
+}
+.offer-duration{
+  display:flex;align-items:center;gap:5px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:var(--amber);
+  letter-spacing:.03em;line-height:1.4;
+}
+.offer-month-tag{
+  display:inline-block;
+  margin-top:6px;
+  background:rgba(0,229,255,.08);
+  border:1px solid rgba(0,229,255,.18);
+  color:var(--cyan);
+  font-family:'Rajdhani',sans-serif;
+  font-size:10px;font-weight:700;letter-spacing:.08em;
+  border-radius:4px;padding:2px 7px;
+}
+
 /* ═══════ LEAGUE STAY BADGES ═══════ */
 .badge-row{
   display:flex;flex-wrap:wrap;gap:5px;
@@ -994,6 +1064,15 @@ border:1px solid rgba(0,229,255,.12);
       <span class="period-lbl">◈ CYCLE</span>
       <div id="period-pills" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
+    <!-- ── ACTIVE OFFERS ── -->
+    <div id="offers-section" style="display:none;margin-bottom:14px">
+      <div class="panel-hd" style="padding:0 0 10px">
+        <div class="panel-title">🎁 ACTIVE OFFERS</div>
+        <div class="panel-tag" id="offers-count-tag">0</div>
+      </div>
+      <div class="offers-track" id="offers-track"></div>
+    </div>
+
     <!-- primary KPI metrics (live computed data) -->
     <div class="metrics-grid" id="metrics-area"></div>
 
@@ -1099,7 +1178,7 @@ border:1px solid rgba(0,229,255,.12);
 /* ═══════ CONSTANTS ═══════ */
 const SID='1bjUIiD3xL8NWWzkZAatxvwp5n98yq7JVE5FODCbmvAs';
 const CSV='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:csv&sheet=';
-let customers=[],orders=[],receipts=[],allMonths=[];
+let customers=[],orders=[],receipts=[],offers=[],allMonths=[];
 let routeMaster=[];
 let selMonth='All',navStack=['dashboard'];
 /* AUTH — { role: 'admin'|'customer', custId: string|null }
@@ -1159,6 +1238,80 @@ function renderBadgeRow(custId,opts){
 
 /* ═══════ UTILS ═══════ */
 function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
+
+/* ═══════ OFFERS HELPERS ═══════ */
+function parseOfferDate(raw){
+  if(!raw)return null;
+  const s=String(raw).trim();
+  /* dd-mm-yyyy or dd/mm/yyyy */
+  const dmy=s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if(dmy)return new Date(+dmy[3],+dmy[2]-1,+dmy[1]);
+  /* yyyy-mm-dd */
+  const ymd=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if(ymd)return new Date(+ymd[1],+ymd[2]-1,+ymd[3]);
+  /* gviz Date(yyyy,m,d) */
+  const gv=s.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
+  if(gv)return new Date(+gv[1],+gv[2],+gv[3]);
+  /* m/d/yyyy (US gviz) */
+  const us=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(us)return new Date(+us[3],+us[1]-1,+us[2]);
+  return null;
+}
+
+function fmtOfferDate(d){
+  if(!d||isNaN(d))return '—';
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function renderOffers(today){
+  const sec=document.getElementById('offers-section');
+  const track=document.getElementById('offers-track');
+  const tag=document.getElementById('offers-count-tag');
+  if(!sec||!track)return;
+
+  const t=today||new Date();
+  /* Show offers that are active and within date range (if dates given) */
+  const visible=offers.filter(o=>{
+    if(o.from&&o.from>t)return false;
+    if(o.to){const toEnd=new Date(o.to);toEnd.setHours(23,59,59,999);if(toEnd<t)return false;}
+    return true;
+  });
+
+  if(!visible.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  tag.textContent=visible.length+' LIVE';
+
+  track.innerHTML=visible.map(o=>{
+    const fromTxt=o.from?fmtOfferDate(o.from):'';
+    const toTxt=o.to?fmtOfferDate(o.to):'';
+    const duration=fromTxt&&toTxt?`${fromTxt} – ${toTxt}`:fromTxt||toTxt||o.month||'';
+    const hasImg=o.imageUrl&&o.imageUrl.startsWith('http');
+    /* Convert Google Drive share link → direct embed if needed */
+    let imgSrc=o.imageUrl;
+    if(hasImg){
+      const driveMatch=imgSrc.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if(driveMatch)imgSrc=`https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+    }
+    return `<div class="offer-card">
+      ${hasImg
+        ?`<div class="offer-img-wrap">
+            <img class="offer-img" src="${imgSrc}" alt="${o.name}"
+                 onerror="this.parentElement.style.display='none'">
+          </div>`
+        :`<div class="offer-img-wrap offer-img-placeholder">
+            <span style="font-size:28px">🎁</span>
+          </div>`}
+      <div class="offer-body">
+        <div class="offer-name">${o.name}</div>
+        ${duration?`<div class="offer-duration">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${duration}
+        </div>`:''}
+        ${o.month?`<div class="offer-month-tag">${o.month}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
 
 /* ═══════════════════════════════════════════════════════════
    LIGHTWEIGHT SVG CHART ENGINE — no external libraries, themed
@@ -1634,7 +1787,7 @@ async function loadData(){
   document.getElementById('err-bar').style.display='none';
   ['dashboard','details','detail'].forEach(p=>document.getElementById('page-'+p).classList.remove('on'));
   try{
-    const[cr,or,rr]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS'),fetchSheet('12_RECEIPTS')]);
+    const[cr,or,rr,ofr]=await Promise.all([fetchSheet('1_CUSTOMERS'),fetchSheet('2_ORDERS'),fetchSheet('12_RECEIPTS'),fetchSheet('13_OFFER').catch(()=>[])]);
     const cm=await fetchSheet('COLUMN_MASTER');
 
     /* ── 1_CUSTOMERS: resolve columns by header, fallback to known index ── */
@@ -1742,6 +1895,19 @@ for(let i=1;i<cm.length;i++){
 
 }
     allMonths=[...new Set([...orders.map(o=>o.month),...receipts.map(r=>r.month)].filter(Boolean))].sort((a,b)=>moVal(b)-moVal(a));
+
+    /* ── 13_OFFER: parse and render ── */
+    const offerRows=(ofr&&ofr.length>1?ofr.slice(1):[]);
+    const today=new Date(); today.setHours(0,0,0,0);
+    offers=offerRows.map(r=>({
+      name:       (r[0]||'').trim(),
+      month:      (r[1]||'').trim(),
+      imageUrl:   (r[2]||'').trim(),
+      status:     (r[3]||'').trim().toLowerCase(),
+      from:       parseOfferDate(r[4]),
+      to:         parseOfferDate(r[5])
+    })).filter(o=>o.name&&o.status==='active');
+    renderOffers(today);
 
     document.getElementById('loading-scr').style.display='none';
     document.getElementById('data-status').textContent='FEED LIVE · '+customers.length+' AGENTS · '+orders.length+' ORDERS · '+receipts.length+' RECEIPTS';
