@@ -79,7 +79,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 /* ═══════════ TOPBAR ═══════════ */
 .topbar{
   height:58px;padding:0 20px;display:flex;align-items:center;gap:14px;
-  position:sticky;top:0;z-index:300;
+  position:sticky;top:0;z-index:200;
   background:rgba(4,8,15,.95);
   border-bottom:1px solid var(--border);
   backdrop-filter:blur(12px);
@@ -600,13 +600,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 ═══════════════════════════════════════ */
 .mob-nav{
   display:none;
-  position:fixed;bottom:0;left:0;right:0;z-index:400;
-  background:rgba(4,8,15,.97);
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:rgba(4,8,15,.98);
   border-top:1px solid var(--border);
-  backdrop-filter:blur(16px);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
   padding:0;
   padding-bottom:env(safe-area-inset-bottom);
-  box-shadow:0 -4px 24px rgba(0,0,0,.6);
+  box-shadow:0 -4px 32px rgba(0,0,0,.8);
+  /* prevent any content from painting over it */
+  isolation:isolate;
 }
 .mob-nav::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
@@ -633,6 +636,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .mob-tab.on .mob-tab-icon{transform:scale(1.1);filter:drop-shadow(0 0 4px var(--cyan))}
 .mob-tab-sync{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--amber);border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .mob-tab-sync .mob-tab-icon{filter:drop-shadow(0 0 4px var(--amber))}
+.mob-tab-logout{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;color:#FF4D6D;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mob-tab-logout .mob-tab-icon{filter:drop-shadow(0 0 4px #FF4D6D)}
 
 /* ═══════════════════════════════════════
    MOBILE TOPBAR ADJUSTMENTS
@@ -656,7 +661,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .hbtn{padding:5px 10px;font-size:11px}
 
   /* Shell — room for bottom nav */
-  .shell{padding:14px 10px 86px}
+  .shell{padding:14px 10px 94px}
 
   /* Metrics: hero full-width, other 2 side by side */
   .metrics-grid{grid-template-columns:1fr 1fr;gap:10px}
@@ -778,7 +783,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 @supports(padding-bottom:env(safe-area-inset-bottom)){
   .mob-nav{padding-bottom:env(safe-area-inset-bottom)}
   @media(max-width:600px){
-    .shell{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+    .shell{padding-bottom:calc(94px + env(safe-area-inset-bottom))}
   }
 }
 </style>
@@ -1081,6 +1086,9 @@ border:1px solid rgba(0,229,255,.12);
     </button>
     <button class="mob-tab-sync" onclick="loadData()">
       <span class="mob-tab-icon">⟳</span>SYNC
+    </button>
+    <button class="mob-tab-logout" onclick="handleLogout()">
+      <span class="mob-tab-icon">⏻</span>LOGOUT
     </button>
   </div>
 </nav>
