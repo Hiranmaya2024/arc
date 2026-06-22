@@ -202,16 +202,21 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .loading-scr .ls{font-size:11px;color:var(--text3)}
 .err-bar{background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.3);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:18px}
 
-/* ═══════ SHARE BUTTON ═══════ */
+/* ═══════ SHARE BUTTONS ═══════ */
+.share-btns-row{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
 .share-btn{
-  display:flex;align-items:center;gap:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;gap:5px;
   background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);
-  color:var(--cyan);border-radius:6px;padding:7px 12px;
-  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;
+  color:var(--cyan);border-radius:6px;padding:6px 10px;
+  font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;
   letter-spacing:.08em;cursor:pointer;-webkit-tap-highlight-color:transparent;
-  transition:background .15s,border-color .15s;
+  transition:background .15s,border-color .15s;white-space:nowrap;
 }
 .share-btn:active{background:rgba(0,229,255,.18);border-color:var(--cyan)}
+.share-btn-ledger{
+  background:rgba(57,255,20,.07);border-color:rgba(57,255,20,.25);color:#39ff14;
+}
+.share-btn-ledger:active{background:rgba(57,255,20,.16);border-color:#39ff14}
 
 /* ═══════ SNAPSHOT WATERMARK ═══════ */
 .snap-watermark{
@@ -220,6 +225,37 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(0,229,255,.4);
   letter-spacing:.06em;
 }
+
+/* ═══════ LEDGER SNAPSHOT CARD ═══════ */
+.ledger-snap-card{
+  display:none;
+  width:900px;
+  background:#0b1120;
+  border:1px solid rgba(0,229,255,.18);
+  border-radius:12px;
+  padding:22px 24px 18px;
+  font-family:'Inter',sans-serif;
+  box-sizing:border-box;
+}
+.ledger-snap-hd{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(0,229,255,.12)}
+.ledger-snap-brand{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;color:rgba(0,229,255,.45);margin-bottom:4px}
+.ledger-snap-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:.1em;color:#00e5ff;margin-bottom:3px}
+.ledger-snap-sub{font-size:12px;color:var(--text2);margin-bottom:12px;letter-spacing:.02em}
+.ledger-snap-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.lsm-cell{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:8px 10px}
+.lsm-lbl{font-size:9px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;color:var(--text3);margin-bottom:3px}
+.lsm-val{font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:600}
+.ledger-snap-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ledger-col{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden}
+.ledger-col-hd{padding:10px 12px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
+.ledger-col-cnt{font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--text3);font-weight:400;letter-spacing:.04em}
+.ledger-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.ledger-tbl thead th{padding:7px 10px;text-align:left;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);border-bottom:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.2)}
+.ledger-tbl tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
+.ledger-tbl tbody tr:hover{background:rgba(0,229,255,.03)}
+.ledger-mono{padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text)}
+.ledger-amt{padding:6px 10px;text-align:right;font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:600}
+.ledger-empty{padding:14px 10px;text-align:center;color:var(--text3);font-size:11px}
 
 /* ═══════════ COLLAPSIBLE FOLD SECTIONS ═══════════ */
 .fold{
@@ -2651,13 +2687,16 @@ function showDetailById(custId){
           </div>
         </div>
         ${AUTH&&AUTH.role!=='customer'?`
-        <button class="share-btn" onclick="shareProfile('${custId}')" title="Share profile with customer">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-          SHARE
-        </button>`:''}
+        <div class="share-btns-row">
+          <button class="share-btn share-btn-profile" onclick="shareProfile('${custId}')" title="Share profile snapshot">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            PROFILE
+          </button>
+          <button class="share-btn share-btn-ledger" onclick="shareLedger('${custId}')" title="Share transaction ledger">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            LEDGER
+          </button>
+        </div>`:''}
       </div>
       ${chgBanner}
       <div class="info-grid" style="margin-top:${tierChg?'16px':'0'}">
@@ -2707,6 +2746,68 @@ function showDetailById(custId){
       </div>
       <div class="snap-watermark">
         <span>⚕ AARADHYA PHARMACEUTICALS</span>
+        <span>Generated ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
+      </div>
+    </div>
+
+    <!-- ═══ LEDGER SNAPSHOT CARD (hidden, used for shareLedger screenshot only) ═══ -->
+    <div id="det-ledger-card" class="ledger-snap-card" aria-hidden="true">
+      <!-- Ledger header -->
+      <div class="ledger-snap-hd">
+        <div class="ledger-snap-brand">⚕ AARADHYA PHARMACEUTICALS</div>
+        <div class="ledger-snap-title">ACCOUNT LEDGER</div>
+        <div class="ledger-snap-sub">${c.name} &nbsp;·&nbsp; ${c.id} &nbsp;·&nbsp; ${[c.city,c.district].filter(Boolean).join(', ')||'—'}</div>
+        <div class="ledger-snap-summary">
+          <div class="lsm-cell"><div class="lsm-lbl">OPENING BAL</div><div class="lsm-val" style="color:var(--amber)">${fmtINR(initOut)}</div></div>
+          <div class="lsm-cell"><div class="lsm-lbl">TOTAL BILLED</div><div class="lsm-val" style="color:var(--cyan)">${fmtINR(aAmt)}</div></div>
+          <div class="lsm-cell"><div class="lsm-lbl">TOTAL COLLECTED</div><div class="lsm-val" style="color:var(--green)">${fmtINR(aCollected)}</div></div>
+          <div class="lsm-cell"><div class="lsm-lbl">OUTSTANDING</div><div class="lsm-val" style="color:${outColor}">${fmtINR(outstanding)}</div></div>
+        </div>
+      </div>
+      <!-- Two-column body -->
+      <div class="ledger-snap-cols">
+        <!-- LEFT: Transaction Orders -->
+        <div class="ledger-col">
+          <div class="ledger-col-hd" style="color:var(--cyan)">
+            📋 TRANSACTION LOG
+            <span class="ledger-col-cnt">${aCnt} records · ${fmtINR(aAmt)}</span>
+          </div>
+          <table class="ledger-tbl">
+            <thead><tr><th>BILL NO.</th><th>DATE</th><th style="text-align:right">AMOUNT</th></tr></thead>
+            <tbody>
+              ${sOrds.length>0
+                ? sOrds.map(o=>`<tr>
+                    <td class="ledger-mono">${o.id}</td>
+                    <td class="ledger-mono">${fmtDateObj(o._d)}</td>
+                    <td class="ledger-amt" style="color:var(--cyan)">${fmtINR(o.amount)}</td>
+                  </tr>`).join('')
+                : '<tr><td colspan="3" class="ledger-empty">No transactions on record</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+        <!-- RIGHT: Payment Receipts -->
+        <div class="ledger-col">
+          <div class="ledger-col-hd" style="color:var(--green)">
+            🧾 PAYMENT RECEIPTS
+            <span class="ledger-col-cnt">${cRcpts.length} records · ${fmtINR(aCollected)}</span>
+          </div>
+          <table class="ledger-tbl">
+            <thead><tr><th>#</th><th>DATE</th><th style="text-align:right">RECEIVED</th></tr></thead>
+            <tbody>
+              ${sRcpts.length>0
+                ? sRcpts.map((r,i)=>`<tr>
+                    <td class="ledger-mono" style="color:var(--text3)">${String(sRcpts.length-i).padStart(2,'0')}</td>
+                    <td class="ledger-mono">${fmtDateObj(r._d)}</td>
+                    <td class="ledger-amt" style="color:var(--green)">${fmtINR(r.amount)}</td>
+                  </tr>`).join('')
+                : '<tr><td colspan="3" class="ledger-empty">No receipts on record</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Ledger footer -->
+      <div class="snap-watermark" style="margin-top:14px;padding-top:10px">
+        <span>⚕ AARADHYA PHARMACEUTICALS — CONFIDENTIAL</span>
         <span>Generated ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
       </div>
     </div>
@@ -2833,44 +2934,60 @@ function switchTab(page,el){
   if(mobBtn) mobBtn.classList.add('on');
   navStack=[page];showPage(page);
 }
-/* ═══════ SHARE PROFILE SNAPSHOT ═══════ */
-async function shareProfile(custId){
-  const card=document.getElementById('det-snap-card');
-  if(!card){alert('Profile card not found');return;}
-  const btn=card.querySelector('.share-btn');
-  if(btn){btn.style.display='none';}
+/* ═══════ SHARE HELPERS ═══════ */
+async function _captureAndShare(el, fname, title, text){
+  if(!el){alert('Could not find content to capture.');return;}
   try{
-    const canvas=await html2canvas(card,{
-      backgroundColor:'#0b1120',
-      scale:2,
-      useCORS:true,
-      logging:false
-    });
-    if(btn){btn.style.display='';}
+    const canvas=await html2canvas(el,{backgroundColor:'#0b1120',scale:2,useCORS:true,logging:false});
     canvas.toBlob(async blob=>{
       if(!blob)return;
-      const c=customers.find(x=>x.id===custId)||{};
-      const fname=`AaradhyaRx_${(c.name||custId).replace(/\s+/g,'_')}_Profile.png`;
-      /* Try Web Share API (mobile) */
       if(navigator.canShare&&navigator.canShare({files:[new File([blob],fname,{type:'image/png'})]})){
-        await navigator.share({
-          title:`${c.name||custId} — Aaradhya Rx Profile`,
-          text:`Your partner profile from Aaradhya Pharmaceuticals as on ${new Date().toLocaleDateString('en-IN')}.`,
-          files:[new File([blob],fname,{type:'image/png'})]
-        });
+        await navigator.share({title,text,files:[new File([blob],fname,{type:'image/png'})]});
       } else {
-        /* Fallback: trigger download */
         const url=URL.createObjectURL(blob);
         const a=document.createElement('a');
-        a.href=url; a.download=fname; a.click();
+        a.href=url;a.download=fname;a.click();
         setTimeout(()=>URL.revokeObjectURL(url),3000);
       }
     },'image/png');
   } catch(err){
-    if(btn){btn.style.display='';}
-    console.error('Share error:',err);
-    alert('Could not capture profile. Please try again.');
+    console.error('Capture error:',err);
+    alert('Could not capture. Please try again.');
   }
+}
+
+async function shareProfile(custId){
+  const card=document.getElementById('det-snap-card');
+  if(!card)return;
+  const row=card.querySelector('.share-btns-row');
+  if(row)row.style.visibility='hidden';
+  const c=customers.find(x=>x.id===custId)||{};
+  const fname=`AaradhyaRx_${(c.name||custId).replace(/\s+/g,'_')}_Profile.png`;
+  await _captureAndShare(card,fname,
+    `${c.name||custId} — Aaradhya Rx Profile`,
+    `Your partner profile from Aaradhya Pharmaceuticals as on ${new Date().toLocaleDateString('en-IN')}.`
+  );
+  if(row)row.style.visibility='';
+}
+
+async function shareLedger(custId){
+  const card=document.getElementById('det-ledger-card');
+  if(!card)return;
+  /* Temporarily make the hidden ledger card visible for canvas capture */
+  card.style.position='fixed';
+  card.style.left='-9999px';
+  card.style.top='0';
+  card.style.display='block';
+  const c=customers.find(x=>x.id===custId)||{};
+  const fname=`AaradhyaRx_${(c.name||custId).replace(/\s+/g,'_')}_Ledger.png`;
+  await _captureAndShare(card,fname,
+    `${c.name||custId} — Aaradhya Account Ledger`,
+    `Account ledger from Aaradhya Pharmaceuticals as on ${new Date().toLocaleDateString('en-IN')}.`
+  );
+  card.style.display='none';
+  card.style.position='';
+  card.style.left='';
+  card.style.top='';
 }
 
 function goHome(){
