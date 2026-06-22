@@ -202,6 +202,25 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .loading-scr .ls{font-size:11px;color:var(--text3)}
 .err-bar{background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.3);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:18px}
 
+/* ═══════ SHARE BUTTON ═══════ */
+.share-btn{
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
+  background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);
+  color:var(--cyan);border-radius:6px;padding:7px 12px;
+  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.08em;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background .15s,border-color .15s;
+}
+.share-btn:active{background:rgba(0,229,255,.18);border-color:var(--cyan)}
+
+/* ═══════ SNAPSHOT WATERMARK ═══════ */
+.snap-watermark{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:16px;padding-top:12px;border-top:1px solid rgba(0,229,255,.12);
+  font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(0,229,255,.4);
+  letter-spacing:.06em;
+}
+
 /* ═══════════ COLLAPSIBLE FOLD SECTIONS ═══════════ */
 .fold{
   background:var(--panel);border-radius:var(--r);
@@ -830,6 +849,7 @@ border:1px solid rgba(0,229,255,.12);
 @media(max-width:800px){.v7-grid{grid-template-columns:1fr}}
 </style>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 <body>
 
@@ -2620,7 +2640,7 @@ function showDetailById(custId){
     </div>`:'<div class="inf-val" style="color:var(--text3)">—</div>';
 
   document.getElementById('page-detail').innerHTML=`
-    <div class="det-panel" style="border-left-color:${tier.color}">
+    <div class="det-panel" id="det-snap-card" style="border-left-color:${tier.color}">
       <div class="det-top-bar">
         <div class="det-avatar" style="background:${tier.bg};color:${tier.color};border-color:${tier.border}">${av}<style>.det-avatar::after{border-color:${tier.color}}</style></div>
         <div style="flex:1;min-width:0">
@@ -2630,6 +2650,14 @@ function showDetailById(custId){
             ${chgBadge}
           </div>
         </div>
+        ${AUTH&&AUTH.role!=='customer'?`
+        <button class="share-btn" onclick="shareProfile('${custId}')" title="Share profile with customer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          SHARE
+        </button>`:''}
       </div>
       ${chgBanner}
       <div class="info-grid" style="margin-top:${tierChg?'16px':'0'}">
@@ -2677,9 +2705,11 @@ function showDetailById(custId){
           <div class="st-lbl">ALL-TIME BILLED</div>
         </div>
       </div>
+      <div class="snap-watermark">
+        <span>⚕ AARADHYA PHARMACEUTICALS</span>
+        <span>Generated ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
+      </div>
     </div>
-
-    ${buildProfileChartsHTML(custId,cOrds,cRcpts,initOut,aAmt,aCollected,outstanding)}
 
     ${questHTML(quests,curMo)}
 
@@ -2803,6 +2833,46 @@ function switchTab(page,el){
   if(mobBtn) mobBtn.classList.add('on');
   navStack=[page];showPage(page);
 }
+/* ═══════ SHARE PROFILE SNAPSHOT ═══════ */
+async function shareProfile(custId){
+  const card=document.getElementById('det-snap-card');
+  if(!card){alert('Profile card not found');return;}
+  const btn=card.querySelector('.share-btn');
+  if(btn){btn.style.display='none';}
+  try{
+    const canvas=await html2canvas(card,{
+      backgroundColor:'#0b1120',
+      scale:2,
+      useCORS:true,
+      logging:false
+    });
+    if(btn){btn.style.display='';}
+    canvas.toBlob(async blob=>{
+      if(!blob)return;
+      const c=customers.find(x=>x.id===custId)||{};
+      const fname=`AaradhyaRx_${(c.name||custId).replace(/\s+/g,'_')}_Profile.png`;
+      /* Try Web Share API (mobile) */
+      if(navigator.canShare&&navigator.canShare({files:[new File([blob],fname,{type:'image/png'})]})){
+        await navigator.share({
+          title:`${c.name||custId} — Aaradhya Rx Profile`,
+          text:`Your partner profile from Aaradhya Pharmaceuticals as on ${new Date().toLocaleDateString('en-IN')}.`,
+          files:[new File([blob],fname,{type:'image/png'})]
+        });
+      } else {
+        /* Fallback: trigger download */
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url; a.download=fname; a.click();
+        setTimeout(()=>URL.revokeObjectURL(url),3000);
+      }
+    },'image/png');
+  } catch(err){
+    if(btn){btn.style.display='';}
+    console.error('Share error:',err);
+    alert('Could not capture profile. Please try again.');
+  }
+}
+
 function goHome(){
   if(AUTH&&AUTH.role==='customer'){showDetailById(AUTH.custId);return;}
   navStack=['dashboard'];showPage('dashboard');
