@@ -1383,41 +1383,50 @@ function renderOffers(today){
 
 let _offerCdInterval=null;
 function startOfferCountdown(){
-  if(_offerCdInterval)clearInterval(_offerCdInterval);
+  if(_offerCdInterval){clearInterval(_offerCdInterval);_offerCdInterval=null;}
+
   function tick(){
     const now=Date.now();
-    document.querySelectorAll('.offer-card:not(.offer-expired)[data-to]').forEach(card=>{
-      const toMs=+card.dataset.to;
-      if(!toMs)return;
+    document.querySelectorAll('.offer-card:not(.offer-expired)').forEach(card=>{
+      const toMs=+card.dataset.to||0;
+      const cdBadge=card.querySelector('.offer-countdown-badge');
+      const cdEl=cdBadge?cdBadge.querySelector('.ocd-time'):null;
+      if(!cdBadge||!cdEl)return;
+
+      /* No end date → show open-ended label */
+      if(!toMs){
+        cdEl.textContent='OPEN-ENDED';
+        return;
+      }
+
       const diff=toMs-now;
-      const cdEl=card.querySelector('.ocd-time');
-      if(!cdEl)return;
+
+      /* Just expired in this tick */
       if(diff<=0){
-        /* Just expired — flip card to expired state without full re-render */
         card.classList.add('offer-expired');
         const wrap=card.querySelector('.offer-img-wrap');
         if(wrap)wrap.classList.add('offer-img-dim');
-        const badge=card.querySelector('.offer-countdown-badge');
-        if(badge){badge.className='offer-expired-badge';badge.innerHTML='<span class="oeb-icon">✕</span>EXPIRED';}
+        cdBadge.className='offer-expired-badge';
+        cdBadge.innerHTML='<span class="oeb-icon">✕</span>EXPIRED';
         return;
       }
-      const days=Math.floor(diff/86400000);
-      const hrs=Math.floor((diff%86400000)/3600000);
-      const mins=Math.floor((diff%3600000)/60000);
-      const secs=Math.floor((diff%60000)/1000);
-      /* Show seconds only when < 1 day left */
+
+      const days =Math.floor(diff/86400000);
+      const hrs  =Math.floor((diff%86400000)/3600000);
+      const mins =Math.floor((diff%3600000)/60000);
+      const secs =Math.floor((diff%60000)/1000);
+
       cdEl.textContent=days>0
-        ?`${days}d ${hrs}h ${mins}m`
-        :`${hrs}h ${mins}m ${secs}s`;
-      /* Urgency colour when < 24 h */
-      const badge=card.querySelector('.offer-countdown-badge');
-      if(badge){
-        badge.classList.toggle('ocd-urgent',diff<86400000);
-        badge.classList.toggle('ocd-warning',diff>=86400000&&diff<3*86400000);
-      }
+        ?`${days}d ${String(hrs).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m`
+        :`${String(hrs).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
+
+      cdBadge.classList.remove('ocd-urgent','ocd-warning');
+      if(diff<86400000)           cdBadge.classList.add('ocd-urgent');
+      else if(diff<3*86400000)    cdBadge.classList.add('ocd-warning');
     });
   }
-  tick(); // immediate first paint
+
+  tick();                                      /* paint immediately */
   _offerCdInterval=setInterval(tick,1000);
 }
 
@@ -2523,6 +2532,7 @@ if(__v7StatusEl) __v7StatusEl.textContent=forecast>=800000?'TARGET LIKELY':'NEED
   renderDashCharts(ids,totals);
   renderRoutes();
   renderRouteSnapshot();
+  startOfferCountdown(); /* keep countdown alive after every dashboard re-render */
   showPage('dashboard');
 }
 
