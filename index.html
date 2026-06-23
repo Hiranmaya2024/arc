@@ -293,26 +293,27 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .offer-img-wrap{position:relative}
 .offer-countdown-badge{
   position:absolute;bottom:0;left:0;right:0;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  padding:5px 8px;
-  background:rgba(4,8,15,.82);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:6px 8px;
+  background:rgba(4,8,15,.85);
   backdrop-filter:blur(6px);
-  font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:600;
-  color:var(--cyan);letter-spacing:.04em;
+  font-family:'Share Tech Mono',monospace;
+  color:var(--cyan);
+  letter-spacing:.04em;
   transition:background .3s,color .3s;
 }
-.ocd-icon{font-size:12px}
-.ocd-time{font-size:11px;font-variant-numeric:tabular-nums}
+.ocd-label{font-size:9px;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:.12em;opacity:.8;line-height:1}
+.ocd-time{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
 
 /* Warning: 1–3 days left */
 .offer-countdown-badge.ocd-warning{
-  background:rgba(255,184,0,.18);
+  background:rgba(255,184,0,.2);
   color:var(--amber);
   box-shadow:0 -1px 0 rgba(255,184,0,.3);
 }
 /* Urgent: < 24 h left */
 .offer-countdown-badge.ocd-urgent{
-  background:rgba(255,45,120,.22);
+  background:rgba(255,45,120,.25);
   color:#ff4d6d;
   box-shadow:0 -1px 0 rgba(255,45,120,.5);
   animation:ocd-pulse 1.2s ease-in-out infinite;
@@ -1319,65 +1320,105 @@ function renderOffers(today){
   const tag=document.getElementById('offers-count-tag');
   if(!sec||!track)return;
 
-  const t=today||new Date();
+  const now=today||new Date();
+  /* Current month label matches what's stored e.g. "Jun" or "Jun-2025" */
+  const curMonLabel=now.toLocaleDateString('en-IN',{month:'short'});   /* "Jun" */
+  const curMonFull =`${curMonLabel}-${now.getFullYear()}`;              /* "Jun-2025" */
 
-  /* Show all active-status offers — not-yet-started, live, and expired (expired shown dimmed) */
-  const visible=offers.filter(o=>{
-    if(o.from&&o.from>t)return false; // not started yet — hide
-    return true;                       // live or expired — show
+  /* Filter: Month = current month  AND  Status = active */
+  const eligible=offers.filter(o=>{
+    if(o.status!=='active')return false;
+    const mo=String(o.month||'').trim();
+    /* Accept "Jun", "Jun-2025", "June", "6", "06" all matching current month */
+    if(!mo)return false;
+    if(mo===curMonLabel||mo===curMonFull)return true;
+    /* numeric month e.g. "6" or "06" */
+    const num=parseInt(mo,10);
+    if(!isNaN(num)&&num===now.getMonth()+1)return true;
+    /* Long name e.g. "June" */
+    const longName=now.toLocaleDateString('en-IN',{month:'long'});
+    if(mo.toLowerCase()===longName.toLowerCase())return true;
+    return false;
   });
 
-  if(!visible.length){sec.style.display='none';return;}
-  sec.style.display='block';
+  if(!eligible.length){sec.style.display='none';return;}
 
-  const liveCount=visible.filter(o=>{
-    if(!o.to)return true;
-    const e=new Date(o.to);e.setHours(23,59,59,999);return e>=t;
-  }).length;
+  /* Determine state for each offer */
+  const cards=eligible.map((o,i)=>{
+    const fromDt=o.from instanceof Date&&!isNaN(o.from)?o.from:null;
+    const toDt  =o.to   instanceof Date&&!isNaN(o.to)  ?o.to  :null;
+
+    /* End of the To-day at 23:59:59 */
+    let toEnd=null;
+    if(toDt){toEnd=new Date(toDt);toEnd.setHours(23,59,59,999);}
+
+    let state; // 'upcoming' | 'live' | 'expired'
+    if(fromDt&&fromDt>now){
+      state='upcoming'; // From is in the future
+    } else if(toEnd&&toEnd<now){
+      state='expired';  // To date already passed
+    } else {
+      state='live';     // From ≤ now ≤ To  (or no dates → treat as live)
+    }
+
+    /* Timestamp the tick should count down toward */
+    const cdTarget = state==='upcoming' ? fromDt.getTime()
+                   : state==='live'     ? (toEnd?toEnd.getTime():0)
+                   : 0;
+
+    const fromTxt=fromDt?fmtOfferDate(fromDt):'';
+    const toTxt  =toDt  ?fmtOfferDate(toDt)  :'';
+    const duration=fromTxt&&toTxt?`${fromTxt} – ${toTxt}`:fromTxt||toTxt||'';
+
+    const hasImg=o.imageUrl&&o.imageUrl.startsWith('http');
+    let imgSrc=o.imageUrl||'';
+    if(hasImg){
+      const dm=imgSrc.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if(dm)imgSrc=`https://drive.google.com/uc?export=view&id=${dm[1]}`;
+    }
+
+    return {o,state,cdTarget,fromTxt,toTxt,duration,hasImg,imgSrc,i};
+  });
+
+  const liveCount=cards.filter(c=>c.state==='live').length;
+  sec.style.display='block';
   tag.textContent=liveCount+' LIVE';
 
-  track.innerHTML=visible.map((o,i)=>{
-    const toEnd=o.to?(()=>{const e=new Date(o.to);e.setHours(23,59,59,999);return e;})():null;
-    const expired=toEnd&&toEnd<t;
-    const fromTxt=o.from?fmtOfferDate(o.from):'';
-    const toTxt=o.to?fmtOfferDate(o.to):'';
-    const duration=fromTxt&&toTxt?`${fromTxt} – ${toTxt}`:fromTxt||toTxt||o.month||'';
-    const hasImg=o.imageUrl&&o.imageUrl.startsWith('http');
-    let imgSrc=o.imageUrl;
-    if(hasImg){
-      const driveMatch=imgSrc.match(/\/d\/([a-zA-Z0-9_-]+)/);
-      if(driveMatch)imgSrc=`https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
-    }
-    const toMs=toEnd?toEnd.getTime():0;
-    const cdId=`ocd-${i}`;
+  track.innerHTML=cards.map(({o,state,cdTarget,duration,hasImg,imgSrc,i})=>{
+    const expired =state==='expired';
+    const upcoming=state==='upcoming';
 
-    return `<div class="offer-card${expired?' offer-expired':''}" data-to="${toMs}">
+    /* Badge overlay on image */
+    let overlayHTML='';
+    if(expired){
+      overlayHTML=`<div class="offer-expired-badge"><span class="oeb-icon">✕</span>EXPIRED</div>`;
+    } else {
+      const label=upcoming?'STARTS IN':'ENDS IN';
+      const icon =upcoming?'🚀':'⏱';
+      overlayHTML=`<div class="offer-countdown-badge" data-target="${cdTarget}" data-label="${label}">
+        <span class="ocd-label">${icon} ${label}</span>
+        <span class="ocd-time">--:--:--</span>
+      </div>`;
+    }
+
+    return `<div class="offer-card${expired?' offer-expired':''}">
       <div class="offer-img-wrap${expired?' offer-img-dim':''}">
         ${hasImg
           ?`<img class="offer-img" src="${imgSrc}" alt="${o.name}"
                  onerror="this.parentElement.classList.add('offer-img-placeholder');this.remove()">`
-          :`<span style="font-size:28px;display:flex;align-items:center;justify-content:center;height:100%">🎁</span>`}
-        ${expired
-          ?`<div class="offer-expired-badge">
-              <span class="oeb-icon">✕</span>EXPIRED
-            </div>`
-          :`<div class="offer-countdown-badge" id="${cdId}">
-              <span class="ocd-icon">⏱</span>
-              <span class="ocd-time">--d --h --m</span>
-            </div>`}
+          :`<div style="font-size:28px;display:flex;align-items:center;justify-content:center;height:100%">🎁</div>`}
+        ${overlayHTML}
       </div>
       <div class="offer-body">
         <div class="offer-name">${o.name}</div>
         ${duration?`<div class="offer-duration">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           ${duration}
         </div>`:''}
-        ${o.month?`<div class="offer-month-tag">${o.month}</div>`:''}
       </div>
     </div>`;
   }).join('');
 
-  /* Start / restart the global offer countdown tick */
   startOfferCountdown();
 }
 
@@ -1387,46 +1428,42 @@ function startOfferCountdown(){
 
   function tick(){
     const now=Date.now();
-    document.querySelectorAll('.offer-card:not(.offer-expired)').forEach(card=>{
-      const toMs=+card.dataset.to||0;
-      const cdBadge=card.querySelector('.offer-countdown-badge');
-      const cdEl=cdBadge?cdBadge.querySelector('.ocd-time'):null;
-      if(!cdBadge||!cdEl)return;
+    document.querySelectorAll('.offer-countdown-badge').forEach(badge=>{
+      const target=+badge.dataset.target||0;
+      const cdEl=badge.querySelector('.ocd-time');
+      if(!cdEl)return;
 
-      /* No end date → show open-ended label */
-      if(!toMs){
-        cdEl.textContent='OPEN-ENDED';
-        return;
-      }
+      if(!target){cdEl.textContent='OPEN ENDED';return;}
 
-      const diff=toMs-now;
+      const diff=target-now;
 
-      /* Just expired in this tick */
       if(diff<=0){
-        card.classList.add('offer-expired');
-        const wrap=card.querySelector('.offer-img-wrap');
+        /* Timer hit zero — flip to expired in-place */
+        const card=badge.closest('.offer-card');
+        const wrap=badge.closest('.offer-img-wrap');
+        if(card)card.classList.add('offer-expired');
         if(wrap)wrap.classList.add('offer-img-dim');
-        cdBadge.className='offer-expired-badge';
-        cdBadge.innerHTML='<span class="oeb-icon">✕</span>EXPIRED';
+        badge.className='offer-expired-badge';
+        badge.innerHTML='<span class="oeb-icon">✕</span>EXPIRED';
         return;
       }
 
-      const days =Math.floor(diff/86400000);
-      const hrs  =Math.floor((diff%86400000)/3600000);
-      const mins =Math.floor((diff%3600000)/60000);
-      const secs =Math.floor((diff%60000)/1000);
+      const days=Math.floor(diff/86400000);
+      const hrs =Math.floor((diff%86400000)/3600000);
+      const mins=Math.floor((diff%3600000)/60000);
+      const secs=Math.floor((diff%60000)/1000);
 
       cdEl.textContent=days>0
         ?`${days}d ${String(hrs).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m`
         :`${String(hrs).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
 
-      cdBadge.classList.remove('ocd-urgent','ocd-warning');
-      if(diff<86400000)           cdBadge.classList.add('ocd-urgent');
-      else if(diff<3*86400000)    cdBadge.classList.add('ocd-warning');
+      badge.classList.remove('ocd-urgent','ocd-warning');
+      if(diff<86400000)        badge.classList.add('ocd-urgent');
+      else if(diff<3*86400000) badge.classList.add('ocd-warning');
     });
   }
 
-  tick();                                      /* paint immediately */
+  tick();
   _offerCdInterval=setInterval(tick,1000);
 }
 
