@@ -1294,18 +1294,32 @@ function fmtINR(n){return '₹'+Math.round(n).toLocaleString('en-IN');}
 function parseOfferDate(raw){
   if(!raw)return null;
   const s=String(raw).trim();
-  /* dd-mm-yyyy or dd/mm/yyyy */
-  const dmy=s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
-  if(dmy)return new Date(+dmy[3],+dmy[2]-1,+dmy[1]);
-  /* yyyy-mm-dd */
-  const ymd=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
-  if(ymd)return new Date(+ymd[1],+ymd[2]-1,+ymd[3]);
-  /* gviz Date(yyyy,m,d) */
+  if(!s)return null;
+
+  /* 1. gviz typed-Date cell: Date(yyyy,m,d)  — months are 0-based in gviz */
   const gv=s.match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})\)$/);
-  if(gv)return new Date(+gv[1],+gv[2],+gv[3]);
-  /* m/d/yyyy (US gviz) */
-  const us=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if(us)return new Date(+us[3],+us[1]-1,+us[2]);
+  if(gv)return new Date(+gv[1],+gv[2],+gv[3]);   // gviz already 0-based
+
+  /* 2. ISO: yyyy-mm-dd */
+  const iso=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(iso)return new Date(+iso[1],+iso[2]-1,+iso[3]);
+
+  /* 3. Slash-separated two-part: resolve dd/mm vs mm/dd ambiguity
+     Rule: if first number > 12  → must be day  → dd/mm/yyyy
+           if second number > 12 → must be day  → mm/dd/yyyy (US gviz CSV)
+           both ≤ 12             → assume dd/mm (Indian convention)        */
+  const sl=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(sl){
+    const a=+sl[1],b=+sl[2],yr=+sl[3];
+    if(a>12)          return new Date(yr,b-1,a);   /* dd/mm/yyyy */
+    if(b>12)          return new Date(yr,a-1,b);   /* mm/dd/yyyy */
+    return new Date(yr,b-1,a);                      /* ambiguous → dd/mm */
+  }
+
+  /* 4. Dash-separated: dd-mm-yyyy */
+  const dm=s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if(dm)return new Date(+dm[3],+dm[2]-1,+dm[1]);
+
   return null;
 }
 
